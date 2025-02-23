@@ -14,7 +14,7 @@ import java.util.Objects;
 
 @ControllerAdvice
 @Slf4j
-public class GlobalException {
+public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = Exception.class)
     public ResponseEntity<ApiResponse<?>> handleException(Exception e) {
