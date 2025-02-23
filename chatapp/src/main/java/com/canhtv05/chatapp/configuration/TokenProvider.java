@@ -22,12 +22,8 @@ import java.util.Date;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class TokenProvider {
 
-    @NonFinal
-    @Value("${jwt.signer-key}")
-    String SECRET_KEY;
-
     String EMAIL = "email";
-    SecretKey key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
+    SecretKey key = Keys.hmacShaKeyFor(JwtConstant.SECRET_KEY.getBytes());
 
     public String generateToken(Authentication authentication) {
         return Jwts.builder()
@@ -42,15 +38,15 @@ public class TokenProvider {
                 .compact();
     }
 
-    public String getEmailFromToken(String jwt) {
-        if (jwt != null && jwt.startsWith("Bearer ")) {
-            jwt = jwt.substring(7);
+    public String getEmailFromToken(String token) {
+        if (token != null && token.startsWith("Bearer ")) {
+            token = token.substring(7);
         }
 
         Claims claims = Jwts.parser()
                 .setSigningKey(key)
                 .build()
-                .parseClaimsJws(jwt)
+                .parseClaimsJws(token)
                 .getPayload();
 
         return String.valueOf(claims.get(EMAIL));

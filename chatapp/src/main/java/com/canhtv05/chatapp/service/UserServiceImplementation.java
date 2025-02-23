@@ -27,7 +27,7 @@ public class UserServiceImplementation implements UserService {
     TokenProvider tokenProvider;
 
     @Override
-    public UserResponse findUserById(Integer id) {
+    public UserResponse findUserById(String id) {
         return userMapper.toUserResponse(userRepository
                 .findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND)));
@@ -51,7 +51,7 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
-    public UserResponse updateUser(Integer userId, UserUpdateRequest request) {
+    public UserResponse updateUser(String userId, UserUpdateRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 

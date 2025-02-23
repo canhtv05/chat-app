@@ -7,11 +7,11 @@ import java.util.List;
 
 public interface UserService {
 
-    UserResponse findUserById(Integer id);
+    UserResponse findUserById(String id);
 
     UserResponse findUserProfile(String jwt);
 
-    UserResponse updateUser(Integer userId, UserUpdateRequest request);
+    UserResponse updateUser(String userId, UserUpdateRequest request);
 
     List<UserResponse> searchUserByFullNameOrEmail(String query);
 }

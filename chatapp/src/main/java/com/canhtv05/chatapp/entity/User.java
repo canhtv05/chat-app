@@ -14,8 +14,8 @@ import lombok.experimental.FieldDefaults;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    Integer id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    String id;
 
     String full_name;
     String email;

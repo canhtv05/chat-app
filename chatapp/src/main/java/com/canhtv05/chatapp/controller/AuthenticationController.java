@@ -2,9 +2,10 @@ package com.canhtv05.chatapp.controller;
 
 
 import com.canhtv05.chatapp.dto.ApiResponse;
-import com.canhtv05.chatapp.dto.response.AuthResponse;
+import com.canhtv05.chatapp.dto.response.AuthenticationResponse;
+import com.canhtv05.chatapp.dto.resquest.AuthenticationRequest;
 import com.canhtv05.chatapp.dto.resquest.UserCreationRequest;
-import com.canhtv05.chatapp.service.AuthService;
+import com.canhtv05.chatapp.service.AuthenticationService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -15,17 +16,21 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class AuthController {
+public class AuthenticationController {
 
-    AuthService authService;
+    AuthenticationService authenticationService;
 
-    @PostMapping("/signup")
-    public ApiResponse<AuthResponse> createUser(@RequestBody UserCreationRequest request) {
-        return ApiResponse.<AuthResponse>builder()
-                .data(authService.createUser(request))
+    @PostMapping("/sign-up")
+    public ApiResponse<AuthenticationResponse> createUser(@RequestBody UserCreationRequest request) {
+        return ApiResponse.<AuthenticationResponse>builder()
+                .data(authenticationService.createUser(request))
                 .build();
     }
 
-    @PostMapping("/signin")
-    public ApiResponse<AuthResponse> login(@ResponseBody LoginRequest)
+    @PostMapping("/sign-in")
+    public ApiResponse<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request) {
+        return ApiResponse.<AuthenticationResponse>builder()
+                .data(authenticationService.authentication(request))
+                .build();
+    }
 }

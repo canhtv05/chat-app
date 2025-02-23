@@ -3,14 +3,14 @@ package com.canhtv05.chatapp.controller;
 import com.canhtv05.chatapp.constant.JwtConstant;
 import com.canhtv05.chatapp.dto.ApiResponse;
 import com.canhtv05.chatapp.dto.response.UserResponse;
+import com.canhtv05.chatapp.dto.resquest.UserUpdateRequest;
 import com.canhtv05.chatapp.service.UserService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/users")
@@ -20,10 +20,29 @@ public class UserController {
 
     UserService userService;
 
-    @GetMapping
+    @GetMapping("/profile")
     public ApiResponse<UserResponse> getUserProfile(@RequestHeader(JwtConstant.JWT_HEADER) String token) {
         UserResponse user = userService.findUserProfile(token);
 
+        return ApiResponse.<UserResponse>builder()
+                .data(user)
+                .build();
+    }
+
+    @GetMapping("/{query}")
+    public ApiResponse<List<UserResponse>> searchUsersByFullNameOrEmail(@PathVariable(value = "query") String query) {
+        var users = userService.searchUserByFullNameOrEmail(query);
+
+        return ApiResponse.<List<UserResponse>>builder()
+                .data(users)
+                .build();
+    }
+
+    @PostMapping("/update")
+    public ApiResponse<UserResponse> updateUser(@RequestBody UserUpdateRequest request, @RequestHeader(JwtConstant.JWT_HEADER) String token) {
+        UserResponse user = userService.findUserProfile(token);
+
+        user = userService.updateUser(user.getId(), request);
         return ApiResponse.<UserResponse>builder()
                 .data(user)
                 .build();

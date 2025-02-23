@@ -27,10 +27,6 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class JwtTokenValidator extends OncePerRequestFilter {
 
-    @NonFinal
-    @Value("${jwt.signer-key}")
-    String SECRET_KEY;
-
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
@@ -40,7 +36,7 @@ public class JwtTokenValidator extends OncePerRequestFilter {
             try {
                 jwt = jwt.substring(7);
 
-                SecretKey secretKey = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
+                SecretKey secretKey = Keys.hmacShaKeyFor(JwtConstant.SECRET_KEY.getBytes());
                 Claims claims = Jwts.parser().setSigningKey(secretKey).build().parseClaimsJws(jwt).getBody();
 
                 String username = String.valueOf(claims.get("username"));

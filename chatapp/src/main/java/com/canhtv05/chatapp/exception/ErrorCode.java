@@ -10,9 +10,11 @@ import org.springframework.http.HttpStatus;
 public enum ErrorCode {
     UNCATEGORIZED_EXCEPTION(9999, "Uncategorized error", HttpStatus.INTERNAL_SERVER_ERROR),
     INVALID_KEY(1000, "Invalid key", HttpStatus.BAD_REQUEST),
-    USER_NOT_FOUND(1001, "User is not exist", HttpStatus.NOT_FOUND),
+    USER_NOT_FOUND(1001, "User not found", HttpStatus.NOT_FOUND),
     INVALID_TOKEN(1002, "Invalid token", HttpStatus.BAD_REQUEST),
     USER_NOT_FOUND_WITH_EMAIL(1003, "Not found with email", HttpStatus.NOT_FOUND),
+    EMAIL_EXISTED(1004, "Email already existed", HttpStatus.CONFLICT),
+    UNAUTHENTICATED(1006, "Unauthenticated", HttpStatus.BAD_REQUEST),
     ;
 
     ErrorCode(int code, String message, HttpStatus status) {

@@ -5,8 +5,7 @@ import lombok.experimental.FieldDefaults;
 
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Setter
+@Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserUpdateRequest {
 

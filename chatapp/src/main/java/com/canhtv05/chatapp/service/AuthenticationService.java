@@ -1,7 +1,8 @@
 package com.canhtv05.chatapp.service;
 
 import com.canhtv05.chatapp.configuration.TokenProvider;
-import com.canhtv05.chatapp.dto.response.AuthResponse;
+import com.canhtv05.chatapp.dto.response.AuthenticationResponse;
+import com.canhtv05.chatapp.dto.resquest.AuthenticationRequest;
 import com.canhtv05.chatapp.dto.resquest.UserCreationRequest;
 import com.canhtv05.chatapp.entity.User;
 import com.canhtv05.chatapp.exception.AppException;
@@ -14,20 +15,24 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class AuthService {
+public class AuthenticationService {
 
     UserRepository userRepository;
     UserMapper userMapper;
     PasswordEncoder passwordEncoder;
     TokenProvider tokenProvider;
+    CustomUserDetailService customUserDetailService;
 
-    public AuthResponse createUser(UserCreationRequest request) {
+    public AuthenticationResponse createUser(UserCreationRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new AppException(ErrorCode.EMAIL_EXISTED);
         }
@@ -42,7 +47,30 @@ public class AuthService {
 
         String token = tokenProvider.generateToken(authentication);
 
-        return AuthResponse.builder()
+        return AuthenticationResponse.builder()
+                .token(token)
+                .is_auth(true)
+                .build();
+    }
+
+    public AuthenticationResponse authentication(AuthenticationRequest request) {
+        UserDetails userDetails = customUserDetailService.loadUserByUsername(request.getEmail());
+
+        if (Objects.isNull(userDetails)) {
+            throw new AppException(ErrorCode.USER_NOT_FOUND);
+        }
+
+        if (!passwordEncoder.matches(request.getPassword(), userDetails.getPassword())) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+
+        Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null,
+                userDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        String token = tokenProvider.generateToken(authentication);
+
+        return AuthenticationResponse.builder()
                 .token(token)
                 .is_auth(true)
                 .build();

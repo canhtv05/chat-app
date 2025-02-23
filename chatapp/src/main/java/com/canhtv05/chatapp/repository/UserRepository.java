@@ -8,10 +8,12 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, Integer> {
+public interface UserRepository extends JpaRepository<User, String> {
 
     User findByEmail(String email);
 
     @Query(value = "SELECT u FROM User u WHERE u.full_name LIKE %?1% OR u.email LIKE %?1%")
     List<User> searchUserByFullNameOrEmail(String query);
+
+    boolean existsByEmail(String email);
 }

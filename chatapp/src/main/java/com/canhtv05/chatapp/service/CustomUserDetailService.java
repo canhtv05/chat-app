@@ -1,7 +1,6 @@
 package com.canhtv05.chatapp.service;
 
 import com.canhtv05.chatapp.dto.response.UserResponse;
-import com.canhtv05.chatapp.entity.User;
 import com.canhtv05.chatapp.exception.AppException;
 import com.canhtv05.chatapp.exception.ErrorCode;
 import com.canhtv05.chatapp.mapper.UserMapper;
@@ -22,7 +21,7 @@ import java.util.Objects;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class UserDetailService implements UserDetailsService {
+public class CustomUserDetailService implements UserDetailsService {
 
     UserRepository userRepository;
     UserMapper userMapper;
