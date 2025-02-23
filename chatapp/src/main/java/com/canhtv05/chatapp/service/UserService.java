@@ -1,17 +1,17 @@
 package com.canhtv05.chatapp.service;
 
+import com.canhtv05.chatapp.dto.response.UserResponse;
 import com.canhtv05.chatapp.dto.resquest.UserUpdateRequest;
-import com.canhtv05.chatapp.entity.User;
 
 import java.util.List;
 
 public interface UserService {
 
-    User findUserById(Integer id);
+    UserResponse findUserById(Integer id);
 
-    User findUserProfile(String jwt);
+    UserResponse findUserProfile(String jwt);
 
-    User updateUser(Integer userId, UserUpdateRequest request) throws Exception;
+    UserResponse updateUser(Integer userId, UserUpdateRequest request);
 
-    List<User> searchUser(String query);
+    List<UserResponse> searchUserByFullNameOrEmail(String query);
 }
