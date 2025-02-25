@@ -1,6 +1,7 @@
 package com.canhtv05.chatapp.service;
 
 import com.canhtv05.chatapp.dto.response.UserResponse;
+import com.canhtv05.chatapp.entity.User;
 import com.canhtv05.chatapp.exception.AppException;
 import com.canhtv05.chatapp.exception.ErrorCode;
 import com.canhtv05.chatapp.mapper.UserMapper;
@@ -16,7 +17,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -28,13 +28,12 @@ public class CustomUserDetailService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserResponse user = userMapper.toUserResponse(userRepository.findByEmail(username));
+        User user = userRepository.findByEmail(username)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND_WITH_EMAIL));
 
-        if (Objects.isNull(user)) {
-            throw new AppException(ErrorCode.USER_NOT_FOUND);
-        }
+        UserResponse userResponse = userMapper.toUserResponse(user);
 
         List<GrantedAuthority> authorities = new ArrayList<>();
-        return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), authorities);
+        return new org.springframework.security.core.userdetails.User(userResponse.getEmail(), userResponse.getPassword(), authorities);
     }
 }

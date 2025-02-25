@@ -1,15 +1,13 @@
 package com.canhtv05.chatapp.configuration;
 
 import com.canhtv05.chatapp.constant.JwtConstant;
+import com.canhtv05.chatapp.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import lombok.experimental.NonFinal;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -25,15 +23,15 @@ public class TokenProvider {
     String EMAIL = "email";
     SecretKey key = Keys.hmacShaKeyFor(JwtConstant.SECRET_KEY.getBytes());
 
-    public String generateToken(Authentication authentication) {
+    public String generateToken(User user) {
         return Jwts.builder()
                 .issuer("canhtv05")
                 .issuedAt(new Date())
                 .expiration(new Date(
                         Instant.now().plus(360000, ChronoUnit.SECONDS).toEpochMilli()
                 ))
-                .subject(authentication.getName())
-                .claim(EMAIL, authentication.getName())
+                .subject(user.getId())
+                .claim(EMAIL, user.getEmail())
                 .signWith(key)
                 .compact();
     }

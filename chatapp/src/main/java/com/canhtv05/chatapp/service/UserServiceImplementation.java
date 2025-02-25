@@ -27,10 +27,10 @@ public class UserServiceImplementation implements UserService {
     TokenProvider tokenProvider;
 
     @Override
-    public UserResponse findUserById(String id) {
-        return userMapper.toUserResponse(userRepository
+    public User findUserById(String id) {
+        return userRepository
                 .findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND)));
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
     }
 
     @Override
@@ -41,11 +41,8 @@ public class UserServiceImplementation implements UserService {
             throw new AppException(ErrorCode.INVALID_TOKEN);
         }
 
-        User user = userRepository.findByEmail(email);
-
-        if (Objects.isNull(user)) {
-            throw new AppException(ErrorCode.USER_NOT_FOUND_WITH_EMAIL);
-        }
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND_WITH_EMAIL));
 
         return userMapper.toUserResponse(user);
     }
