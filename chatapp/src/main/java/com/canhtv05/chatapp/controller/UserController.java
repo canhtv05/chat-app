@@ -4,7 +4,10 @@ import com.canhtv05.chatapp.constant.JwtConstant;
 import com.canhtv05.chatapp.dto.ApiResponse;
 import com.canhtv05.chatapp.dto.response.UserResponse;
 import com.canhtv05.chatapp.dto.resquest.UserUpdateRequest;
+import com.canhtv05.chatapp.entity.User;
+import com.canhtv05.chatapp.mapper.UserMapper;
 import com.canhtv05.chatapp.service.UserService;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -19,13 +22,14 @@ import java.util.List;
 public class UserController {
 
     UserService userService;
+    UserMapper userMapper;
 
     @GetMapping("/profile")
     public ApiResponse<UserResponse> getUserProfile(@RequestHeader(JwtConstant.JWT_HEADER) String token) {
-        UserResponse user = userService.findUserProfile(token);
+        User user = userService.findUserProfile(token);
 
         return ApiResponse.<UserResponse>builder()
-                .data(user)
+                .data(userMapper.toUserResponse(user))
                 .build();
     }
 
@@ -39,12 +43,13 @@ public class UserController {
     }
 
     @PostMapping("/update")
-    public ApiResponse<UserResponse> updateUser(@RequestBody UserUpdateRequest request, @RequestHeader(JwtConstant.JWT_HEADER) String token) {
-        UserResponse user = userService.findUserProfile(token);
+    public ApiResponse<UserResponse> updateUser(@Valid @RequestBody UserUpdateRequest request,
+                                                @RequestHeader(JwtConstant.JWT_HEADER) String token) {
+        User user = userService.findUserProfile(token);
 
         user = userService.updateUser(user.getId(), request);
         return ApiResponse.<UserResponse>builder()
-                .data(user)
+                .data(userMapper.toUserResponse(user))
                 .build();
     }
 }

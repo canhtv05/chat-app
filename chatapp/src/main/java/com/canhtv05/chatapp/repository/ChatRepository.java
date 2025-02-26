@@ -1,6 +1,5 @@
 package com.canhtv05.chatapp.repository;
 
-import com.canhtv05.chatapp.dto.response.ChatResponse;
 import com.canhtv05.chatapp.entity.Chat;
 import com.canhtv05.chatapp.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;

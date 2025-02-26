@@ -6,6 +6,7 @@ import com.canhtv05.chatapp.dto.response.AuthenticationResponse;
 import com.canhtv05.chatapp.dto.resquest.AuthenticationRequest;
 import com.canhtv05.chatapp.dto.resquest.UserCreationRequest;
 import com.canhtv05.chatapp.service.AuthenticationService;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -21,7 +22,7 @@ public class AuthenticationController {
     AuthenticationService authenticationService;
 
     @PostMapping("/sign-up")
-    public ApiResponse<AuthenticationResponse> createUser(@RequestBody UserCreationRequest request) {
+    public ApiResponse<AuthenticationResponse> createUser(@Valid @RequestBody UserCreationRequest request) {
         return ApiResponse.<AuthenticationResponse>builder()
                 .data(authenticationService.createUser(request))
                 .build();

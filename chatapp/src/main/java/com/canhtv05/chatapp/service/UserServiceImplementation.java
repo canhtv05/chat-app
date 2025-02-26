@@ -34,27 +34,25 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
-    public UserResponse findUserProfile(String jwt) {
+    public User findUserProfile(String jwt) {
         String email = tokenProvider.getEmailFromToken(jwt);
 
         if (Objects.isNull(email)) {
             throw new AppException(ErrorCode.INVALID_TOKEN);
         }
 
-        User user = userRepository.findByEmail(email)
+        return userRepository.findByEmail(email)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND_WITH_EMAIL));
-
-        return userMapper.toUserResponse(user);
     }
 
     @Override
-    public UserResponse updateUser(String userId, UserUpdateRequest request) {
+    public User updateUser(String userId, UserUpdateRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         userMapper.updateUserFromRequest(request, user);
 
-        return userMapper.toUserResponse(userRepository.save(user));
+        return userRepository.save(user);
     }
 
     @Override

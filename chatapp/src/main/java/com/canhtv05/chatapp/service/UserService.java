@@ -10,9 +10,9 @@ public interface UserService {
 
     User findUserById(String id);
 
-    UserResponse findUserProfile(String jwt);
+    User findUserProfile(String jwt);
 
-    UserResponse updateUser(String userId, UserUpdateRequest request);
+    User updateUser(String userId, UserUpdateRequest request);
 
     List<UserResponse> searchUserByFullNameOrEmail(String query);
 }
