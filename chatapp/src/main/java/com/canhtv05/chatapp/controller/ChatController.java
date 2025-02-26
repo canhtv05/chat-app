@@ -7,6 +7,7 @@ import com.canhtv05.chatapp.dto.resquest.GroupChatCreationRequest;
 import com.canhtv05.chatapp.dto.resquest.RenameGroupRequest;
 import com.canhtv05.chatapp.dto.resquest.SingleChatCreationRequest;
 import com.canhtv05.chatapp.entity.User;
+import com.canhtv05.chatapp.mapper.ChatMapper;
 import com.canhtv05.chatapp.service.ChatService;
 import com.canhtv05.chatapp.service.UserService;
 import jakarta.validation.Valid;
@@ -25,6 +26,7 @@ public class ChatController {
 
     ChatService chatService;
     UserService userService;
+    ChatMapper chatMapper;
 
 
     @PostMapping("/single")
@@ -57,7 +59,7 @@ public class ChatController {
     public ApiResponse<ChatResponse> findChatById(@PathVariable String chatId) {
 
         return ApiResponse.<ChatResponse>builder()
-                .data(chatService.findChatById(chatId))
+                .data(chatMapper.toChatResponse(chatService.findChatById(chatId)))
                 .build();
 
     }
@@ -85,7 +87,7 @@ public class ChatController {
 
     }
 
-    @GetMapping("/{chatId}/remove/{userId}")
+    @PutMapping("/{chatId}/remove/{userId}")
     public ApiResponse<ChatResponse> removeUserFromGroup(@PathVariable String chatId, @PathVariable String userId,
                                                          @RequestHeader(JwtConstant.JWT_HEADER) String token) {
         User userRequest = userService.findUserProfile(token);
@@ -100,7 +102,7 @@ public class ChatController {
 
     @DeleteMapping("/delete/{chatId}")
     public ApiResponse<Void> deleteChat(@PathVariable String chatId,
-                                       @RequestHeader(JwtConstant.JWT_HEADER) String token) {
+                                        @RequestHeader(JwtConstant.JWT_HEADER) String token) {
         User userRequest = userService.findUserProfile(token);
 
         chatService.deleteChat(chatId, userRequest.getId());
@@ -111,7 +113,7 @@ public class ChatController {
 
     }
 
-    @PutMapping("/{chatId}/rename")
+    @PutMapping("rename/{chatId}")
     public ApiResponse<ChatResponse> renameGroup(@PathVariable String chatId,
                                                  @Valid @RequestBody RenameGroupRequest request,
                                                  @RequestHeader(JwtConstant.JWT_HEADER) String token) {

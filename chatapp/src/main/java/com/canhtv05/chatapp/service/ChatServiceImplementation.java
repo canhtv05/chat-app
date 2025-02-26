@@ -48,10 +48,9 @@ public class ChatServiceImplementation implements ChatService {
     }
 
     @Override
-    public ChatResponse findChatById(String chatId) {
-        Chat chat = chatRepository.findById(chatId).orElseThrow(() -> new AppException(ErrorCode.CHAT_NOT_FOUND));
-
-        return chatMapper.toChatResponse(chat);
+    public Chat findChatById(String chatId) {
+        return chatRepository.findById(chatId)
+                .orElseThrow(() -> new AppException(ErrorCode.CHAT_NOT_FOUND));
     }
 
     @Override
@@ -72,9 +71,7 @@ public class ChatServiceImplementation implements ChatService {
             users.add(user);
         }
 
-        if (users.isEmpty()) {
-            users.add(userRequest);
-        }
+        users.add(userRequest);
 
         Chat chat =
                 Chat.builder().is_group(true).chat_image(request.getChat_image()).chat_name(request.getChat_name()).created_by(userRequest).admins(new HashSet<>(Set.of(userRequest))).users(users).build();
@@ -96,10 +93,6 @@ public class ChatServiceImplementation implements ChatService {
 
         if (Boolean.FALSE.equals(chat.getIs_group())) {
             throw new AppException(ErrorCode.CANNOT_ADD_USER_TO_SINGLE_CHAT);
-        }
-
-        if (chat.getUsers().contains(user)) {
-            throw new AppException(ErrorCode.USER_ALREADY_IN_CHAT);
         }
 
         return chatMapper.toChatResponse(chatRepository.save(chat));

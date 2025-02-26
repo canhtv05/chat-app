@@ -5,6 +5,7 @@ import jakarta.validation.ConstraintViolation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -32,6 +33,16 @@ public class GlobalExceptionHandler {
         ApiResponse<?> apiResponse = ApiResponse.builder()
                 .message(errorCode.getMessage())
                 .code(errorCode.getCode())
+                .build();
+
+        return ResponseEntity.badRequest().body(apiResponse);
+    }
+
+    @ExceptionHandler(value = MissingRequestHeaderException.class)
+    public ResponseEntity<ApiResponse> handleMissingRequestHeaderException(MissingRequestHeaderException e) {
+        ApiResponse<?> apiResponse = ApiResponse.builder()
+                .message(e.getMessage())
+                .code(e.getStatusCode().value())
                 .build();
 
         return ResponseEntity.badRequest().body(apiResponse);

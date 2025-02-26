@@ -2,6 +2,7 @@ package com.canhtv05.chatapp.service;
 
 import com.canhtv05.chatapp.dto.response.ChatResponse;
 import com.canhtv05.chatapp.dto.resquest.GroupChatCreationRequest;
+import com.canhtv05.chatapp.entity.Chat;
 import com.canhtv05.chatapp.entity.User;
 
 import java.util.List;
@@ -10,7 +11,7 @@ public interface ChatService {
 
     ChatResponse createChat(User userRequest, String userId);
 
-    ChatResponse findChatById(String chatId);
+    Chat findChatById(String chatId);
 
     List<ChatResponse> findAllChatByUserId(String userId);
 
