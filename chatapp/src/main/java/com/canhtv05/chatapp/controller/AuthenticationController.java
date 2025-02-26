@@ -22,7 +22,7 @@ public class AuthenticationController {
     AuthenticationService authenticationService;
 
     @PostMapping("/sign-up")
-    public ApiResponse<AuthenticationResponse> createUser(@Valid @RequestBody UserCreationRequest request) {
+    public ApiResponse<AuthenticationResponse> createUser(@RequestBody @Valid UserCreationRequest request) {
         return ApiResponse.<AuthenticationResponse>builder()
                 .data(authenticationService.createUser(request))
                 .build();

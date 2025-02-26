@@ -24,16 +24,14 @@ import java.util.List;
 public class CustomUserDetailService implements UserDetailsService {
 
     UserRepository userRepository;
-    UserMapper userMapper;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(username)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND_WITH_EMAIL));
 
-        UserResponse userResponse = userMapper.toUserResponse(user);
-
         List<GrantedAuthority> authorities = new ArrayList<>();
-        return new org.springframework.security.core.userdetails.User(userResponse.getEmail(), userResponse.getPassword(), authorities);
+        return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(),
+                authorities);
     }
 }

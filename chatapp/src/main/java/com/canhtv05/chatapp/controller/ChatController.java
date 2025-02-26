@@ -32,7 +32,7 @@ public class ChatController {
                                                   @RequestHeader(JwtConstant.JWT_HEADER) String token) {
         User userRequest = userService.findUserProfile(token);
 
-        ChatResponse chat = chatService.createChat(userRequest, request.getUserId());
+        ChatResponse chat = chatService.createChat(userRequest, request.getUser_id());
 
         return ApiResponse.<ChatResponse>builder()
                 .data(chat)
@@ -41,7 +41,7 @@ public class ChatController {
     }
 
     @PostMapping("/group")
-    public ApiResponse<ChatResponse> creationChatGroup(@Valid @RequestBody GroupChatCreationRequest request,
+    public ApiResponse<ChatResponse> creationChatGroup(@RequestBody GroupChatCreationRequest request,
                                                        @RequestHeader(JwtConstant.JWT_HEADER) String token) {
         User userRequest = userService.findUserProfile(token);
 

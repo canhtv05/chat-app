@@ -17,7 +17,7 @@ import java.util.Objects;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = Exception.class)
-    public ResponseEntity<ApiResponse<?>> handleException(Exception e) {
+    public ResponseEntity<ApiResponse> handleException(Exception e) {
         ApiResponse<?> apiResponse = ApiResponse.builder()
                 .message(ErrorCode.UNCATEGORIZED_EXCEPTION.getMessage())
                 .code(ErrorCode.UNCATEGORIZED_EXCEPTION.getCode())
@@ -27,18 +27,18 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(value = AppException.class)
-    public ResponseEntity<ApiResponse<?>> handleAppException(AppException e) {
+    public ResponseEntity<ApiResponse> handleAppException(AppException e) {
         ErrorCode errorCode = e.getErrorCode();
         ApiResponse<?> apiResponse = ApiResponse.builder()
                 .message(errorCode.getMessage())
                 .code(errorCode.getCode())
                 .build();
 
-        return ResponseEntity.status(errorCode.getCode()).body(apiResponse);
+        return ResponseEntity.badRequest().body(apiResponse);
     }
 
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponse<?>> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+    public ResponseEntity<ApiResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         String enumKey = e.getFieldError() != null ? e.getFieldError().getDefaultMessage() : "INVALID_KEY";
 
         ErrorCode errorCode = ErrorCode.INVALID_KEY;

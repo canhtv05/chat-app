@@ -1,7 +1,6 @@
 package com.canhtv05.chatapp.mapper;
 
 import com.canhtv05.chatapp.dto.response.UserResponse;
-import com.canhtv05.chatapp.dto.resquest.UserChatRequest;
 import com.canhtv05.chatapp.dto.resquest.UserCreationRequest;
 import com.canhtv05.chatapp.dto.resquest.UserUpdateRequest;
 import com.canhtv05.chatapp.entity.User;
@@ -22,6 +21,4 @@ public interface UserMapper {
     void updateUserFromRequest(UserUpdateRequest request, @MappingTarget User user);
 
     UserResponse toUserResponse(User user);
-
-    User toUserChatRequest(UserChatRequest request);
 }
