@@ -1,4 +1,4 @@
-import { BsChatTextFill } from 'react-icons/bs';
+import { BsChatText } from 'react-icons/bs';
 import { IoSettingsOutline } from 'react-icons/io5';
 
 import MyButton from '~/components/MyButton/MyButton';
@@ -17,7 +17,7 @@ function Sidebar() {
                 </MyButton>
             </div>
             <MyButton active>
-                <BsChatTextFill className="size-8 text-text-bold" />
+                <BsChatText className="size-8 text-text-bold" />
             </MyButton>
             <div className="mt-auto">
                 <MyButton>

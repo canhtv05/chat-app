@@ -1,17 +1,26 @@
 import { CiSearch } from 'react-icons/ci';
 import { AiOutlineUserAdd, AiOutlineUsergroupAdd } from 'react-icons/ai';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 
 import MyInput from '~/components/MyInput/MyInput';
 import AccountItem from '~/components/AccountItem/AccountItem';
+import { ChatCardContext } from '~/contexts/ChatCardProvider/ChatCardProvider';
 
 const list = new Array(10).fill(0);
 
 function Article() {
     const [activeIndex, setActiveIndex] = useState(null);
+    const [query, setQuery] = useState('');
+
+    const { setCurrentChat } = useContext(ChatCardContext);
 
     const handleClick = (index) => {
         setActiveIndex(index);
+        setCurrentChat(true);
+    };
+
+    const handleSearch = (e) => {
+        setQuery(e.target.value);
     };
 
     return (
@@ -22,13 +31,15 @@ function Article() {
                     placeholder="Search..."
                     variant="soft"
                     size="md"
+                    onChange={handleSearch}
+                    value={query}
                 />
                 <AiOutlineUserAdd className="size-6 text-text-bold cursor-pointer" />
                 <AiOutlineUsergroupAdd className="size-6 text-text-bold cursor-pointer" />
             </div>
-            <div className="overflow-y-auto flex-1">
-                <div className="pb-6">
-                    {list.map((_, index) => (
+            <div className="overflow-y-auto" tabIndex={-1}>
+                {query &&
+                    list.map((_, index) => (
                         <AccountItem
                             key={index}
                             separator={index !== list.length - 1}
@@ -36,7 +47,6 @@ function Article() {
                             onClick={() => handleClick(index)}
                         />
                     ))}
-                </div>
             </div>
         </div>
     );
