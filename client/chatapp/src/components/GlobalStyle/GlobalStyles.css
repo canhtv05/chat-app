@@ -3,39 +3,53 @@
 @import 'tailwindcss/utilities';
 
 .light {
-    --background: 245, 245, 245;
+    --background: 246, 248, 250;
+    --background-secondary: 238, 243, 247;
 
-    --border: 212, 212, 212;
-    --card: 255, 255, 255;
+    --border: 209, 217, 224;
 
-    --copy-primary: 23, 23, 23;
-    --copy-secondary: 23, 23, 23;
+    --text-bold: 31, 35, 40;
+    --text-light: 31, 35, 40;
 
-    --cta: 139, 92, 246;
-    --cta-active: 124, 58, 237;
-    --cta-text: 255, 255, 255;
+    --active: 129, 139, 152, 0.2;
 
     background: rgb(var(--background));
 }
 
 .dark {
-    --background: 0, 0, 0;
+    --background: 21, 27, 35;
+    --background-secondary: 48, 54, 61;
 
-    --border: 38, 38, 38;
-    --card: 23, 23, 23;
+    --border: 61, 68, 77;
 
-    --copy-primary: 250, 250, 250;
-    --copy-secondary: 115, 115, 115;
+    --text-bold: 209, 215, 224;
+    --text-light: 145, 152, 161;
 
-    --cta: 99, 102, 241;
-    --cta-active: 79, 70, 239;
-    --cta-text: 255, 255, 255;
+    --active: 101, 108, 118, 0.1;
 
     background: rgb(var(--background));
 }
 
 body {
-    background: rgb(var(--background));
+    background: rgba(var(--background));
+    background-color: rgba(var(--background));
+    transition: background-color 300ms;
+}
+
+html ::-webkit-scrollbar {
+    border-radius: 0px;
+    width: 8px;
+}
+
+html ::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    background: rgba(var(--active));
+    cursor: pointer;
+}
+
+html ::-webkit-scrollbar-track {
+    border-radius: 0px;
+    background-color: transparent;
 }
 
 @media (prefers-color-scheme: dark) {

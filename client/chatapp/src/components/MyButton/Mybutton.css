@@ -1,0 +1,6 @@
+.active {
+    background-color: rgba(var(--active));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

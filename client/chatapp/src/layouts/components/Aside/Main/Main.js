@@ -1,8 +1,9 @@
-import { Button } from '@mui/material';
+import { Button } from '@mui/joy';
 import { useContext } from 'react';
+
 import { ThemeContext } from '~/contexts/ThemeProvider/ThemeProvider';
 
-function HomePage() {
+function Main() {
     const { toggleTheme } = useContext(ThemeContext);
 
     return (
@@ -12,4 +13,4 @@ function HomePage() {
     );
 }
 
-export default HomePage;
+export default Main;

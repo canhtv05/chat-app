@@ -5,7 +5,7 @@ const ThemeContext = createContext();
 
 function ThemeProvider({ children }) {
     const { dataStorage, setStorage } = useLocalStorage();
-    const [isDark, setIsDark] = useState((dataStorage.theme = 'dark'));
+    const [isDark, setIsDark] = useState(dataStorage.theme === 'dark');
 
     const setDarkMode = () => {
         document.body.classList.remove('light');
@@ -20,18 +20,23 @@ function ThemeProvider({ children }) {
     };
 
     const toggleTheme = () => {
-        if (isDark) {
-            setLightMode();
-        } else {
-            setDarkMode();
-        }
+        setIsDark(!isDark);
     };
 
     useEffect(() => {
-        const theme = isDark ? 'dark' : 'light';
-        document.body.classList.remove('light', 'dark');
-        document.body.classList.add(theme);
-        setStorage({ theme });
+        const dataThem = {
+            theme: 'light',
+        };
+
+        if (isDark) {
+            dataThem.theme = 'dark';
+            setDarkMode();
+        } else {
+            dataThem.theme = 'light';
+            setLightMode();
+        }
+
+        setStorage(dataThem);
     }, [isDark, setStorage]);
 
     const value = {
