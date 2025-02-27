@@ -1,9 +1,9 @@
-import Home from '~/pages/Home/Home';
+import HomePage from '~/pages/Home/HomPage';
 
 const publicRoutes = [
     {
         path: '/',
-        component: Home,
+        component: HomePage,
     },
 ];
 
