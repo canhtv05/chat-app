@@ -1,17 +1,16 @@
-import { Textarea } from '@mui/joy';
 import { forwardRef, memo } from 'react';
 import PropTypes from 'prop-types';
 
 const MyTextArea = forwardRef(({ width = '100%', ...props }, ref) => {
     return (
-        <Textarea
+        <textarea
             {...props}
             ref={ref}
-            sx={{
-                background: 'rgba(var(--background-secondary))',
-                color: 'rgba(var(--text-bold))',
+            style={{
                 width,
+                height: 36,
             }}
+            className={`bg-background-secondary text-text-bold resize-none p-[4px] px-2 rounded border-2 border-transparent focus:border-[#1976d2] focus:outline-none`}
         />
     );
 });

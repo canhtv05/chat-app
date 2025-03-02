@@ -1,6 +1,8 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
-function useTextAreaResize({ setContent, setIsLineBeak, setLengthText, lengthText, textAreaRef }) {
+function useTextAreaResize({ setContent, setIsLineBeak }) {
+    const [lengthText, setLengthText] = useState(null);
+
     const myRef = useRef();
     const myRef2 = useRef();
 
@@ -18,8 +20,10 @@ function useTextAreaResize({ setContent, setIsLineBeak, setLengthText, lengthTex
             let maxLength = lengthText || 0;
             setContent(value);
 
-            const textAreaElement = textAreaRef.current?.querySelector('textarea');
+            const textAreaElement = e.target;
             if (!textAreaElement) return;
+
+            textAreaElement.style.height = `36px`;
 
             const textAreaWidth = textAreaElement.offsetWidth;
             const textWidth = getTextWidth(value, getComputedStyle(textAreaElement).font);
@@ -37,6 +41,13 @@ function useTextAreaResize({ setContent, setIsLineBeak, setLengthText, lengthTex
                 }
             }
 
+            console.log(textWidth, textAreaWidth - 40);
+
+            if (textWidth > textAreaWidth - 20 && length > maxLength) {
+                const scrollHeight = e.target.scrollHeight;
+                textAreaElement.style.height = `${scrollHeight + 4}px`;
+            }
+
             if (length < maxLength) {
                 setIsLineBeak(false);
                 myRef2.current = null;
@@ -49,7 +60,7 @@ function useTextAreaResize({ setContent, setIsLineBeak, setLengthText, lengthTex
                 setLengthText(null);
             }
         },
-        [lengthText, setContent, setIsLineBeak, setLengthText, textAreaRef],
+        [lengthText, setContent, setIsLineBeak],
     );
 
     return handleChange;
