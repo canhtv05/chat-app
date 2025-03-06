@@ -1,6 +1,4 @@
 import images from '~/assets/images';
-import Sidebar from '../components/Sidebar/Sidebar';
-import Aside from '../components/Aside/Aside';
 
 function DefaultLayout({ children }) {
     return (
@@ -13,15 +11,7 @@ function DefaultLayout({ children }) {
                         alt="div"
                         className="w-full h-full object-cover absolute blur-lg z-0"
                     />
-                    <div className="flex h-full absolute z-10 w-full">
-                        <div className="left w-[5%]">
-                            <Sidebar />
-                        </div>
-                        <div className="right w-full">
-                            <Aside />
-                            {children}
-                        </div>
-                    </div>
+                    <div className="flex h-full absolute z-10 w-full">{children}</div>
                 </div>
             </div>
         </div>

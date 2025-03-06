@@ -41,8 +41,6 @@ function useTextAreaResize({ setContent, setIsLineBeak }) {
                 }
             }
 
-            console.log(textWidth, textAreaWidth - 40);
-
             if (textWidth > textAreaWidth - 20 && length > maxLength) {
                 const scrollHeight = e.target.scrollHeight;
                 textAreaElement.style.height = `${scrollHeight + 4}px`;

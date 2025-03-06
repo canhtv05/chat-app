@@ -1,3 +1,5 @@
+import PropTypes from 'prop-types';
+
 function MessageCard({ isMe, content }) {
     return (
         <div
@@ -9,5 +11,10 @@ function MessageCard({ isMe, content }) {
         </div>
     );
 }
+
+MessageCard.propTypes = {
+    isMe: PropTypes.bool,
+    content: PropTypes.string,
+};
 
 export default MessageCard;

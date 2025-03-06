@@ -1,6 +1,6 @@
 import { Avatar } from '@mui/joy';
 import PropTypes from 'prop-types';
-import { useEffect, useRef } from 'react';
+import { memo, useEffect, useRef } from 'react';
 
 function AccountItem({ separator, isMe, isOnline, isActive, onClick }) {
     const divRef = useRef();
@@ -29,7 +29,9 @@ function AccountItem({ separator, isMe, isOnline, isActive, onClick }) {
                     </div>
                     <div className="flex flex-col w-full">
                         <div className="ml-4 flex justify-between">
-                            <span className="text-text-bold font-semibold">Tran Van Canh</span>
+                            <span className="text-text-bold font-semibold max-w-[150px] truncate inline-block">
+                                Tran Van Canh
+                            </span>
                             <span className="text-text-bold font-thin">4 hours ago</span>
                         </div>
                         <div className="ml-4 mt-1 flex">
@@ -56,4 +58,4 @@ AccountItem.propTypes = {
     onClick: PropTypes.func,
 };
 
-export default AccountItem;
+export default memo(AccountItem);

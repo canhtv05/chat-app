@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 
 import './Mybutton.css';
 
-function MyButton({ children, active = false, minHeight = 64, minWidth = 64, ...props }) {
+function MyButton({ className, children, active = false, minHeight = 64, minWidth = 64, isRounded, ...props }) {
     const [isActive, setIsActive] = useState(active);
 
     useEffect(() => {
@@ -12,8 +12,22 @@ function MyButton({ children, active = false, minHeight = 64, minWidth = 64, ...
     }, [active]);
 
     return (
-        <div className={isActive ? 'active rounded-xl' : ''}>
-            <Button {...props} sx={{ borderRadius: '0.75rem', width: '100%', height: '100%', minHeight, minWidth }}>
+        <div
+            className={`${
+                isActive ? 'active' : `hover:bg-background transition-all ease-in-out duration-500`
+            } rounded-xl ${className}`}
+            style={isRounded && { borderRadius: '50%' }}
+        >
+            <Button
+                {...props}
+                sx={{
+                    borderRadius: `${isRounded ? '50%' : '0.75rem'}`,
+                    width: '90%',
+                    height: '90%',
+                    minHeight,
+                    minWidth,
+                }}
+            >
                 {children}
             </Button>
         </div>
@@ -25,6 +39,7 @@ MyButton.propTypes = {
     active: PropTypes.bool,
     minHeight: PropTypes.number,
     minWidth: PropTypes.number,
+    isRounded: PropTypes.bool,
 };
 
 export default MyButton;

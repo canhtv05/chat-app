@@ -3,19 +3,16 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { BrowserRouter } from 'react-router-dom';
-import { ThemeProvider } from './contexts/ThemeProvider/ThemeProvider';
-import GlobalStyles from './components/GlobalStyle/GlobalStyles';
+import { AuthProvider } from './contexts/Auth/AuthProvider';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
     <React.StrictMode>
-        <ThemeProvider>
-            <GlobalStyles>
-                <BrowserRouter>
-                    <App />
-                </BrowserRouter>
-            </GlobalStyles>
-        </ThemeProvider>
+        <AuthProvider>
+            <BrowserRouter>
+                <App />
+            </BrowserRouter>
+        </AuthProvider>
     </React.StrictMode>,
 );
 

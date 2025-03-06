@@ -11,6 +11,12 @@ module.exports = {
                 "background-secondary": "rgba(var(--background-secondary))",
                 active: "rgba(var(--active))",
             },
+            keyframes: {
+                fadeIn: {},
+            },
+            animation: {
+                fadeIn: "fadeIn 0.3s ease-out forwards",
+            },
         },
     },
     plugins: [],
