@@ -3,6 +3,8 @@ package com.canhtv05.chatapp.dto.response;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDate;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -11,7 +13,10 @@ import lombok.experimental.FieldDefaults;
 public class UserResponse {
 
     String id;
-    String full_name;
+    String first_name;
+    String last_name;
+    Boolean gender;
+    LocalDate dob;
     String email;
     String profile_picture;
 }

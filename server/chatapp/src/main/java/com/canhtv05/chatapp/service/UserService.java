@@ -10,7 +10,7 @@ public interface UserService {
 
     User findUserById(String id);
 
-    User findUserProfile(String jwt);
+    User getMyInfo(String jwt);
 
     User updateUser(String userId, UserUpdateRequest request);
 

@@ -1,10 +1,8 @@
 package com.canhtv05.chatapp.service;
 
-import com.canhtv05.chatapp.dto.response.UserResponse;
 import com.canhtv05.chatapp.entity.User;
 import com.canhtv05.chatapp.exception.AppException;
 import com.canhtv05.chatapp.exception.ErrorCode;
-import com.canhtv05.chatapp.mapper.UserMapper;
 import com.canhtv05.chatapp.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +26,7 @@ public class CustomUserDetailService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(username)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND_WITH_EMAIL));
+                .orElseThrow(() -> new AppException(ErrorCode.INVALID_EMAIL_OR_PASSWORD));
 
         List<GrantedAuthority> authorities = new ArrayList<>();
         return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(),

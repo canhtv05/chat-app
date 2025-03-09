@@ -1,4 +1,4 @@
-package com.canhtv05.chatapp.service;
+package com.canhtv05.chatapp.service.impl;
 
 import com.canhtv05.chatapp.dto.response.ChatResponse;
 import com.canhtv05.chatapp.dto.resquest.GroupChatCreationRequest;
@@ -8,6 +8,8 @@ import com.canhtv05.chatapp.exception.AppException;
 import com.canhtv05.chatapp.exception.ErrorCode;
 import com.canhtv05.chatapp.mapper.ChatMapper;
 import com.canhtv05.chatapp.repository.ChatRepository;
+import com.canhtv05.chatapp.service.ChatService;
+import com.canhtv05.chatapp.service.UserService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -117,7 +119,7 @@ public class ChatServiceImplementation implements ChatService {
         User user = userService.findUserById(userId);
 
         if (Boolean.FALSE.equals(chat.getIs_group())) {
-            throw new AppException(ErrorCode.CANNOT_REMOVE_USER_TO_SINGLE_CHAT);
+            throw new AppException(ErrorCode.CANNOT_REMOVE_USER_FROM_SINGLE_CHAT);
         }
 
         if (chat.getAdmins().contains(userRequest)) {

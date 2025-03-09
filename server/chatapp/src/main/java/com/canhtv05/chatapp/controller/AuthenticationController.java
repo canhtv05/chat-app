@@ -22,16 +22,16 @@ public class AuthenticationController {
     AuthenticationService authenticationService;
 
     @PostMapping("/sign-up")
-    public ApiResponse<AuthenticationResponse> createUser(@RequestBody @Valid UserCreationRequest request) {
+    public ApiResponse<AuthenticationResponse> signup(@RequestBody @Valid UserCreationRequest request) {
         return ApiResponse.<AuthenticationResponse>builder()
-                .data(authenticationService.createUser(request))
+                .data(authenticationService.signup(request))
                 .build();
     }
 
     @PostMapping("/sign-in")
-    public ApiResponse<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request) {
+    public ApiResponse<AuthenticationResponse> signIn(@RequestBody AuthenticationRequest request) {
         return ApiResponse.<AuthenticationResponse>builder()
-                .data(authenticationService.authentication(request))
+                .data(authenticationService.signIn(request))
                 .build();
     }
 }

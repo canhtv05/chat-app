@@ -1,14 +1,19 @@
-import HomePage from '~/pages/Home/HomPage';
-import MessagePage from '~/pages/MessagePage/MessagePage';
+import Home from '~/pages/Home';
+import Message from '~/pages/Message';
+import Auth from '~/pages/Auth';
 
 const publicRoutes = [
     {
         path: '/',
-        component: HomePage,
+        component: Home,
     },
     {
         path: '/messages',
-        component: MessagePage,
+        component: Message,
+    },
+    {
+        path: '/login',
+        component: Auth,
     },
 ];
 

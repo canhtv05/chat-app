@@ -39,10 +39,10 @@ function ChatBoxFooter() {
                 onKeyDown={handleKeyDown}
             />
             <div className={`items-center flex ${isLineBeak ? 'mt-2 justify-end w-full' : 'justify-center'}`}>
-                <MyButton minHeight={40} minWidth={40}>
+                <MyButton size="sm">
                     <CiFaceSmile className="size-7 text-text-bold cursor-pointer" />
                 </MyButton>
-                <MyButton minHeight={40} minWidth={40}>
+                <MyButton size="sm">
                     <IoIosSend className="size-7 text-text-bold cursor-pointer rotate-45" />
                 </MyButton>
             </div>

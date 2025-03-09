@@ -1,4 +1,4 @@
-package com.canhtv05.chatapp.service;
+package com.canhtv05.chatapp.service.impl;
 
 import com.canhtv05.chatapp.configuration.TokenProvider;
 import com.canhtv05.chatapp.dto.response.UserResponse;
@@ -8,6 +8,7 @@ import com.canhtv05.chatapp.exception.AppException;
 import com.canhtv05.chatapp.exception.ErrorCode;
 import com.canhtv05.chatapp.mapper.UserMapper;
 import com.canhtv05.chatapp.repository.UserRepository;
+import com.canhtv05.chatapp.service.UserService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -34,7 +35,7 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
-    public User findUserProfile(String jwt) {
+    public User getMyInfo(String jwt) {
         String email = tokenProvider.getEmailFromToken(jwt);
 
         if (Objects.isNull(email)) {

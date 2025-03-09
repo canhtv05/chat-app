@@ -20,8 +20,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = Exception.class)
     public ResponseEntity<ApiResponse> handleException(Exception e) {
         ApiResponse<?> apiResponse = ApiResponse.builder()
-                .message(ErrorCode.UNCATEGORIZED_EXCEPTION.getMessage())
-                .code(ErrorCode.UNCATEGORIZED_EXCEPTION.getCode())
+                .message(ErrorCode.INTERNAL_SERVER_ERROR.getMessage())
+                .code(ErrorCode.INTERNAL_SERVER_ERROR.getCode())
                 .build();
 
         return ResponseEntity.badRequest().body(apiResponse);

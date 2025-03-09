@@ -2,6 +2,10 @@
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 
+* {
+    box-sizing: border-box;
+}
+
 .light {
     --background: 246, 248, 250;
     --background-secondary: 238, 243, 247;
@@ -31,6 +35,8 @@
 }
 
 body {
+    /* padding: 0;
+    margin: 0; */
     background: rgba(var(--background));
     background-color: rgba(var(--background));
     transition: background-color 300ms;

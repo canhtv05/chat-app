@@ -22,7 +22,7 @@ function ChatBoxHeader({ isOnline = false }) {
                         <span className="text-text-bold font-semibold">Tran Van Canh</span>
                         <span className="text-text-bold font-thin">4 hours ago</span>
                     </div>
-                    <MyButton minHeight={40} minWidth={40}>
+                    <MyButton size="sm">
                         <CiSearch className="size-7 text-text-bold" />
                     </MyButton>
                 </div>

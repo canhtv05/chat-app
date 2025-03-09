@@ -4,8 +4,17 @@ import PropTypes from 'prop-types';
 
 import './Mybutton.css';
 
-function MyButton({ className, children, active = false, minHeight = 64, minWidth = 64, isRounded, ...props }) {
+function MyButton({ className, children, active = false, size = 'md', isRounded, width = 64, height = 64, ...props }) {
     const [isActive, setIsActive] = useState(active);
+    const [minWidth, setMinWidth] = useState(width);
+    const [minHeight, setMinHeight] = useState(height);
+
+    useEffect(() => {
+        if (size === 'sm') {
+            setMinHeight(40);
+            setMinWidth(40);
+        }
+    }, [size]);
 
     useEffect(() => {
         setIsActive(active);
@@ -37,9 +46,10 @@ function MyButton({ className, children, active = false, minHeight = 64, minWidt
 MyButton.propTypes = {
     children: PropTypes.node.isRequired,
     active: PropTypes.bool,
-    minHeight: PropTypes.number,
-    minWidth: PropTypes.number,
     isRounded: PropTypes.bool,
+    width: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    height: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    size: PropTypes.oneOf(['sm', 'md']),
 };
 
 export default MyButton;

@@ -1,7 +1,7 @@
 import Container from '~/layouts/components/Container';
 import MenuSidebar from '~/layouts/components/MenuSidebar';
 
-function MessagePage() {
+function Message() {
     return (
         <>
             <div className="left w-[5%]">
@@ -14,4 +14,4 @@ function MessagePage() {
     );
 }
 
-export default MessagePage;
+export default Message;

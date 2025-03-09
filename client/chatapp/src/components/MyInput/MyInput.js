@@ -1,8 +1,18 @@
 import { Input } from '@mui/joy';
 
-function MyInput({ ...props }) {
+function MyInput({ className, ...props }) {
     return (
-        <Input {...props} sx={{ background: 'rgba(var(--background-secondary))', color: 'rgba(var(--text-bold))' }} />
+        <div className={className}>
+            <Input
+                {...props}
+                sx={{
+                    background: 'rgba(var(--background-secondary))',
+                    color: 'rgba(var(--text-bold))',
+                    minWidth: 0,
+                    width: 'auto',
+                }}
+            />
+        </div>
     );
 }
 

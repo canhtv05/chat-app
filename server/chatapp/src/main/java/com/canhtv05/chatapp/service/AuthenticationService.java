@@ -12,6 +12,7 @@ import com.canhtv05.chatapp.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Objects;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -32,7 +34,7 @@ public class AuthenticationService {
     TokenProvider tokenProvider;
     CustomUserDetailService customUserDetailService;
 
-    public AuthenticationResponse createUser(UserCreationRequest request) {
+    public AuthenticationResponse signup(UserCreationRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new AppException(ErrorCode.EMAIL_EXISTED);
         }
@@ -53,7 +55,7 @@ public class AuthenticationService {
                 .build();
     }
 
-    public AuthenticationResponse authentication(AuthenticationRequest request) {
+    public AuthenticationResponse signIn(AuthenticationRequest request) {
         UserDetails userDetails = customUserDetailService.loadUserByUsername(request.getEmail());
 
         if (Objects.isNull(userDetails)) {
@@ -61,11 +63,12 @@ public class AuthenticationService {
         }
 
         if (!passwordEncoder.matches(request.getPassword(), userDetails.getPassword())) {
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
+            throw new AppException(ErrorCode.INVALID_EMAIL_OR_PASSWORD);
         }
 
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND_WITH_EMAIL));
+                .orElseThrow(() -> new AppException(ErrorCode.INVALID_EMAIL_OR_PASSWORD));
+
 
         Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null,
                 userDetails.getAuthorities());

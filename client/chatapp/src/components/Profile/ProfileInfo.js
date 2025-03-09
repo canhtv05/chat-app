@@ -36,7 +36,7 @@ function ProfileInfo({ setIsShowEditForm }) {
                             <Avatar sx={{ width: 90, height: 90 }} />
                         </div>
                         <div className="absolute right-0 bottom-0 bg-background-secondary rounded-full border-2 border-border">
-                            <MyButton isRounded minWidth={36} minHeight={36}>
+                            <MyButton isRounded height={36} width={36}>
                                 <MdOutlineCameraAlt className="text-text-bold size-5" />
                             </MyButton>
                         </div>
@@ -47,7 +47,7 @@ function ProfileInfo({ setIsShowEditForm }) {
                             <span className="text-text-bold font-semibold text-xl mr-2 break-words max-w-[234px] line-clamp-2">
                                 {`${first_name} ${last_name}`}
                             </span>
-                            <MyButton isRounded minWidth={36} minHeight={36}>
+                            <MyButton isRounded height={36} width={36}>
                                 <LuPenLine className="text-text-bold size-5" />
                             </MyButton>
                         </div>
@@ -67,7 +67,7 @@ function ProfileInfo({ setIsShowEditForm }) {
                 ))}
             </div>
             <div className="w-full border-border border-t-2">
-                <MyButton minWidth={'100%'} onClick={() => setIsShowEditForm(true)}>
+                <MyButton width={'100%'} onClick={() => setIsShowEditForm(true)}>
                     <LuPenLine className="text-text-bold size-6" />
                     <span className="text-text-bold font-semibold text-lg text-no ml-3">Cập nhật</span>
                 </MyButton>

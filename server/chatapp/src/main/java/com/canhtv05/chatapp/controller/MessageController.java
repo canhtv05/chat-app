@@ -27,7 +27,7 @@ public class MessageController {
     @PostMapping("/send")
     public ApiResponse<MessageResponse> sendMessage(@Valid @RequestBody SendMessageRequest request,
                                                     @RequestHeader(JwtConstant.JWT_HEADER) String token) {
-        User user = userService.findUserProfile(token);
+        User user = userService.getMyInfo(token);
 
         request.setUser_id(user.getId());
 
@@ -41,7 +41,7 @@ public class MessageController {
     @GetMapping("/chats/{chatId}")
     public ApiResponse<List<MessageResponse>> getChatsMessages(@PathVariable String chatId,
                                                                @RequestHeader(JwtConstant.JWT_HEADER) String token) {
-        User user = userService.findUserProfile(token);
+        User user = userService.getMyInfo(token);
 
         var messages = messageService.getChatsMessages(chatId, user);
 
@@ -53,7 +53,7 @@ public class MessageController {
     @DeleteMapping("/{messageId}")
     public ApiResponse<Void> deleteMessage(@PathVariable String messageId,
                                            @RequestHeader(JwtConstant.JWT_HEADER) String token) {
-        User user = userService.findUserProfile(token);
+        User user = userService.getMyInfo(token);
 
         messageService.deleteMessage(messageId, user);
 

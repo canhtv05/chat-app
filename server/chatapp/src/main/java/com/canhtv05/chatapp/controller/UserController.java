@@ -24,17 +24,17 @@ public class UserController {
     UserService userService;
     UserMapper userMapper;
 
-    @GetMapping("/profile")
-    public ApiResponse<UserResponse> getUserProfile(@RequestHeader(JwtConstant.JWT_HEADER) String token) {
-        User user = userService.findUserProfile(token);
+    @GetMapping("/my-info")
+    public ApiResponse<UserResponse> getMyInfo(@RequestHeader(JwtConstant.JWT_HEADER) String token) {
+        User user = userService.getMyInfo(token);
 
         return ApiResponse.<UserResponse>builder()
                 .data(userMapper.toUserResponse(user))
                 .build();
     }
 
-    @GetMapping("/{query}")
-    public ApiResponse<List<UserResponse>> searchUsersByFullNameOrEmail(@PathVariable(value = "query") String query) {
+    @GetMapping("/search")
+    public ApiResponse<List<UserResponse>> searchUsersByFullNameOrEmail(@RequestParam(value = "query") String query) {
         var users = userService.searchUserByFullNameOrEmail(query);
 
         return ApiResponse.<List<UserResponse>>builder()
@@ -45,7 +45,7 @@ public class UserController {
     @PostMapping("/update")
     public ApiResponse<UserResponse> updateUser(@Valid @RequestBody UserUpdateRequest request,
                                                 @RequestHeader(JwtConstant.JWT_HEADER) String token) {
-        User user = userService.findUserProfile(token);
+        User user = userService.getMyInfo(token);
 
         user = userService.updateUser(user.getId(), request);
         return ApiResponse.<UserResponse>builder()

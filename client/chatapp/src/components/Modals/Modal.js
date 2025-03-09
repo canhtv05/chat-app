@@ -65,7 +65,7 @@ function Modal({ children, setIsOpen, isOpen, outline = false, title, delay = 20
                     <div className="relative">
                         <div className="flex justify-between items-center px-4 py-2 font-semibold border-border border-b-2">
                             <span className="text-text-bold text-lg">{title}</span>
-                            <MyButton isRounded minWidth={40} minHeight={40} onClick={handleClose}>
+                            <MyButton isRounded size="sm" onClick={handleClose}>
                                 <IoCloseSharp className="text-text-bold size-6" />
                             </MyButton>
                         </div>

@@ -28,10 +28,10 @@ function ProfileEdit({ setIsShowEditForm }) {
                 <MyInput size="lg" type="date" defaultValue={dob} />
             </div>
             <div className="border-border border-t-2 w-full flex justify-end items-center p-2">
-                <MyButton minHeight={50} onClick={() => setIsShowEditForm(false)}>
+                <MyButton height={50} onClick={() => setIsShowEditForm(false)}>
                     <span className="text-text-bold font-semibold">Hủy</span>
                 </MyButton>
-                <MyButton minHeight={50} minWidth={'100px'} className="bg-background ml-4">
+                <MyButton height={50} width={'100px'} className="bg-background ml-4">
                     <span className="text-text-bold font-semibold">Cập nhật</span>
                 </MyButton>
             </div>

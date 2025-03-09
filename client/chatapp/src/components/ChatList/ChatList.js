@@ -13,7 +13,7 @@ const list = new Array(10).fill(0);
 function ChatList() {
     const [activeIndex, setActiveIndex] = useState(null);
     const [query, setQuery] = useState('');
-    const [isShowModal, setIsShowModal] = useState(true);
+    const [isShowModalAddGroup, setIsShowModalAddGroup] = useState(true);
 
     const { setCurrentChat } = useContext(ChatCardContext);
 
@@ -37,10 +37,10 @@ function ChatList() {
                     onChange={handleSearch}
                     value={query}
                 />
-                <MyButton minHeight={40} minWidth={40}>
+                <MyButton size="sm">
                     <AiOutlineUserAdd className="size-6 text-text-bold cursor-pointer" />
                 </MyButton>
-                <MyButton minHeight={40} minWidth={40}>
+                <MyButton size="sm" onClick={() => setIsShowModalAddGroup(true)}>
                     <AiOutlineUsergroupAdd className="size-6 text-text-bold cursor-pointer" />
                 </MyButton>
             </div>
@@ -55,7 +55,7 @@ function ChatList() {
                         />
                     ))}
             </div>
-            <ModalAddGroup isOpen={isShowModal} setIsOpen={setIsShowModal} />
+            <ModalAddGroup isOpen={isShowModalAddGroup} setIsOpen={setIsShowModalAddGroup} />
         </div>
     );
 }
