@@ -1,8 +1,9 @@
 import { Avatar } from '@mui/joy';
 import { CiSearch } from 'react-icons/ci';
-import MyButton from '~/components/MyButton/MyButton';
 
-function MainHeader({ isOnline = false }) {
+import MyButton from '~/components/MyButton';
+
+function ChatBoxHeader({ isOnline = false }) {
     return (
         <div className="p-5 flex justify-between items-center border-b border-border relative shrink-0 w-full">
             <div className="flex w-full">
@@ -30,4 +31,4 @@ function MainHeader({ isOnline = false }) {
     );
 }
 
-export default MainHeader;
+export default ChatBoxHeader;

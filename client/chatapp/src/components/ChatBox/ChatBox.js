@@ -1,13 +1,13 @@
 import { useContext } from 'react';
 
+import RenderIf from '../RenderIf';
 import icons from '~/assets/icons';
-import RenderIf from '~/components/RenderIf/RenderIf';
-import { ChatCardContext } from '~/contexts/ChatCardProvider/ChatCardProvider';
-import MainHeader from './MainHeader/MainHeader';
-import MessageCard from '~/components/MessageCard/MessageCard';
-import MainFooter from './MainFooter/MainFooter';
+import ChatBoxHeader from './ChatBoxHeader';
+import MessageCard from '../MessageCard';
+import ChatBoxFooter from './ChatBoxFooter';
+import { ChatCardContext } from '~/contexts/ChatCardProvider';
 
-function Main() {
+function ChatBox() {
     const { currentChat } = useContext(ChatCardContext);
 
     return (
@@ -22,7 +22,7 @@ function Main() {
             <RenderIf value={currentChat}>
                 <div className="flex flex-col h-full">
                     <div className="shrink-0">
-                        <MainHeader isOnline />
+                        <ChatBoxHeader isOnline />
                     </div>
                     <div className="flex-1 overflow-hidden">
                         <div className="px-10 h-full overflow-y-auto">
@@ -34,7 +34,7 @@ function Main() {
                         </div>
                     </div>
                     <div className="shrink-0 border-border border-t">
-                        <MainFooter />
+                        <ChatBoxFooter />
                     </div>
                 </div>
             </RenderIf>
@@ -42,4 +42,4 @@ function Main() {
     );
 }
 
-export default Main;
+export default ChatBox;

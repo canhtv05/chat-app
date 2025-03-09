@@ -2,15 +2,18 @@ import { CiSearch } from 'react-icons/ci';
 import { AiOutlineUserAdd, AiOutlineUsergroupAdd } from 'react-icons/ai';
 import { useContext, useState } from 'react';
 
-import MyInput from '~/components/MyInput/MyInput';
-import AccountItem from '~/components/AccountItem/AccountItem';
-import { ChatCardContext } from '~/contexts/ChatCardProvider/ChatCardProvider';
+import { ChatCardContext } from '~/contexts/ChatCardProvider';
+import MyInput from '../MyInput';
+import MyButton from '../MyButton';
+import AccountItem from '../AccountItem';
+import ModalAddGroup from './ModalAddGroup';
 
 const list = new Array(10).fill(0);
 
-function Article() {
+function ChatList() {
     const [activeIndex, setActiveIndex] = useState(null);
     const [query, setQuery] = useState('');
+    const [isShowModal, setIsShowModal] = useState(true);
 
     const { setCurrentChat } = useContext(ChatCardContext);
 
@@ -34,8 +37,12 @@ function Article() {
                     onChange={handleSearch}
                     value={query}
                 />
-                <AiOutlineUserAdd className="size-6 text-text-bold cursor-pointer" />
-                <AiOutlineUsergroupAdd className="size-6 text-text-bold cursor-pointer" />
+                <MyButton minHeight={40} minWidth={40}>
+                    <AiOutlineUserAdd className="size-6 text-text-bold cursor-pointer" />
+                </MyButton>
+                <MyButton minHeight={40} minWidth={40}>
+                    <AiOutlineUsergroupAdd className="size-6 text-text-bold cursor-pointer" />
+                </MyButton>
             </div>
             <div className="overflow-y-auto" tabIndex={-1}>
                 {query &&
@@ -48,8 +55,9 @@ function Article() {
                         />
                     ))}
             </div>
+            <ModalAddGroup isOpen={isShowModal} setIsOpen={setIsShowModal} />
         </div>
     );
 }
 
-export default Article;
+export default ChatList;

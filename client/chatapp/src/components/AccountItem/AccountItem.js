@@ -2,7 +2,7 @@ import { Avatar } from '@mui/joy';
 import PropTypes from 'prop-types';
 import { memo, useEffect, useRef } from 'react';
 
-function AccountItem({ separator, isMe, isOnline, isActive, onClick }) {
+function AccountItem({ separator, isMe = false, isOnline, isActive, onClick }) {
     const divRef = useRef();
 
     useEffect(() => {

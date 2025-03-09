@@ -2,12 +2,12 @@ import { Avatar } from '@mui/material';
 import MyButton from '../MyButton/MyButton';
 import { MdOutlineCameraAlt } from 'react-icons/md';
 import { LuPenLine } from 'react-icons/lu';
-import { memo, useCallback, useContext, useRef } from 'react';
+import { memo, useCallback, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { AuthContext } from '~/contexts/Auth/AuthProvider';
+import { useSelector } from 'react-redux';
 
 function ProfileInfo({ setIsShowEditForm }) {
-    const { gender, dob, phone, first_name, last_name } = useContext(AuthContext).data;
+    const { gender, dob, phone, first_name, last_name } = useSelector((state) => state.auth.data);
     const inputRef = useRef();
 
     const handleUploadFile = useCallback(() => {
@@ -78,7 +78,6 @@ function ProfileInfo({ setIsShowEditForm }) {
 
 ProfileInfo.propTypes = {
     setIsShowEditForm: PropTypes.func.isRequired,
-    data: PropTypes.object.isRequired,
 };
 
 export default memo(ProfileInfo);

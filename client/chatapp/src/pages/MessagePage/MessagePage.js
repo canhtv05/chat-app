@@ -1,14 +1,14 @@
-import Aside from '~/layouts/components/Aside/Aside';
-import Sidebar from '~/layouts/components/Sidebar/Sidebar';
+import Container from '~/layouts/components/Container';
+import MenuSidebar from '~/layouts/components/MenuSidebar';
 
 function MessagePage() {
     return (
         <>
             <div className="left w-[5%]">
-                <Sidebar />
+                <MenuSidebar />
             </div>
             <div className="right w-full">
-                <Aside />
+                <Container />
             </div>
         </>
     );

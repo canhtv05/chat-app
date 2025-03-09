@@ -2,11 +2,10 @@ import { RadioGroup } from '@mui/joy';
 import MyInput from '../MyInput/MyInput';
 import MyRadio from '../MyRadio/MyRadio';
 import MyButton from '../MyButton/MyButton';
-import { useContext } from 'react';
-import { AuthContext } from '~/contexts/Auth/AuthProvider';
+import { useSelector } from 'react-redux';
 
 function ProfileEdit({ setIsShowEditForm }) {
-    const { first_name, last_name, gender, dob } = useContext(AuthContext).data;
+    const { gender, dob, first_name, last_name } = useSelector((state) => state.auth.data);
 
     return (
         <form className="px-4 py-1 flex flex-col items-center">

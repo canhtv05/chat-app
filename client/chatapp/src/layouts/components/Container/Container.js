@@ -1,9 +1,9 @@
-import { ChatCardProvider } from '~/contexts/ChatCardProvider/ChatCardProvider';
 import Header from '../Header/Header';
-import Article from './Article/Article';
-import Main from './Main/Main';
+import ChatList from '~/components/ChatList';
+import ChatBox from '~/components/ChatBox';
+import { ChatCardProvider } from '~/contexts/ChatCardProvider';
 
-function Aside() {
+function Container() {
     return (
         <div className="h-full flex flex-col flex-1">
             <div className="flex flex-col w-full h-full overflow-hidden">
@@ -11,10 +11,10 @@ function Aside() {
                 <ChatCardProvider>
                     <div className="flex w-full h-full relative">
                         <div className="left w-[25%] absolute top-0 left-0 h-full">
-                            <Article />
+                            <ChatList />
                         </div>
                         <div className="right w-[75%] absolute top-0 right-0 h-full">
-                            <Main />
+                            <ChatBox />
                         </div>
                     </div>
                 </ChatCardProvider>
@@ -23,4 +23,4 @@ function Aside() {
     );
 }
 
-export default Aside;
+export default Container;

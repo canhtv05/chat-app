@@ -1,12 +1,12 @@
 import { BsChatText } from 'react-icons/bs';
 import { IoSettingsOutline } from 'react-icons/io5';
-
-import MyButton from '~/components/MyButton/MyButton';
-import { Avatar } from '@mui/joy';
-import { Profile } from '~/components/Profile';
 import { useState } from 'react';
+import { Avatar } from '@mui/joy';
 
-function Sidebar() {
+import { Profile } from '~/components/Profile';
+import MyButton from '~/components/MyButton';
+
+function MenuSidebar() {
     const [isOpen, setIsOpen] = useState(false);
 
     const handleShowInfo = () => {
@@ -37,4 +37,4 @@ function Sidebar() {
     );
 }
 
-export default Sidebar;
+export default MenuSidebar;

@@ -2,11 +2,12 @@ import { useRef, useState } from 'react';
 import { CiFaceSmile } from 'react-icons/ci';
 import { IoIosSend } from 'react-icons/io';
 
-import MyButton from '~/components/MyButton/MyButton';
-import MyTextArea from '~/components/MyTextArea/MyTextArea';
+import MyButton from '~/components/MyButton';
+import MyTextArea from '~/components/MyTextArea';
+
 import useTextAreaResize from '~/hooks/useTextAreaResize';
 
-function MainFooter() {
+function ChatBoxFooter() {
     const [isLineBeak, setIsLineBeak] = useState(false);
     const [content, setContent] = useState('');
     const textAreaRef = useRef(null);
@@ -49,4 +50,4 @@ function MainFooter() {
     );
 }
 
-export default MainFooter;
+export default ChatBoxFooter;
