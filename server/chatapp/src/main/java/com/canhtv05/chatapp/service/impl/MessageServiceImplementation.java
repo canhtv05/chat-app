@@ -55,7 +55,7 @@ public class MessageServiceImplementation implements MessageService {
     public List<MessageResponse> getChatsMessages(String chatId, User userRequest) {
         Chat chat = chatService.findChatById(chatId);
 
-        if (!chat.getUsers().contains(userRequest) && !chat.getAdmins().contains(userRequest) && !chat.getCreated_by().equals(userRequest)) {
+        if (!chat.getUsers().contains(userRequest) && !chat.getAdmins().contains(userRequest) && !chat.getCreatedBy().equals(userRequest)) {
             throw new AppException(ErrorCode.NOT_RELATED_TO_CHAT);
         }
 
@@ -70,7 +70,7 @@ public class MessageServiceImplementation implements MessageService {
                 .orElseThrow(() -> new AppException(ErrorCode.MESSAGE_NOT_FOUND));
 
         Chat chat = message.getChat();
-        if (!chat.getUsers().contains(userRequest) && !chat.getAdmins().contains(userRequest) && !chat.getCreated_by().equals(userRequest)) {
+        if (!chat.getUsers().contains(userRequest) && !chat.getAdmins().contains(userRequest) && !chat.getCreatedBy().equals(userRequest)) {
             throw new AppException(ErrorCode.NOT_RELATED_TO_CHAT);
         }
 
@@ -82,7 +82,7 @@ public class MessageServiceImplementation implements MessageService {
     public void deleteMessage(String messageId, User userRequest) {
         MessageResponse message = findMessageById(messageId, userRequest);
 
-        if (message.getUser().getId().equals(userRequest.getId())) {
+        if (message.getUser().getEmail().equals(userRequest.getEmail())) {
             messageRepository.deleteById(messageId);
         } else {
             throw new AppException(ErrorCode.CANT_DELETE_OTHER_MESSAGE);

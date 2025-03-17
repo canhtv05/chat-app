@@ -7,7 +7,7 @@ import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 
 function ProfileInfo({ setIsShowEditForm }) {
-    const { gender, dob, phone, first_name, last_name } = useSelector((state) => state.auth.data);
+    const { gender, dob, phone, first_name, last_name } = useSelector((state) => state.auth.data.data);
     const inputRef = useRef();
 
     const handleUploadFile = useCallback(() => {

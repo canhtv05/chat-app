@@ -1,6 +1,5 @@
 package com.canhtv05.chatapp.controller;
 
-import com.canhtv05.chatapp.constant.JwtConstant;
 import com.canhtv05.chatapp.dto.ApiResponse;
 import com.canhtv05.chatapp.dto.response.ChatResponse;
 import com.canhtv05.chatapp.dto.resquest.GroupChatCreationRequest;
@@ -8,14 +7,18 @@ import com.canhtv05.chatapp.dto.resquest.RenameGroupRequest;
 import com.canhtv05.chatapp.dto.resquest.SingleChatCreationRequest;
 import com.canhtv05.chatapp.entity.User;
 import com.canhtv05.chatapp.mapper.ChatMapper;
+import com.canhtv05.chatapp.mapper.UserMapper;
 import com.canhtv05.chatapp.service.ChatService;
 import com.canhtv05.chatapp.service.UserService;
+import com.nimbusds.jose.JOSEException;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.ParseException;
 import java.util.List;
 
 @RestController
@@ -27,12 +30,11 @@ public class ChatController {
     ChatService chatService;
     UserService userService;
     ChatMapper chatMapper;
-
+    UserMapper userMapper;
 
     @PostMapping("/single")
-    public ApiResponse<ChatResponse> creationChat(@RequestBody SingleChatCreationRequest request,
-                                                  @RequestHeader(JwtConstant.JWT_HEADER) String token) {
-        User userRequest = userService.getMyInfo(token);
+    public ApiResponse<ChatResponse> creationChat(@RequestBody SingleChatCreationRequest request) {
+        User userRequest = userService.getCurrentUser();
 
         ChatResponse chat = chatService.createChat(userRequest, request.getUser_id());
 
@@ -43,9 +45,8 @@ public class ChatController {
     }
 
     @PostMapping("/group")
-    public ApiResponse<ChatResponse> creationChatGroup(@RequestBody GroupChatCreationRequest request,
-                                                       @RequestHeader(JwtConstant.JWT_HEADER) String token) {
-        User userRequest = userService.getMyInfo(token);
+    public ApiResponse<ChatResponse> creationChatGroup(@RequestBody GroupChatCreationRequest request) {
+        User userRequest = userService.getCurrentUser();
 
         ChatResponse chat = chatService.createGroup(userRequest, request);
 
@@ -65,8 +66,8 @@ public class ChatController {
     }
 
     @GetMapping("/users")
-    public ApiResponse<List<ChatResponse>> findAllChatByUserId(@RequestHeader(JwtConstant.JWT_HEADER) String token) {
-        User userRequest = userService.getMyInfo(token);
+    public ApiResponse<List<ChatResponse>> findAllChatByUserId() {
+        User userRequest = userService.getCurrentUser();
 
         return ApiResponse.<List<ChatResponse>>builder()
                 .data(chatService.findAllChatByUserId(userRequest.getId()))
@@ -75,9 +76,8 @@ public class ChatController {
     }
 
     @PutMapping("/{chatId}/add/{userId}")
-    public ApiResponse<ChatResponse> addUserToGroup(@PathVariable String chatId, @PathVariable String userId,
-                                                    @RequestHeader(JwtConstant.JWT_HEADER) String token) {
-        User userRequest = userService.getMyInfo(token);
+    public ApiResponse<ChatResponse> addUserToGroup(@PathVariable String chatId, @PathVariable String userId) {
+        User userRequest = userService.getCurrentUser();
 
         ChatResponse chat = chatService.addUserToGroup(chatId, userId, userRequest);
 
@@ -88,9 +88,8 @@ public class ChatController {
     }
 
     @PutMapping("/{chatId}/remove/{userId}")
-    public ApiResponse<ChatResponse> removeUserFromGroup(@PathVariable String chatId, @PathVariable String userId,
-                                                         @RequestHeader(JwtConstant.JWT_HEADER) String token) {
-        User userRequest = userService.getMyInfo(token);
+    public ApiResponse<ChatResponse> removeUserFromGroup(@PathVariable String chatId, @PathVariable String userId) {
+        User userRequest = userService.getCurrentUser();
 
         ChatResponse chat = chatService.removeUserFromGroup(chatId, userId, userRequest);
 
@@ -101,9 +100,8 @@ public class ChatController {
     }
 
     @DeleteMapping("/delete/{chatId}")
-    public ApiResponse<Void> deleteChat(@PathVariable String chatId,
-                                        @RequestHeader(JwtConstant.JWT_HEADER) String token) {
-        User userRequest = userService.getMyInfo(token);
+    public ApiResponse<Void> deleteChat(@PathVariable String chatId) {
+        User userRequest = userService.getCurrentUser();
 
         chatService.deleteChat(chatId, userRequest.getId());
 
@@ -115,9 +113,8 @@ public class ChatController {
 
     @PutMapping("rename/{chatId}")
     public ApiResponse<ChatResponse> renameGroup(@PathVariable String chatId,
-                                                 @Valid @RequestBody RenameGroupRequest request,
-                                                 @RequestHeader(JwtConstant.JWT_HEADER) String token) {
-        User userRequest = userService.getMyInfo(token);
+                                                 @Valid @RequestBody RenameGroupRequest request) {
+        User userRequest = userService.getCurrentUser();
 
         ChatResponse chat = chatService.renameGroup(chatId, request.getGroup_name(), userRequest);
 

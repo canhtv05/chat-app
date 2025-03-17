@@ -5,7 +5,7 @@ import MyButton from '../MyButton/MyButton';
 import { useSelector } from 'react-redux';
 
 function ProfileEdit({ setIsShowEditForm }) {
-    const { gender, dob, first_name, last_name } = useSelector((state) => state.auth.data);
+    const { gender, dob, first_name, last_name } = useSelector((state) => state.auth.data.data);
 
     return (
         <form className="px-4 py-1 flex flex-col items-center">
@@ -15,7 +15,7 @@ function ProfileEdit({ setIsShowEditForm }) {
             </div>
             <div className="flex flex-col my-2 w-full">
                 <span className="mb-2 text-text-bold text-lg font-semibold">Thông tin cá nhân</span>
-                <RadioGroup defaultValue={String(gender)} name="radio-buttons-group">
+                <RadioGroup defaultValue={gender} name="gender">
                     <div className="flex my-2">
                         <MyRadio value="true" label="Nam" size="md" />
                         <span className="mx-6"></span>

@@ -41,9 +41,9 @@ public class ChatServiceImplementation implements ChatService {
         }
 
         Chat chat = Chat.builder()
-                .created_by(userRequest)
+                .createdBy(userRequest)
                 .users(new HashSet<>(Set.of(user, userRequest)))
-                .is_group(false)
+                .isGroup(false)
                 .build();
 
         return chatMapper.toChatResponse(chatRepository.save(chat));
@@ -76,7 +76,7 @@ public class ChatServiceImplementation implements ChatService {
         users.add(userRequest);
 
         Chat chat =
-                Chat.builder().is_group(true).chat_image(request.getChat_image()).chat_name(request.getChat_name()).created_by(userRequest).admins(new HashSet<>(Set.of(userRequest))).users(users).build();
+                Chat.builder().isGroup(true).chatImage(request.getChat_image()).chatName(request.getChat_name()).createdBy(userRequest).admins(new HashSet<>(Set.of(userRequest))).users(users).build();
 
         return chatMapper.toChatResponse(chatRepository.save(chat));
     }
@@ -87,13 +87,13 @@ public class ChatServiceImplementation implements ChatService {
 
         User user = userService.findUserById(userId);
 
-        if (!chat.getAdmins().contains(userRequest) && !chat.getUsers().contains(userRequest) && !chat.getCreated_by().equals(userRequest)) {
+        if (!chat.getAdmins().contains(userRequest) && !chat.getUsers().contains(userRequest) && !chat.getCreatedBy().equals(userRequest)) {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
 
         chat.getUsers().add(user);
 
-        if (Boolean.FALSE.equals(chat.getIs_group())) {
+        if (Boolean.FALSE.equals(chat.getIsGroup())) {
             throw new AppException(ErrorCode.CANNOT_ADD_USER_TO_SINGLE_CHAT);
         }
 
@@ -104,8 +104,8 @@ public class ChatServiceImplementation implements ChatService {
     public ChatResponse renameGroup(String chatId, String groupName, User userRequest) {
         Chat chat = chatRepository.findById(chatId).orElseThrow(() -> new AppException(ErrorCode.CHAT_NOT_FOUND));
 
-        if (chat.getUsers().contains(userRequest) && Boolean.TRUE.equals(chat.getIs_group())) {
-            chat.setChat_name(groupName);
+        if (chat.getUsers().contains(userRequest) && Boolean.TRUE.equals(chat.getIsGroup())) {
+            chat.setChatName(groupName);
             return chatMapper.toChatResponse(chatRepository.save(chat));
         }
 
@@ -118,7 +118,7 @@ public class ChatServiceImplementation implements ChatService {
 
         User user = userService.findUserById(userId);
 
-        if (Boolean.FALSE.equals(chat.getIs_group())) {
+        if (Boolean.FALSE.equals(chat.getIsGroup())) {
             throw new AppException(ErrorCode.CANNOT_REMOVE_USER_FROM_SINGLE_CHAT);
         }
 
@@ -144,12 +144,12 @@ public class ChatServiceImplementation implements ChatService {
 
         User user = userService.findUserById(userId);
 
-        if (Boolean.TRUE.equals(chat.getIs_group())) {
-            if (!chat.getAdmins().contains(user) && !chat.getCreated_by().equals(user)) {
+        if (Boolean.TRUE.equals(chat.getIsGroup())) {
+            if (!chat.getAdmins().contains(user) && !chat.getCreatedBy().equals(user)) {
                 throw new AppException(ErrorCode.UNAUTHORIZED);
             }
         } else {
-            if (!chat.getCreated_by().equals(user) && !chat.getUsers().contains(user)) {
+            if (!chat.getCreatedBy().equals(user) && !chat.getUsers().contains(user)) {
                 throw new AppException(ErrorCode.UNAUTHORIZED);
             }
         }

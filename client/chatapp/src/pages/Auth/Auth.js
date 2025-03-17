@@ -35,7 +35,7 @@ function Auth() {
 
     return (
         <>
-            <div className="wrapper" id="container">
+            <div className="wrapper border-border border-2" id="container">
                 <SignUp />
                 <SignIn />
                 <div className="overlay-container">

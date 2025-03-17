@@ -4,6 +4,7 @@ import com.canhtv05.chatapp.dto.ApiResponse;
 import jakarta.validation.ConstraintViolation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -30,6 +31,18 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = AppException.class)
     public ResponseEntity<ApiResponse> handleAppException(AppException e) {
         ErrorCode errorCode = e.getErrorCode();
+        ApiResponse<?> apiResponse = ApiResponse.builder()
+                .message(errorCode.getMessage())
+                .code(errorCode.getCode())
+                .build();
+
+        return ResponseEntity.badRequest().body(apiResponse);
+    }
+
+    // handler account has been locked
+    @ExceptionHandler(value = LockedException.class)
+    public ResponseEntity<ApiResponse> handleLockedException(LockedException e) {
+        ErrorCode errorCode = ErrorCode.ACCOUNT_HAS_BEEN_LOCKED;
         ApiResponse<?> apiResponse = ApiResponse.builder()
                 .message(errorCode.getMessage())
                 .code(errorCode.getCode())

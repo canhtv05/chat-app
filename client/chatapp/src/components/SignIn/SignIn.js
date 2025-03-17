@@ -1,12 +1,15 @@
 import { Input } from '@mui/joy';
 import { useState } from 'react';
+// import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
 import useLocalStorage from '~/hooks/useLocalStorage';
 import { signin } from '~/services/auth/authService';
 
 function SignIn() {
+    // const dispatch = useDispatch();
     const { setStorage } = useLocalStorage();
+
     const navigate = useNavigate();
     const [dataSignin, setDataSignin] = useState({
         email: '',
@@ -58,7 +61,9 @@ function SignIn() {
         }
 
         setStorage({ token: result.data.token });
-        navigate('/');
+
+        navigate('/messages');
+        window.location.reload();
     };
 
     return (

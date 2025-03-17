@@ -1,22 +1,28 @@
 package com.canhtv05.chatapp.dto.response;
 
+import com.canhtv05.chatapp.common.Gender;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.io.Serializable;
+import java.time.Instant;
 import java.time.LocalDate;
 
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Data
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class UserResponse {
+public class UserResponse implements Serializable {
 
     String id;
-    String first_name;
-    String last_name;
-    Boolean gender;
+    String firstName;
+    String lastName;
+    Gender gender;
     LocalDate dob;
     String email;
-    String profile_picture;
+    String phone;
+    String profilePicture;
+    Instant createdAt;
+    Instant updatedAt;
 }

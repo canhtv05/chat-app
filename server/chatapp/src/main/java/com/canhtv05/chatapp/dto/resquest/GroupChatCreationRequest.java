@@ -6,13 +6,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
+import java.io.Serializable;
 import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class GroupChatCreationRequest {
+public class GroupChatCreationRequest implements Serializable {
 
     List<String> user_ids;
     String chat_name;

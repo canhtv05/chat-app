@@ -1,7 +1,9 @@
 package com.canhtv05.chatapp.service.impl;
 
+import com.canhtv05.chatapp.common.UserStatus;
 import com.canhtv05.chatapp.configuration.TokenProvider;
 import com.canhtv05.chatapp.dto.response.UserResponse;
+import com.canhtv05.chatapp.dto.resquest.UserCreationRequest;
 import com.canhtv05.chatapp.dto.resquest.UserUpdateRequest;
 import com.canhtv05.chatapp.entity.User;
 import com.canhtv05.chatapp.exception.AppException;
@@ -12,11 +14,17 @@ import com.canhtv05.chatapp.service.UserService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
-import java.util.Objects;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -24,8 +32,29 @@ public class UserServiceImplementation implements UserService {
 
     UserRepository userRepository;
     UserMapper userMapper;
+    PasswordEncoder passwordEncoder;
 
     TokenProvider tokenProvider;
+
+    @Override
+    @Transactional
+    public UserResponse createUser(UserCreationRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new AppException(ErrorCode.EMAIL_EXISTED);
+        }
+
+        if (userRepository.existsByPhone(request.getPhone())) {
+            throw new AppException(ErrorCode.PHONE_EXISTED);
+        }
+
+        User user = userMapper.toUserRequest(request);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setUserStatus(UserStatus.ACTIVE);
+
+        user = userRepository.save(user);
+
+        return userMapper.toUserResponse(user);
+    }
 
     @Override
     public User findUserById(String id) {
@@ -35,25 +64,20 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
-    public User getMyInfo(String jwt) {
-        String email = tokenProvider.getEmailFromToken(jwt);
-
-        if (Objects.isNull(email)) {
-            throw new AppException(ErrorCode.INVALID_TOKEN);
-        }
-
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND_WITH_EMAIL));
+    public User getCurrentUser() {
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        return (User) securityContext.getAuthentication().getPrincipal();
     }
 
     @Override
-    public User updateUser(String userId, UserUpdateRequest request) {
+    public UserResponse updateUser(String userId, UserUpdateRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         userMapper.updateUserFromRequest(request, user);
+        user.setUpdatedAt(Instant.now());
 
-        return userRepository.save(user);
+        return userMapper.toUserResponse(userRepository.save(user));
     }
 
     @Override

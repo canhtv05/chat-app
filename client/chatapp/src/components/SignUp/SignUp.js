@@ -13,6 +13,7 @@ function SignUp() {
         email: '',
         password: '',
         gender: true,
+        phone: '',
     });
 
     const handleChangeSignup = (e) => {
@@ -31,6 +32,7 @@ function SignUp() {
 
     const handleBlur = (e) => {
         const { name, value } = e.target;
+
         let error = '';
 
         if (!value.trim()) {
@@ -135,6 +137,20 @@ function SignUp() {
                         <p className="text-left text-white text-sm ">Female</p>
                     </div>
                 </RadioGroup>
+                <span className="text-left text-white text-sm font-semibold mb-1 w-full">Phone number</span>
+                <Input
+                    name="phone"
+                    value={dataSignup.phone}
+                    onChange={handleChangeSignup}
+                    variant="soft"
+                    type="text"
+                    placeholder="Phone number"
+                    className="mb-2 w-full"
+                    onBlur={handleBlur}
+                />
+                {errors.phone && (
+                    <p className="text-red-500 text-left text-sm font-semibold mb-1 w-full">{errors.phone}</p>
+                )}
                 <span className="text-left text-white text-sm font-semibold mb-1 w-full">Email</span>
                 <Input
                     name="email"

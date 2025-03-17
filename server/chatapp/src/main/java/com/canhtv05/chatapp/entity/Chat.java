@@ -1,49 +1,70 @@
 package com.canhtv05.chatapp.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.util.*;
 
-@Entity
-@Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
+@Setter
 @Builder
+@Entity
+@Table(name = "chat")
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Chat {
+public class Chat extends AbstractEntity<String> {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    String id;
-    String chat_name;
-    String chat_image;
+    @Column(name = "chat_name", nullable = false)
+    String chatName;
+
+    @Column(name = "chat_image")
+    String chatImage;
 
     @ManyToMany
+    @JoinTable(
+            name = "chat_admins",
+            joinColumns = @JoinColumn(name = "chat_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
     Set<User> admins = new HashSet<>();
 
-    Boolean is_group;
+    @Column(name = "is_group", nullable = false)
+    Boolean isGroup;
 
     @ManyToOne
-    User created_by;
+    @JoinColumn(name = "created_by", nullable = false)
+    User createdBy;
 
+    @Builder.Default
     @ManyToMany
+    @JoinTable(
+            name = "chat_users",
+            joinColumns = @JoinColumn(name = "chat_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
     Set<User> users = new HashSet<>();
 
-    @OneToMany
+    @Builder.Default
+    @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true)
     List<Message> messages = new ArrayList<>();
 
     @Override
     public boolean equals(Object object) {
         if (object == null || getClass() != object.getClass()) return false;
         Chat chat = (Chat) object;
-        return Objects.equals(id, chat.id) && Objects.equals(chat_name, chat.chat_name) && Objects.equals(chat_image, chat.chat_image) && Objects.equals(is_group, chat.is_group) && Objects.equals(created_by, chat.created_by) && Objects.equals(users, chat.users) && Objects.equals(messages, chat.messages);
+        return Objects.equals(chatName, chat.chatName) &&
+                Objects.equals(chatImage, chat.chatImage) &&
+                Objects.equals(isGroup, chat.isGroup) &&
+                Objects.equals(createdBy, chat.createdBy) &&
+                Objects.equals(users, chat.users) &&
+                Objects.equals(messages, chat.messages);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, chat_name, chat_image, is_group, created_by, users, messages);
+        return Objects.hash(chatName, chatImage, isGroup, createdBy, users, messages);
     }
 }

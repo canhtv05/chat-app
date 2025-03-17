@@ -1,6 +1,6 @@
 import httpRequest, { handlerRequest } from '~/util/httpRequest';
 
-export const getCurrentUser = async (token) => {
+const getCurrentUser = async (token) => {
     const [error, result] = await handlerRequest(
         httpRequest.get('/users/my-info', {
             headers: {
@@ -11,7 +11,7 @@ export const getCurrentUser = async (token) => {
     return [error, result];
 };
 
-export const searchUser = async (query) => {
+const searchUser = async (query) => {
     const [error, result] = await handlerRequest(
         httpRequest.get('/users/search', {
             params: {
@@ -22,7 +22,7 @@ export const searchUser = async (query) => {
     return [error, result];
 };
 
-export const updateUser = async (token, data) => {
+const updateUser = async (token, data) => {
     const [error, result] = await handlerRequest(
         httpRequest.post('/users/update', data, {
             headers: {
@@ -32,3 +32,5 @@ export const updateUser = async (token, data) => {
     );
     return [error, result];
 };
+
+export { getCurrentUser, searchUser, updateUser };
