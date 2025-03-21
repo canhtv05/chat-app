@@ -1,20 +1,42 @@
-import { Input } from '@mui/joy';
-import { useState } from 'react';
-// import { useDispatch } from 'react-redux';
+import { Button, Input } from '@mui/joy';
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
-import useLocalStorage from '~/hooks/useLocalStorage';
-import { signin } from '~/services/auth/authService';
+import { signIn } from '~/redux/reducers/authSlice';
 
-function SignIn() {
-    // const dispatch = useDispatch();
-    const { setStorage } = useLocalStorage();
+const buttonStyle = {
+    borderRadius: '20px',
+    border: '1px solid #3aaba7',
+    backgroundColor: '#3aaba7',
+    color: '#ffffff',
+    fontSize: '12px',
+    fontWeight: 'bold',
+    padding: '12px 45px',
+    letterSpacing: '1px',
+    textTransform: 'uppercase',
+    transition: 'transform 80ms ease-in',
+    '&:hover': {
+        backgroundColor: '#3aaba7',
+    },
+};
 
+function SignIn({ isClick }) {
+    const dispatch = useDispatch();
+    const { loading } = useSelector((state) => state.auth);
     const navigate = useNavigate();
     const [dataSignin, setDataSignin] = useState({
         email: '',
         password: '',
     });
+
+    useEffect(() => {
+        if (isClick) {
+            setDataSignin({ email: '', password: '' });
+            setErrorSignIn('');
+            setErrors({});
+        }
+    }, [isClick]);
 
     const [errors, setErrors] = useState({});
     const [errorSignIn, setErrorSignIn] = useState('');
@@ -44,7 +66,6 @@ function SignIn() {
 
     const handleSignin = async (e) => {
         e.preventDefault();
-        setErrorSignIn('');
 
         const newErrors = {};
         if (!dataSignin.email.trim()) newErrors.email = 'Please enter your email!';
@@ -54,16 +75,17 @@ function SignIn() {
             return;
         }
 
-        const [error, result] = await signin(dataSignin);
-        if (error) {
-            setErrorSignIn(error.response?.data?.message);
+        // unwrap
+        const data = await dispatch(signIn(dataSignin));
+        if (signIn.fulfilled.match(data)) {
+            window.location.reload();
+            navigate('/messages');
+        } else if (signIn.rejected.match(data)) {
+            setErrorSignIn(data.payload?.message);
             return;
         }
-
-        setStorage({ token: result.data.token });
-
-        navigate('/messages');
-        window.location.reload();
+        setErrorSignIn('');
+        setErrors({});
     };
 
     return (
@@ -114,9 +136,9 @@ function SignIn() {
                     <p className="text-red-500 text-left text-sm font-semibold mb-1 w-full">{errorSignIn}</p>
                 )}
 
-                <button className="button mt-2" type="submit">
+                <Button variant="soft" loading={loading} className="button mt-2" sx={buttonStyle} type="submit">
                     Sign In
-                </button>
+                </Button>
             </form>
         </div>
     );

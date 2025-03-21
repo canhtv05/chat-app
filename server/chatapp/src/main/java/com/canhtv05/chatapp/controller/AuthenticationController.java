@@ -19,8 +19,10 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.text.ParseException;
 
 
@@ -45,7 +47,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login")
-    public ApiResponse<?> login(@RequestBody AuthenticationRequest request, HttpServletResponse response) {
+    public ApiResponse<?> login(@RequestBody AuthenticationRequest request, HttpServletResponse response){
         LoginResponse loginResponse = authenticationService.login(request, response);
         User user = userService.findUserById(loginResponse.getUserId());
         UserResponse userResponse = userMapper.toUserResponse(user);
@@ -62,9 +64,16 @@ public class AuthenticationController {
                 .build();
     }
 
+    @PostMapping("/logout")
+    public ApiResponse<Void> logout(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, HttpServletResponse response) throws ParseException{
+        authenticationService.logout(token, response);
+        return ApiResponse.<Void>builder()
+                .message("Logout successful!")
+                .build();
+    }
+
     @PostMapping("/refresh-token")
-    public ApiResponse<?> refreshToken(@CookieValue(name = "refreshToken") String refreshToken) throws ParseException
-            , JOSEException {
+    public ApiResponse<?> refreshToken(@CookieValue(name = "refreshToken") String refreshToken) throws ParseException {
         var data = authenticationService.refreshToken(refreshToken);
         return ApiResponse.builder()
                 .message("Refresh token successful!")
@@ -81,7 +90,6 @@ public class AuthenticationController {
                 .data(userMapper.toUserResponse(user))
                 .build();
     }
-
 
     @PatchMapping("/me/update")
     public ApiResponse<UserResponse> updateUser(@Valid @RequestBody UserUpdateRequest request) {

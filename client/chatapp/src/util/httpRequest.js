@@ -22,6 +22,11 @@ export const post = async (path, data, options = {}) => {
     return res.data;
 };
 
+export const patch = async (path, data, options = {}) => {
+    const res = await httpRequest.patch(path, data, options);
+    return res.data;
+};
+
 export const put = async (path, data, options = {}) => {
     const res = await httpRequest.put(path, data, options);
     return res.data;

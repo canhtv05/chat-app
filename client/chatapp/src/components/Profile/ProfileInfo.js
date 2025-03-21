@@ -7,7 +7,7 @@ import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 
 function ProfileInfo({ setIsShowEditForm }) {
-    const { gender, dob, phone, first_name, last_name } = useSelector((state) => state.auth.data.data);
+    const { gender, dob, phone, firstName, lastName } = useSelector((state) => state.auth.data.data);
     const inputRef = useRef();
 
     const handleUploadFile = useCallback(() => {
@@ -45,9 +45,9 @@ function ProfileInfo({ setIsShowEditForm }) {
                     <div className="absolute top-1/2 left-[260px] transform -translate-x-1/2 -translate-y-1/2 w-[300px]">
                         <div className="flex items-center">
                             <span className="text-text-bold font-semibold text-xl mr-2 break-words max-w-[234px] line-clamp-2">
-                                {`${first_name} ${last_name}`}
+                                {`${firstName} ${lastName}`}
                             </span>
-                            <MyButton isRounded height={36} width={36}>
+                            <MyButton isRounded height={36} width={36} onClick={() => setIsShowEditForm(true)}>
                                 <LuPenLine className="text-text-bold size-5" />
                             </MyButton>
                         </div>
@@ -61,7 +61,13 @@ function ProfileInfo({ setIsShowEditForm }) {
                     <div className="flex items-center my-2" key={index}>
                         <span className="text-text-light text-lg w-[120px] inline-block">{info.label}</span>
                         <span className="text-text-bold text-lg font-semibold">
-                            {info.label === 'Giới tính' ? (info.value === true ? 'Nam' : 'Nữ') : info.value}
+                            {info.label === 'Giới tính'
+                                ? info.value === 'MALE'
+                                    ? 'Nam'
+                                    : info.value === 'FEMALE'
+                                    ? 'Nữ'
+                                    : 'Khác'
+                                : info.value}
                         </span>
                     </div>
                 ))}

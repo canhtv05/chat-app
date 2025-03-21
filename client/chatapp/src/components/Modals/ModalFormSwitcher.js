@@ -3,7 +3,16 @@ import PropTypes from 'prop-types';
 
 import Modal from './Modal';
 
-function ModalFormSwitcher({ mainForm, subForm, isOpen, setIsOpen, subFormRef, isShowSubForm, setIsShowSubForm }) {
+function ModalFormSwitcher({
+    mainForm,
+    subForm,
+    isOpen,
+    setIsOpen,
+    subFormRef,
+    isShowSubForm,
+    setIsShowSubForm,
+    valueScrollHeight,
+}) {
     const containerRef = useRef();
     const initialContainerHeightRef = useRef();
 
@@ -37,6 +46,13 @@ function ModalFormSwitcher({ mainForm, subForm, isOpen, setIsOpen, subFormRef, i
             });
         }
     }, [isShowSubForm, subFormRef]);
+
+    // handle resize form
+    useEffect(() => {
+        if (valueScrollHeight && isShowSubForm) {
+            containerRef.current.style.height = `${valueScrollHeight}px`;
+        }
+    }, [isShowSubForm, valueScrollHeight]);
 
     return (
         <Modal setIsOpen={setIsOpen} outline isOpen={isOpen} title="Thông tin tài khoản">

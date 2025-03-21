@@ -1,28 +1,34 @@
 package com.canhtv05.chatapp.configuration;
 
+import com.canhtv05.chatapp.dto.ApiResponse;
 import com.canhtv05.chatapp.entity.User;
 import com.canhtv05.chatapp.exception.AppException;
 import com.canhtv05.chatapp.exception.ErrorCode;
 import com.canhtv05.chatapp.service.RedisService;
 import com.canhtv05.chatapp.util.JwtUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import io.micrometer.common.util.StringUtils;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -37,14 +43,8 @@ public class TokenProvider {
     public String generateAccessToken(User user) {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS256);
 
-        JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
-                .subject(user.getId())
-                .issuer(ISSUER)
-                .issueTime(Date.from(Instant.now()))
-                .expirationTime(Date.from(Instant.now().plus(jwtUtil.getValidDuration(), ChronoUnit.SECONDS)))
-                .claim(EMAIL_CLAIM, user.getEmail())
-                .jwtID(UUID.randomUUID().toString())
-                .build();
+        JWTClaimsSet jwtClaimsSet =
+                new JWTClaimsSet.Builder().subject(user.getId()).issuer(ISSUER).issueTime(Date.from(Instant.now())).expirationTime(Date.from(Instant.now().plus(jwtUtil.getValidDuration(), ChronoUnit.SECONDS))).claim(EMAIL_CLAIM, user.getEmail()).jwtID(UUID.randomUUID().toString()).build();
 
         Payload payload = new Payload(jwtClaimsSet.toJSONObject());
         JWSObject jwsObject = new JWSObject(header, payload);
@@ -60,14 +60,8 @@ public class TokenProvider {
     public String generateRefreshToken(User user) {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS256);
 
-        var claimsSet = new JWTClaimsSet.Builder()
-                .subject(user.getId())
-                .issuer(ISSUER)
-                .issueTime(Date.from(Instant.now()))
-                .expirationTime(new Date(Instant.now().plus(jwtUtil.getRefreshableDuration(), ChronoUnit.SECONDS).toEpochMilli()))
-                .claim(EMAIL_CLAIM, user.getEmail())
-                .jwtID(UUID.randomUUID().toString())
-                .build();
+        var claimsSet =
+                new JWTClaimsSet.Builder().subject(user.getId()).issuer(ISSUER).issueTime(Date.from(Instant.now())).expirationTime(new Date(Instant.now().plus(jwtUtil.getRefreshableDuration(), ChronoUnit.SECONDS).toEpochMilli())).claim(EMAIL_CLAIM, user.getEmail()).jwtID(UUID.randomUUID().toString()).build();
 
         var payload = new Payload(claimsSet.toJSONObject());
         JWSObject jwsObject = new JWSObject(header, payload);
@@ -85,13 +79,8 @@ public class TokenProvider {
             if (token.startsWith("Bearer")) {
                 token = token.replace("Bearer ", "");
             }
-            SignedJWT signedJWT = SignedJWT.parse(token);
-
-            if (StringUtils.isNotBlank(redisService.get(signedJWT.getJWTClaimsSet().getJWTID()))) {
-                throw new AppException(ErrorCode.TOKEN_BLACKLISTED);
-            }
-
             JWSVerifier verifier = new MACVerifier(jwtUtil.getSecretKey());
+            SignedJWT signedJWT = SignedJWT.parse(token);
 
             Date expiration = signedJWT.getJWTClaimsSet().getExpirationTime();
 
@@ -100,29 +89,28 @@ public class TokenProvider {
                 throw new AppException(ErrorCode.UNAUTHORIZED);
             }
 
+            if (StringUtils.isNotBlank(redisService.get(signedJWT.getJWTClaimsSet().getJWTID()))) {
+                throw new AppException(ErrorCode.TOKEN_BLACKLISTED);
+            }
             return signedJWT;
-        } catch (AppException | ParseException | JOSEException e) {
-            throw new AppException(ErrorCode.INVALID_TOKEN);
+        } catch (ParseException | JOSEException e) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
         }
     }
 
     public String verifyAndExtractEmail(String token) throws ParseException {
-        try {
-            Object emailClaim = this.verifyToken(token).getJWTClaimsSet().getClaim(EMAIL_CLAIM);
-            if (Objects.isNull(emailClaim)) {
-                throw new AppException(ErrorCode.UNAUTHORIZED);
-            }
-            return emailClaim.toString();
-        } catch (AppException e) {
-            throw new AppException(ErrorCode.INVALID_TOKEN);
+        Object emailClaim = this.verifyToken(token).getJWTClaimsSet().getClaim(EMAIL_CLAIM);
+        if (Objects.isNull(emailClaim)) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
         }
+        return emailClaim.toString();
     }
 
-    public long extractTokenExpired(String token) {
-        try {
-            return SignedJWT.parse(token).getJWTClaimsSet().getExpirationTime().getTime();
-        } catch (ParseException e) {
-            throw new AppException(ErrorCode.INVALID_TOKEN);
+    public long verifyAndExtractTokenExpired(String token) throws ParseException {
+        Date expiredClaim = this.verifyToken(token).getJWTClaimsSet().getExpirationTime();
+        if (Objects.isNull(expiredClaim)) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
         }
+        return expiredClaim.getTime();
     }
 }

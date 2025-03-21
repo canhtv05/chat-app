@@ -9,7 +9,7 @@ import org.springframework.http.HttpStatus;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public enum ErrorCode {
     INTERNAL_SERVER_ERROR(500, "Uncategorized error.", HttpStatus.INTERNAL_SERVER_ERROR),
-    UNAUTHORIZED(401, "Unauthenticated.", HttpStatus.UNAUTHORIZED),
+    UNAUTHORIZED(401, "Unauthenticated: Invalid or expired JWT token.", HttpStatus.UNAUTHORIZED),
     FORBIDDEN(403, "You don't have permission.", HttpStatus.FORBIDDEN),
     BAD_REQUEST(400, "Invalid request.", HttpStatus.BAD_REQUEST),
 
@@ -28,6 +28,7 @@ public enum ErrorCode {
     USER_NOT_FOUND(404, "User not found.", HttpStatus.NOT_FOUND),
     CHAT_NOT_FOUND(404, "Chat not found.", HttpStatus.NOT_FOUND),
     MESSAGE_NOT_FOUND(404, "Message not found.", HttpStatus.NOT_FOUND),
+    API_ENDPOINT_NOT_FOUND(404, "API endpoint not found.", HttpStatus.NOT_FOUND),
 
     EMAIL_EXISTED(409, "Email already existed.", HttpStatus.CONFLICT),
     PHONE_EXISTED(409, "Phone already existed.", HttpStatus.CONFLICT),

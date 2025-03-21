@@ -1,13 +1,28 @@
 import { Button } from '@mui/material';
 import { useEffect, useState } from 'react';
+import { AiOutlineLoading } from 'react-icons/ai';
 import PropTypes from 'prop-types';
 
 import './Mybutton.css';
 
-function MyButton({ className, children, active = false, size = 'md', isRounded, width = 64, height = 64, ...props }) {
+function MyButton({
+    className,
+    loading = false,
+    children,
+    active = false,
+    size = 'md',
+    isRounded,
+    width = 64,
+    height = 64,
+    ...props
+}) {
     const [isActive, setIsActive] = useState(active);
     const [minWidth, setMinWidth] = useState(width);
     const [minHeight, setMinHeight] = useState(height);
+
+    const LoadingIcon = () => {
+        return <AiOutlineLoading className="animate-spin text-3xl text-text-bold" />;
+    };
 
     useEffect(() => {
         if (size === 'sm') {
@@ -22,12 +37,14 @@ function MyButton({ className, children, active = false, size = 'md', isRounded,
 
     return (
         <div
-            className={`${
+            className={`flex justify-center items-center ${
                 isActive ? 'active' : `hover:bg-background transition-all ease-in-out duration-500`
-            } rounded-xl ${className}`}
+            } rounded-xl ${className} ${loading ? 'pointer-events-none pl-3' : 'hover:bg-background'}`}
             style={isRounded && { borderRadius: '50%' }}
         >
+            {loading && <LoadingIcon />}
             <Button
+                disabled={loading}
                 {...props}
                 sx={{
                     borderRadius: `${isRounded ? '50%' : '0.75rem'}`,
@@ -35,6 +52,7 @@ function MyButton({ className, children, active = false, size = 'md', isRounded,
                     height: '90%',
                     minHeight,
                     minWidth,
+                    opacity: loading && '0.1',
                 }}
             >
                 {children}

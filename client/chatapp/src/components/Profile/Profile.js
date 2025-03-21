@@ -7,6 +7,11 @@ import ProfileEdit from './ProfileEdit';
 function Profile({ isOpen, setIsOpen }) {
     const formRef = useRef();
     const [isShowEditForm, setIsShowEditForm] = useState(false);
+    const [valueScrollHeight, setValueScrollHeight] = useState(null);
+
+    const getScrollHeight = (height) => {
+        setValueScrollHeight(height);
+    };
 
     useEffect(() => {
         if (!isOpen) {
@@ -19,8 +24,9 @@ function Profile({ isOpen, setIsOpen }) {
             isOpen={isOpen}
             setIsOpen={setIsOpen}
             mainForm={<ProfileInfo setIsShowEditForm={setIsShowEditForm} />}
-            subForm={<ProfileEdit setIsShowEditForm={setIsShowEditForm} />}
+            subForm={<ProfileEdit setIsShowEditForm={setIsShowEditForm} getScrollHeight={getScrollHeight} />}
             subFormRef={formRef}
+            valueScrollHeight={valueScrollHeight}
             isShowSubForm={isShowEditForm}
             setIsShowSubForm={setIsShowEditForm}
         />

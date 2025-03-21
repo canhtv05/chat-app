@@ -1,34 +1,39 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import SignIn from '~/components/SignIn/SignIn';
 import SignUp from '~/components/SignUp/SignUp';
 import './Auth.css';
 
 function Auth() {
+    const [isClickSignUp, setIsClickSignUp] = useState(false);
+    const [isClickSignIn, setIsClickSignIn] = useState(false);
+
     useEffect(() => {
         const signUpButton = document.getElementById('signUp');
         const signInButton = document.getElementById('signIn');
         const container = document.getElementById('container');
 
-        if (signUpButton && signInButton && container) {
-            signUpButton.addEventListener('click', () => {
-                container.classList.add('right-panel-active');
-            });
+        const handleSignUp = () => {
+            container.classList.add('right-panel-active');
+            setIsClickSignUp(true);
+            setIsClickSignIn(false);
+        };
 
-            signInButton.addEventListener('click', () => {
-                container.classList.remove('right-panel-active');
-            });
+        const handleSignIn = () => {
+            container.classList.remove('right-panel-active');
+            setIsClickSignIn(true);
+            setIsClickSignUp(false);
+        };
+
+        if (signUpButton && signInButton) {
+            signUpButton.addEventListener('click', handleSignUp);
+            signInButton.addEventListener('click', handleSignIn);
         }
 
         return () => {
             if (signUpButton && signInButton) {
-                signUpButton.removeEventListener('click', () => {
-                    container.classList.add('right-panel-active');
-                });
-
-                signInButton.removeEventListener('click', () => {
-                    container.classList.remove('right-panel-active');
-                });
+                signUpButton.removeEventListener('click', handleSignUp);
+                signInButton.removeEventListener('click', handleSignIn);
             }
         };
     }, []);
@@ -36,8 +41,8 @@ function Auth() {
     return (
         <>
             <div className="wrapper border-border border-2" id="container">
-                <SignUp />
-                <SignIn />
+                <SignUp isClick={isClickSignUp} />
+                <SignIn isClick={isClickSignIn} />
                 <div className="overlay-container">
                     <div className="overlay">
                         <div className="overlay-panel overlay-left">

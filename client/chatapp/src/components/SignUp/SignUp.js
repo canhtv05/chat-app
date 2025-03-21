@@ -1,20 +1,54 @@
-import { Input, Radio, RadioGroup } from '@mui/joy';
-import { useState } from 'react';
+import { Button, Input, Radio, RadioGroup } from '@mui/joy';
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { signUp } from '~/redux/reducers/authSlice';
 
-import { signup } from '~/services/auth/authService';
+const buttonStyle = {
+    borderRadius: '20px',
+    border: '1px solid #3aaba7',
+    backgroundColor: '#3aaba7',
+    color: '#ffffff',
+    fontSize: '12px',
+    fontWeight: 'bold',
+    padding: '12px 45px',
+    letterSpacing: '1px',
+    textTransform: 'uppercase',
+    transition: 'transform 80ms ease-in',
+    '&:hover': {
+        backgroundColor: '#3aaba7',
+    },
+};
 
-function SignUp() {
+function SignUp({ isClick }) {
+    const dispatch = useDispatch();
     const [errorSignUp, setErrorSignUp] = useState('');
+    const { loading } = useSelector((state) => state.auth);
     const [errors, setErrors] = useState({});
     const [dataSignup, setDataSignup] = useState({
-        first_name: '',
-        last_name: '',
+        firstName: '',
+        lastName: '',
         dob: '',
         email: '',
         password: '',
-        gender: true,
+        gender: 'MALE',
         phone: '',
     });
+
+    useEffect(() => {
+        if (isClick) {
+            setDataSignup({
+                firstName: '',
+                lastName: '',
+                dob: '',
+                email: '',
+                password: '',
+                gender: 'MALE',
+                phone: '',
+            });
+            setErrorSignUp('');
+            setErrors({});
+        }
+    }, [isClick]);
 
     const handleChangeSignup = (e) => {
         setDataSignup((prev) => ({
@@ -54,10 +88,33 @@ function SignUp() {
     const handleSignUp = async (e) => {
         e.preventDefault();
 
+        const newErrors = {};
+        if (!dataSignup.firstName.trim()) newErrors.email = 'Please enter your first name!';
+        if (!dataSignup.lastName.trim()) newErrors.lastName = 'Please enter your first name!';
+        if (!dataSignup.dob.trim()) newErrors.dob = 'Please enter your dob!';
+        if (!dataSignup.gender.trim()) newErrors.gender = 'Please enter your gender!';
+        if (!dataSignup.phone.trim()) newErrors.phone = 'Please enter your phone!';
+        if (!dataSignup.email.trim()) newErrors.email = 'Please enter your email!';
+        if (!dataSignup.password.trim()) newErrors.password = 'Please enter your password!';
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return;
+        }
+
         // eslint-disable-next-line no-unused-vars
-        const [error, result] = await signup(dataSignup);
-        if (error) {
-            setErrorSignUp(error.response?.data?.message);
+        const data = await dispatch(signUp(dataSignup));
+        if (signUp.fulfilled.match(data)) {
+            setDataSignup({
+                firstName: '',
+                lastName: '',
+                dob: '',
+                email: '',
+                password: '',
+                gender: 'MALE',
+                phone: '',
+            });
+        } else if (signUp.rejected.match(data)) {
+            setErrorSignUp(data.payload?.message);
             return;
         }
 
@@ -87,8 +144,8 @@ function SignUp() {
                 </div>
                 <div className="flex justify-between items-center w-full">
                     <Input
-                        name="first_name"
-                        value={dataSignup.first_name}
+                        name="firstName"
+                        value={dataSignup.firstName}
                         onChange={handleChangeSignup}
                         variant="soft"
                         type="text"
@@ -97,8 +154,8 @@ function SignUp() {
                         onBlur={handleBlur}
                     />
                     <Input
-                        name="last_name"
-                        value={dataSignup.last_name}
+                        name="lastName"
+                        value={dataSignup.lastName}
                         onChange={handleChangeSignup}
                         variant="soft"
                         type="text"
@@ -107,9 +164,9 @@ function SignUp() {
                         onBlur={handleBlur}
                     />
                 </div>
-                {(errors.first_name || errors.last_name) && (
+                {(errors.firstName || errors.lastName) && (
                     <p className="text-red-500 text-left text-sm font-semibold mb-1 w-full">
-                        {errors.first_name || errors.last_name}
+                        {errors.firstName || errors.lastName}
                     </p>
                 )}
                 <span className="text-left text-white text-sm font-semibold mb-1 w-full">Date of birth</span>
@@ -130,10 +187,10 @@ function SignUp() {
                     className="flex justify-start w-full"
                 >
                     <div className="flex my-2 items-center">
-                        <Radio value="true" size="md" variant="soft" className="mr-2" />
+                        <Radio value="MALE" size="md" variant="soft" className="mr-2" />
                         <p className="text-left text-white text-sm ">Male</p>
                         <span className="mx-6"></span>
-                        <Radio value="false" size="md" variant="soft" className="mr-2" />
+                        <Radio value="FEMALE" size="md" variant="soft" className="mr-2" />
                         <p className="text-left text-white text-sm ">Female</p>
                     </div>
                 </RadioGroup>
@@ -180,9 +237,9 @@ function SignUp() {
                     <p className="text-red-500 text-left text-sm font-semibold mb-1 w-full">{errors.password}</p>
                 )}
                 {errorSignUp && <p className="text-red-500 font-semibold text-sm mb-2">{errorSignUp}</p>}
-                <button className="button mt-2" type="submit">
+                <Button variant="soft" loading={loading} className="button mt-2" sx={buttonStyle} type="submit">
                     Sign Up
-                </button>
+                </Button>
             </form>
         </div>
     );

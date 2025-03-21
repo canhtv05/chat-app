@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -33,8 +34,6 @@ public class UserServiceImplementation implements UserService {
     UserRepository userRepository;
     UserMapper userMapper;
     PasswordEncoder passwordEncoder;
-
-    TokenProvider tokenProvider;
 
     @Override
     @Transactional
@@ -65,8 +64,14 @@ public class UserServiceImplementation implements UserService {
 
     @Override
     public User getCurrentUser() {
-        SecurityContext securityContext = SecurityContextHolder.getContext();
-        return (User) securityContext.getAuthentication().getPrincipal();
+        try {
+            SecurityContext securityContext = SecurityContextHolder.getContext();
+            var user = securityContext.getAuthentication().getPrincipal();
+            return (User) user;
+        } catch (Exception e) {
+            log.error("error: {}", e.getMessage());
+            return null;
+        }
     }
 
     @Override

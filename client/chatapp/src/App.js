@@ -1,4 +1,4 @@
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, useNavigate } from 'react-router-dom';
 import { Fragment, useEffect, useState } from 'react';
 
 import { privateRoutes, publicRoutes } from './routes';
@@ -7,22 +7,29 @@ import PrivateRoute from './routes/PrivateRoute';
 import useLocalStorage from './hooks/useLocalStorage';
 import { useDispatch } from 'react-redux';
 import { getMyInfo } from './redux/reducers/authSlice';
+import PublicRoute from './routes/PublicRoute';
 
 function App() {
     const { dataStorage } = useLocalStorage();
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const [isLoadUser, setIsLoadUser] = useState(true);
 
     useEffect(() => {
         if (dataStorage?.token) {
-            const loadUser = dispatch(getMyInfo(dataStorage.token));
-
-            loadUser.finally(() => {
-                setIsLoadUser(false);
-            });
+            dispatch(getMyInfo(dataStorage.token))
+                .unwrap()
+                .then(() => {
+                    setIsLoadUser(false);
+                })
+                .catch(() => {
+                    navigate('/login');
+                    setIsLoadUser(false);
+                    window.location.reload();
+                });
         } else {
-            setIsLoadUser(true);
+            setIsLoadUser(false);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -51,12 +58,12 @@ function App() {
     };
     return (
         <>
-            {/* {isLoadUser ? null : ( */}
-            <Routes>
-                {publicRoutes.map(loadRoute)}
-                <Route element={<PrivateRoute />}>{privateRoutes.map(loadRoute)}</Route>
-            </Routes>
-            {/* )} */}
+            {!isLoadUser && (
+                <Routes>
+                    <Route element={<PublicRoute />}>{publicRoutes.map(loadRoute)}</Route>
+                    <Route element={<PrivateRoute />}>{privateRoutes.map(loadRoute)}</Route>
+                </Routes>
+            )}
         </>
     );
 }
