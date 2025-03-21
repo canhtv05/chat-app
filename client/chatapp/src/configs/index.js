@@ -1,9 +1,9 @@
 import routes from './routes';
-import localStorage from './localStorage';
+import storage from './storage';
 
 const config = {
     routes,
-    localStorage,
+    storage,
 };
 
 export default config;

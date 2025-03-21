@@ -132,7 +132,7 @@ function ProfileEdit({ setIsShowEditForm, getScrollHeight }) {
             )}
             <div className="flex flex-col my-2 w-full">
                 <span className="mb-2 text-text-bold text-lg font-semibold">Thông tin cá nhân</span>
-                <RadioGroup defaultValue={String(dataUpdateCurrentUser.gender)} name="gender" onChange={handleChange}>
+                <RadioGroup value={dataUpdateCurrentUser.gender} name="gender" onChange={handleChange}>
                     <div className="flex my-2">
                         <MyRadio value="MALE" label="Nam" size="md" />
                         <span className="mx-6"></span>

@@ -1,12 +1,9 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import useLocalStorage from '~/hooks/useLocalStorage';
 import { getCurrentUser, signin, signup, updateCurrentUser } from '~/services/auth/authService';
+import cookieUtil from '~/utils/cookieUtils';
 
-// eslint-disable-next-line react-hooks/rules-of-hooks
-const { setStorage, deleteStorage, dataStorage } = useLocalStorage();
-
-export const getMyInfo = createAsyncThunk('/auth/me', async (token, { rejectWithValue }) => {
-    const [error, data] = await getCurrentUser(token);
+export const getMyInfo = createAsyncThunk('/auth/me', async (_, { rejectWithValue }) => {
+    const [error, data] = await getCurrentUser();
 
     if (error) {
         return rejectWithValue(error?.response?.data);
@@ -33,8 +30,7 @@ export const signIn = createAsyncThunk('/auth/login', async (request, { rejectWi
 });
 
 export const updateMyInfo = createAsyncThunk('/auth/me/update', async (request, { rejectWithValue }) => {
-    const token = dataStorage.token;
-    const [error, data] = await updateCurrentUser(token, request);
+    const [error, data] = await updateCurrentUser(request);
 
     if (error) {
         return rejectWithValue(error?.response?.data);
@@ -62,7 +58,7 @@ const authSlice = createSlice({
                 state.isAuth = false;
                 state.error = action.payload;
                 state.data = {};
-                deleteStorage('token');
+                cookieUtil.deleteStorage();
             })
             // register
             .addCase(signUp.pending, (state) => {
@@ -81,12 +77,13 @@ const authSlice = createSlice({
                 state.loading = true;
             })
             .addCase(signIn.fulfilled, (state, action) => {
-                const token = action.payload?.meta?.tokenInfo?.accessToken;
-                if (token) {
+                const { accessToken, refreshToken } = action.payload?.meta?.tokenInfo;
+                if (accessToken) {
                     const dataStorage = {
-                        token,
+                        accessToken,
+                        refreshToken,
                     };
-                    setStorage(dataStorage);
+                    cookieUtil.setStorage(dataStorage, { expires: 14 });
                 }
                 state.error = null;
                 state.loading = false;

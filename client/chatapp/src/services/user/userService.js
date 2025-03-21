@@ -1,4 +1,4 @@
-import httpRequest, { handlerRequest } from '~/util/httpRequest';
+import httpRequest, { handlerRequest } from '~/utils/httpRequest';
 
 const searchUser = async (query) => {
     const [error, result] = await handlerRequest(

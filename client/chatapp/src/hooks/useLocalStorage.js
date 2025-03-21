@@ -1,11 +1,11 @@
 import config from '~/configs';
 
-const key = config.localStorage.key;
+const key = config.storage.key;
 
 function useLocalStorage() {
     const getItem = () => {
-        const data = JSON.parse(localStorage.getItem(key)) || {};
-        return data;
+        const data = localStorage.getItem(key);
+        return data ? JSON.parse(data) : {};
     };
 
     const setItem = (objectSet) => {

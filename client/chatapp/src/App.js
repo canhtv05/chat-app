@@ -1,24 +1,23 @@
 import { Route, Routes, useNavigate } from 'react-router-dom';
 import { Fragment, useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
 
 import { privateRoutes, publicRoutes } from './routes';
 import DefaultLayout from './layouts/DefaultLayout';
 import PrivateRoute from './routes/PrivateRoute';
-import useLocalStorage from './hooks/useLocalStorage';
-import { useDispatch } from 'react-redux';
 import { getMyInfo } from './redux/reducers/authSlice';
 import PublicRoute from './routes/PublicRoute';
+import cookieUtil from './utils/cookieUtils';
 
 function App() {
-    const { dataStorage } = useLocalStorage();
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
     const [isLoadUser, setIsLoadUser] = useState(true);
 
     useEffect(() => {
-        if (dataStorage?.token) {
-            dispatch(getMyInfo(dataStorage.token))
+        if (cookieUtil.getStorage()?.accessToken) {
+            dispatch(getMyInfo())
                 .unwrap()
                 .then(() => {
                     setIsLoadUser(false);
