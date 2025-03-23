@@ -1,6 +1,5 @@
 package com.canhtv05.chatapp.dto.response;
 
-import com.canhtv05.chatapp.entity.Message;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -20,5 +19,4 @@ public class ChatResponse implements Serializable {
     Boolean isGroup;
     UserResponse createdBy;
     Set<UserResponse> users = new HashSet<>();
-    List<Message> messages = new ArrayList<>();
 }

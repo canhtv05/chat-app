@@ -1,7 +1,7 @@
 package com.canhtv05.chatapp.service.impl;
 
 import com.canhtv05.chatapp.common.UserStatus;
-import com.canhtv05.chatapp.configuration.TokenProvider;
+import com.canhtv05.chatapp.dto.response.UserDetailResponse;
 import com.canhtv05.chatapp.dto.response.UserResponse;
 import com.canhtv05.chatapp.dto.resquest.UserCreationRequest;
 import com.canhtv05.chatapp.dto.resquest.UserUpdateRequest;
@@ -11,10 +11,12 @@ import com.canhtv05.chatapp.exception.ErrorCode;
 import com.canhtv05.chatapp.mapper.UserMapper;
 import com.canhtv05.chatapp.repository.UserRepository;
 import com.canhtv05.chatapp.service.UserService;
+import io.micrometer.common.util.StringUtils;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.*;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,8 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.List;
-import java.util.Objects;
+import java.util.Collections;
 
 @Slf4j
 @Service
@@ -37,7 +38,7 @@ public class UserServiceImplementation implements UserService {
 
     @Override
     @Transactional
-    public UserResponse createUser(UserCreationRequest request) {
+    public UserDetailResponse createUser(UserCreationRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new AppException(ErrorCode.EMAIL_EXISTED);
         }
@@ -75,7 +76,7 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
-    public UserResponse updateUser(String userId, UserUpdateRequest request) {
+    public UserDetailResponse updateUser(String userId, UserUpdateRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
@@ -86,9 +87,24 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
-    public List<UserResponse> searchUserByFullNameOrEmail(String query) {
-        return userRepository.searchUserByFullNameOrEmail(query).stream()
-                .map(userMapper::toUserResponse)
-                .toList();
+    public Page<UserResponse> searchUserByFullNameOrEmail(String query, int page, int size) {
+        User user = this.getCurrentUser();
+
+        if (StringUtils.isEmpty(query) || query.length() > 100 || query.startsWith(" ")) {
+            return new PageImpl<>(Collections.emptyList());
+        }
+
+        // client page = 1 => spring jpa page = 0
+        int pageIndex = Math.max(page - 1, 0);
+        Sort sort = Sort.by(
+                Sort.Order.desc("firstName"),
+                Sort.Order.desc("lastName"),
+                Sort.Order.desc("email")
+        );
+        Pageable pageAble = PageRequest.of(pageIndex, size, sort);
+
+        Page<User> userPage = userRepository.searchUserByFullNameOrEmailExcludingCurrentUser(query, user.getId(),
+                pageAble);
+        return userPage.map(userMapper::toUser);
     }
 }

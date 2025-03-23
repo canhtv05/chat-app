@@ -17,5 +17,5 @@ public class MessageResponse implements Serializable {
     String content;
     LocalDateTime timestamp;
     UserResponse user;
-    ChatResponse chat;
+    String chatId;
 }

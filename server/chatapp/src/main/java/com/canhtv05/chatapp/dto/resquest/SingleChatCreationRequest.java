@@ -13,5 +13,5 @@ import java.io.Serializable;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class SingleChatCreationRequest implements Serializable {
 
-    String user_id;
+    String userId;
 }

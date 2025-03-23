@@ -30,7 +30,7 @@ public class MessageController {
     public ApiResponse<MessageResponse> sendMessage(@Valid @RequestBody SendMessageRequest request) {
         User user = userService.getCurrentUser();
 
-        request.setUser_id(user.getId());
+        request.setUserId(user.getId());
 
         MessageResponse messageResponse = messageService.sendMessage(request);
 

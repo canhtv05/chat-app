@@ -17,7 +17,7 @@ import java.util.*;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Chat extends AbstractEntity<String> {
 
-    @Column(name = "chat_name", nullable = false)
+    @Column(name = "chat_name")
     String chatName;
 
     @Column(name = "chat_image")

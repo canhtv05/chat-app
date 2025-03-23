@@ -35,7 +35,7 @@ public class SecurityConfig {
     UserDetailsService userDetailsService;
 
     private static final String[] PUBLIC_ENDPOINTS = {
-        "/auth/login", "/auth/logout", "/auth/refresh-token", "/auth/register",
+        "/auth/login", "/auth/logout", "/auth/refresh-token", "/auth/register","users/search"
     };
 
     @Bean

@@ -1,9 +1,16 @@
 import { Avatar } from '@mui/joy';
 import { CiSearch } from 'react-icons/ci';
+import { useSelector } from 'react-redux';
 
 import MyButton from '~/components/MyButton';
+import RenderIf from '~/components/RenderIf';
 
 function ChatBoxHeader({ isOnline = false }) {
+    const { id: currentUserId } = useSelector((state) => state.auth.data.data);
+    const data = useSelector((state) => state.chat.data);
+    const user = data?.createdBy?.id ? data?.users.find((user) => user.id !== currentUserId) : data;
+    const chat = data?.createdBy?.id ? data : null;
+
     return (
         <div className="p-5 flex justify-between items-center border-b border-border relative shrink-0 w-full">
             <div className="flex w-full">
@@ -19,8 +26,15 @@ function ChatBoxHeader({ isOnline = false }) {
                 </div>
                 <div className="flex justify-between items-center w-full h-full">
                     <div className="ml-4 flex justify-between flex-col">
-                        <span className="text-text-bold font-semibold">Tran Van Canh</span>
-                        <span className="text-text-bold font-thin">4 hours ago</span>
+                        <RenderIf value={!chat?.isGroup}>
+                            <span className="text-text-bold font-semibold">{`${user?.firstName || ''} ${
+                                user?.lastName || ''
+                            }`}</span>
+                        </RenderIf>
+                        <RenderIf value={chat?.isGroup}>
+                            <span className="text-text-bold font-semibold">{chat?.chatName || ''}</span>
+                        </RenderIf>
+                        <span className="text-text-bold font-thin">4 hours ago //undefined</span>
                     </div>
                     <MyButton size="sm">
                         <CiSearch className="size-7 text-text-bold" />

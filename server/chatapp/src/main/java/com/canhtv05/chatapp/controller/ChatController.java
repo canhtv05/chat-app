@@ -36,7 +36,7 @@ public class ChatController {
     public ApiResponse<ChatResponse> creationChat(@RequestBody SingleChatCreationRequest request) {
         User userRequest = userService.getCurrentUser();
 
-        ChatResponse chat = chatService.createChat(userRequest, request.getUser_id());
+        ChatResponse chat = chatService.createChat(userRequest, request.getUserId());
 
         return ApiResponse.<ChatResponse>builder()
                 .data(chat)

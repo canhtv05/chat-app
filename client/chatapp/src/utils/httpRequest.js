@@ -59,9 +59,7 @@ httpRequest.interceptors.response.use(
 
         const getRefreshToken = cookieUtil.getStorage()?.refreshToken;
 
-        if (error.response?.data?.code === 401 && !originalRequest._retry) {
-            originalRequest._retry = true;
-
+        if (error.response?.data?.code === 401) {
             try {
                 if (!getRefreshToken) {
                     throw new Error('No refresh token available');

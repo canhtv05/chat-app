@@ -15,12 +15,16 @@ import com.canhtv05.chatapp.service.UserService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -33,9 +37,9 @@ public class MessageServiceImplementation implements MessageService {
 
     @Override
     public MessageResponse sendMessage(SendMessageRequest request) {
-        User user = userService.findUserById(request.getUser_id());
+        User user = userService.findUserById(request.getUserId());
 
-        Chat chat = chatService.findChatById(request.getChat_id());
+        Chat chat = chatService.findChatById(request.getChatId());
 
         if  (!chat.getUsers().contains(user) && !chat.getAdmins().contains(user)) {
             throw new AppException(ErrorCode.NOT_RELATED_TO_CHAT);
@@ -55,17 +59,28 @@ public class MessageServiceImplementation implements MessageService {
     public List<MessageResponse> getChatsMessages(String chatId, User userRequest) {
         Chat chat = chatService.findChatById(chatId);
 
+        log.info("1: {}, 2: {}, 3: {}", !chat.getUsers().contains(userRequest),
+                !chat.getAdmins().contains(userRequest), !chat.getCreatedBy().equals(userRequest));
+
+        log.info("email: {}",userRequest.getEmail());
+
+        log.info("o: {}", chat.getUsers().stream()
+                .map(User::getEmail)  // Lấy email của từng user
+                .collect(Collectors.toList())); // Chuyển thành danh sách
+
+
         if (!chat.getUsers().contains(userRequest) && !chat.getAdmins().contains(userRequest) && !chat.getCreatedBy().equals(userRequest)) {
             throw new AppException(ErrorCode.NOT_RELATED_TO_CHAT);
         }
 
         return messageRepository.findByChatId(chatId).stream()
                 .map(messageMapper::toMessageResponse)
+                .sorted(Comparator.comparing(MessageResponse::getTimestamp))
                 .toList();
     }
 
     @Override
-    public MessageResponse findMessageById(String messageId, User userRequest) {
+    public Message findMessageById(String messageId, User userRequest) {
         Message message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new AppException(ErrorCode.MESSAGE_NOT_FOUND));
 
@@ -74,13 +89,13 @@ public class MessageServiceImplementation implements MessageService {
             throw new AppException(ErrorCode.NOT_RELATED_TO_CHAT);
         }
 
-        return messageMapper.toMessageResponse(message);
+        return message;
     }
 
     @Transactional
     @Override
     public void deleteMessage(String messageId, User userRequest) {
-        MessageResponse message = findMessageById(messageId, userRequest);
+        Message message = findMessageById(messageId, userRequest);
 
         if (message.getUser().getEmail().equals(userRequest.getEmail())) {
             messageRepository.deleteById(messageId);

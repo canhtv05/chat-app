@@ -14,8 +14,8 @@ import java.io.Serializable;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class SendMessageRequest implements Serializable {
 
-    String user_id;
-    String chat_id;
+    String userId;
+    String chatId;
 
     @NotBlank(message = "Content can't be blank")
     String content;

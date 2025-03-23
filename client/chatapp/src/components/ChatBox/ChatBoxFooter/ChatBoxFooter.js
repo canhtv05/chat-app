@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { CiFaceSmile } from 'react-icons/ci';
 import { IoIosSend } from 'react-icons/io';
 
@@ -7,21 +7,24 @@ import MyTextArea from '~/components/MyTextArea';
 
 import useTextAreaResize from '~/hooks/useTextAreaResize';
 
-function ChatBoxFooter() {
+function ChatBoxFooter({ content, setContent, onSend }) {
     const [isLineBeak, setIsLineBeak] = useState(false);
-    const [content, setContent] = useState('');
     const textAreaRef = useRef(null);
 
     const handleChange = useTextAreaResize({ setContent, setIsLineBeak });
 
-    const handleKeyDown = (e) => {
-        if (e.key === 'Enter') {
-            setContent('');
-            setIsLineBeak(false);
-            textAreaRef.current.style.height = '36px';
-            e.preventDefault();
-        }
-    };
+    const handleKeyDown = useCallback(
+        (e) => {
+            if (e.key === 'Enter') {
+                setContent('');
+                onSend();
+                setIsLineBeak(false);
+                textAreaRef.current.style.height = '36px';
+                e.preventDefault();
+            }
+        },
+        [setContent, onSend],
+    );
 
     return (
         <div

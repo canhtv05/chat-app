@@ -1,5 +1,6 @@
 package com.canhtv05.chatapp.mapper;
 
+import com.canhtv05.chatapp.dto.response.UserDetailResponse;
 import com.canhtv05.chatapp.dto.response.UserResponse;
 import com.canhtv05.chatapp.dto.resquest.UserCreationRequest;
 import com.canhtv05.chatapp.dto.resquest.UserUpdateRequest;
@@ -18,5 +19,7 @@ public interface UserMapper {
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateUserFromRequest(UserUpdateRequest request, @MappingTarget User user);
 
-    UserResponse toUserResponse(User user);
+    UserDetailResponse toUserResponse(User user);
+
+    UserResponse toUser(User user);
 }

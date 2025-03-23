@@ -1,21 +1,21 @@
 package com.canhtv05.chatapp.service;
 
+import com.canhtv05.chatapp.dto.response.UserDetailResponse;
 import com.canhtv05.chatapp.dto.response.UserResponse;
 import com.canhtv05.chatapp.dto.resquest.UserCreationRequest;
 import com.canhtv05.chatapp.dto.resquest.UserUpdateRequest;
 import com.canhtv05.chatapp.entity.User;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
 
 public interface UserService {
 
-    UserResponse createUser(UserCreationRequest request);
+    UserDetailResponse createUser(UserCreationRequest request);
 
     User findUserById(String id);
 
     User getCurrentUser();
 
-    UserResponse updateUser(String userId, UserUpdateRequest request);
+    UserDetailResponse updateUser(String userId, UserUpdateRequest request);
 
-    List<UserResponse> searchUserByFullNameOrEmail(String query);
+    Page<UserResponse> searchUserByFullNameOrEmail(String query, int page, int size);
 }

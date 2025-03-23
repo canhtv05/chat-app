@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 function MessageCard({ isMe, content }) {
     return (
         <div
-            className={`p-2 rounded-md max-w-[50%] text-text-light border-border border ${
-                isMe ? 'self-start bg-background-secondary' : 'self-end bg-green-700 text-white'
+            className={`p-2 max-w-[50%] text-text-light rounded-xl border-border border ${
+                isMe ? 'self-end bg-green-700 text-white' : 'self-start bg-background-secondary'
             }`}
         >
             <p>{content}</p>

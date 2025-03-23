@@ -2,6 +2,7 @@ package com.canhtv05.chatapp.entity;
 
 import com.canhtv05.chatapp.common.Gender;
 import com.canhtv05.chatapp.common.UserStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -11,6 +12,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -40,6 +42,7 @@ public class User extends AbstractEntity<String> implements UserDetails {
     @Column(name = "profile_picture")
     String profilePicture;
 
+    @JsonIgnore
     @Column(name = "refresh_token", columnDefinition = "TEXT")
     String refreshToken;
 
@@ -51,6 +54,7 @@ public class User extends AbstractEntity<String> implements UserDetails {
     @Column(name = "gender", nullable = false)
     Gender gender;
 
+    @JsonIgnore
     @Column(name = "password", nullable = false)
     String password;
 
@@ -83,6 +87,18 @@ public class User extends AbstractEntity<String> implements UserDetails {
     @Override
     public boolean isEnabled() {
         return this.userStatus.equals(UserStatus.ACTIVE); // default true
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (object == null || getClass() != object.getClass()) return false;
+        User user = (User) object;
+        return Objects.equals(firstName, user.firstName) && Objects.equals(lastName, user.lastName) && Objects.equals(dob, user.dob) && Objects.equals(email, user.email) && Objects.equals(phone, user.phone) && Objects.equals(profilePicture, user.profilePicture) && Objects.equals(refreshToken, user.refreshToken) && userStatus == user.userStatus && gender == user.gender && Objects.equals(password, user.password);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(firstName, lastName, dob, email, phone, profilePicture, refreshToken, userStatus, gender, password);
     }
 }
 
