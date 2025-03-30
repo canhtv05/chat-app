@@ -2,19 +2,68 @@ import { Avatar } from '@mui/material';
 import MyButton from '../MyButton/MyButton';
 import { MdOutlineCameraAlt } from 'react-icons/md';
 import { LuPenLine } from 'react-icons/lu';
-import { memo, useCallback, useRef } from 'react';
+import { memo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { updateMyInfo } from '~/redux/reducers/authSlice';
 
 function ProfileInfo({ setIsShowEditForm }) {
-    const { gender, dob, phone, firstName, lastName } = useSelector((state) => state.auth.data.data);
-    const inputRef = useRef();
+    const dispatch = useDispatch();
+    const { gender, dob, phone, firstName, lastName, profilePicture } = useSelector((state) => state.auth.data.data);
 
-    const handleUploadFile = useCallback(() => {
-        if (inputRef.current) {
-            inputRef.current?.click();
+    const inputRef = useRef(null);
+    const [tempPicture, setTempPicture] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+
+    const handleUploadFile = async (picture) => {
+        if (!picture) return;
+
+        if (!picture.type.startsWith('image/')) {
+            setError('Please upload an image file (jpg, png, etc.)');
+            return;
         }
-    }, []);
+
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        if (picture.size > maxSize) {
+            setError('File size exceeds 5MB limit');
+            return;
+        }
+
+        setLoading(true);
+        setError(null);
+
+        const formData = new FormData();
+        formData.append('file', picture);
+        formData.append('upload_preset', 'chat-app');
+
+        try {
+            const response = await fetch('https://api.cloudinary.com/v1_1/doxc6iqyk/image/upload', {
+                method: 'POST',
+                body: formData,
+            });
+
+            const data = await response.json();
+
+            console.log(data);
+
+            if (data.secure_url) {
+                setTempPicture(data.secure_url);
+                dispatch(updateMyInfo({ profilePicture: data.secure_url }));
+            } else {
+                setError('Upload failed. Please try again.');
+            }
+        } catch (error) {
+            setError('Error uploading file. Please try again.');
+            console.error('Error uploading file:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleClickUpload = () => {
+        inputRef.current.click();
+    };
 
     const dataInfo = [
         { label: 'Giới tính', value: gender },
@@ -31,16 +80,22 @@ function ProfileInfo({ setIsShowEditForm }) {
                     className="bg-contain block w-[450px]"
                 />
                 <div className="absolute left-[14px] bottom-[-64px] cursor-pointer">
-                    <div onClick={handleUploadFile}>
+                    <div onClick={handleClickUpload}>
                         <div className="border-border border-4 rounded-full">
-                            <Avatar sx={{ width: 90, height: 90 }} />
+                            <Avatar sx={{ width: 90, height: 90 }} src={profilePicture || tempPicture} />
                         </div>
                         <div className="absolute right-0 bottom-0 bg-background-secondary rounded-full border-2 border-border">
                             <MyButton isRounded height={36} width={36}>
                                 <MdOutlineCameraAlt className="text-text-bold size-5" />
                             </MyButton>
                         </div>
-                        <input type="file" className="hidden" ref={inputRef} />
+                        <input
+                            ref={inputRef}
+                            onChange={(e) => handleUploadFile(e.target.files[0])}
+                            type="file"
+                            className="hidden"
+                            accept="image/*"
+                        />
                     </div>
                     <div className="absolute top-1/2 left-[260px] transform -translate-x-1/2 -translate-y-1/2 w-[300px]">
                         <div className="flex items-center">

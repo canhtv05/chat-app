@@ -1,14 +1,18 @@
 import { useCallback, useRef, useState } from 'react';
 import { CiFaceSmile } from 'react-icons/ci';
 import { IoIosSend } from 'react-icons/io';
+import EmojiPicker from 'emoji-picker-react';
 
 import MyButton from '~/components/MyButton';
 import MyTextArea from '~/components/MyTextArea';
-
+import RenderIf from '~/components/RenderIf';
 import useTextAreaResize from '~/hooks/useTextAreaResize';
+import useLocalStorage from '~/hooks/useLocalStorage';
 
 function ChatBoxFooter({ content, setContent, onSend }) {
     const [isLineBeak, setIsLineBeak] = useState(false);
+    const [openEmoji, setOpenEmoji] = useState(false);
+    const { dataStorage } = useLocalStorage();
     const textAreaRef = useRef(null);
 
     const handleChange = useTextAreaResize({ setContent, setIsLineBeak });
@@ -28,7 +32,7 @@ function ChatBoxFooter({ content, setContent, onSend }) {
 
     return (
         <div
-            className={`p-5 flex ${
+            className={`p-5 relative flex ${
                 isLineBeak ? 'flex-col pb-3' : 'flex-row'
             } justify-between items-center border-b border-border relative w-full`}
         >
@@ -42,12 +46,26 @@ function ChatBoxFooter({ content, setContent, onSend }) {
                 onKeyDown={handleKeyDown}
             />
             <div className={`items-center flex ${isLineBeak ? 'mt-2 justify-end w-full' : 'justify-center'}`}>
-                <MyButton size="sm">
+                <MyButton size="sm" onClick={() => setOpenEmoji((prev) => !prev)}>
                     <CiFaceSmile className="size-7 text-text-bold cursor-pointer" />
                 </MyButton>
                 <MyButton size="sm">
                     <IoIosSend className="size-7 text-text-bold cursor-pointer rotate-45" />
                 </MyButton>
+            </div>
+            <div className="absolute top-[-440px] right-[390px]">
+                <RenderIf value={openEmoji}>
+                    <div className="absolute">
+                        <EmojiPicker
+                            theme={dataStorage?.theme === 'dark' ? 'dark' : 'light'}
+                            previewConfig={{
+                                showPreview: false,
+                            }}
+                            emojiStyle="facebook"
+                            open={openEmoji}
+                        />
+                    </div>
+                </RenderIf>
             </div>
         </div>
     );

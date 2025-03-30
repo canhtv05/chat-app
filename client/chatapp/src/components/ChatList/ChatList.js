@@ -10,13 +10,15 @@ import ModalAddGroup from './ModalAddGroup';
 import useDebounce from '~/hooks/useDebounce';
 import { searchUser } from '~/services/user/userService';
 import RenderIf from '../RenderIf';
-import { useDispatch } from 'react-redux';
-import { setInfoCurrentChat } from '~/redux/reducers/chatSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { setIdChatOfUser, setInfoCurrentChat } from '~/redux/reducers/chatSlice';
 import { getAllMyChats } from '~/services/chat/chatService';
 import { getAllMessagesFromChat } from '~/services/message/messageService';
+import colors from '../AccountItem/colors';
 
 function ChatList() {
     const dispatch = useDispatch();
+    const { id: currentUserId } = useSelector((state) => state.auth.data.data);
     const [activeIndex, setActiveIndex] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -34,6 +36,11 @@ function ChatList() {
 
     const debounceValue = useDebounce(query, 500);
     const { setCurrentChat } = useContext(ChatCardContext);
+
+    const getRandomBackground = () => {
+        const randomIndex = Math.floor(Math.random() * colors.backgrounds.length);
+        return colors.backgrounds[randomIndex];
+    };
 
     useEffect(() => {
         setPage(1);
@@ -53,7 +60,24 @@ function ChatList() {
             }
 
             const chatsData = result.data || [];
-            setChats(chatsData);
+            const chatUserMapping = {};
+            const chatsWithBackground = chatsData.map((chat) => {
+                if (!chat?.isGroup) {
+                    const otherUser = chat?.users?.find((user) => user?.id !== currentUserId);
+                    if (otherUser) {
+                        // user id: chat id
+                        chatUserMapping[otherUser?.id] = chat?.id;
+                    }
+                }
+
+                return {
+                    ...chat,
+                    background: getRandomBackground(),
+                };
+            });
+
+            setChats(chatsWithBackground);
+            dispatch(setIdChatOfUser(chatUserMapping));
 
             // get last message
             const initialLastMessages = {};
@@ -67,7 +91,7 @@ function ChatList() {
         };
 
         fetchApi();
-    }, []);
+    }, [dispatch, currentUserId]);
 
     useEffect(() => {
         if (!debounceValue.trim()) {
@@ -94,8 +118,12 @@ function ChatList() {
 
             setSearchRes((prev) => {
                 const newData = result?.data || [];
+                const newDataWithBackground = newData.map((user) => ({
+                    ...user,
+                    background: getRandomBackground(),
+                }));
                 const existingIds = new Set(prev.map((item) => item.id));
-                const uniqueNewData = newData.filter((item) => !existingIds.has(item.id));
+                const uniqueNewData = newDataWithBackground.filter((item) => !existingIds.has(item.id));
                 return [...prev, ...uniqueNewData];
             });
 
@@ -130,8 +158,12 @@ function ChatList() {
             setActiveIndex(index);
             setCurrentChat(true);
             // kiểm tra xem nếu có created by thì là list chat, còn ko thì là search user
-            if (!!data?.createdBy) dispatch(setInfoCurrentChat({ ...data, idUser: data?.createdBy?.id }));
-            else dispatch(setInfoCurrentChat({ ...data, isSearch: true, idUser: data?.id }));
+            if (!!data?.createdBy)
+                dispatch(setInfoCurrentChat({ ...data, idUser: data?.createdBy?.id, background: data.background }));
+            else
+                dispatch(
+                    setInfoCurrentChat({ ...data, isSearch: true, idUser: data?.id, background: data.background }),
+                );
         },
         [setCurrentChat, dispatch],
     );

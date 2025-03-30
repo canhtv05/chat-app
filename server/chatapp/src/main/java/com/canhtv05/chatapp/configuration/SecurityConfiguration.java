@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -29,13 +28,13 @@ import java.util.List;
 @Configuration
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class SecurityConfig {
+public class SecurityConfiguration {
 
     JwtTokenValidator jwtTokenValidator;
     UserDetailsService userDetailsService;
 
     private static final String[] PUBLIC_ENDPOINTS = {
-        "/auth/login", "/auth/logout", "/auth/refresh-token", "/auth/register","users/search"
+        "/auth/login", "/auth/logout", "/auth/refresh-token", "/auth/register","users/search", "/ws/**"
     };
 
     @Bean
@@ -72,7 +71,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
 
-        corsConfiguration.setAllowedOriginPatterns(List.of("*"));
+        corsConfiguration.setAllowedOrigins(List.of("http://localhost:3000"));
         corsConfiguration.addAllowedMethod("*");
         corsConfiguration.addAllowedHeader("*");
         corsConfiguration.setExposedHeaders(List.of("Authorization"));

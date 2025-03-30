@@ -5,12 +5,20 @@ import { Avatar } from '@mui/joy';
 
 import { Profile } from '~/components/Profile';
 import MyButton from '~/components/MyButton';
+import { useSelector } from 'react-redux';
+import colors from '~/components/AccountItem/colors';
 
 function MenuSidebar() {
+    const { profilePicture, firstName, lastName } = useSelector((state) => state.auth.data.data);
     const [isOpen, setIsOpen] = useState(false);
 
     const handleShowInfo = () => {
         setIsOpen(true);
+    };
+
+    const getRandomBackground = () => {
+        const randomIndex = Math.floor(Math.random() * colors.backgrounds.length);
+        return colors.backgrounds[randomIndex];
     };
 
     return (
@@ -18,10 +26,16 @@ function MenuSidebar() {
             <div className="pb-12">
                 <MyButton onClick={handleShowInfo}>
                     <Avatar
-                        alt="Remy Sharp"
-                        src="https://avatars.githubusercontent.com/u/166397227?u=b890f6ef06b108063dca01ecbd15bcf2e0cf46a1&v=4"
-                        sx={{ width: 50, height: 50 }}
-                    />
+                        alt={`${firstName || ''} ${lastName || ''}`}
+                        src={profilePicture}
+                        sx={{ width: 50, height: 50, background: getRandomBackground() }}
+                        onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = '';
+                        }}
+                    >
+                        <span className="text-white font-semibold text-xl">{firstName?.charAt(0).toUpperCase()}</span>
+                    </Avatar>
                 </MyButton>
             </div>
             <MyButton active>

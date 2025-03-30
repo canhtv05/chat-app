@@ -1,5 +1,6 @@
-import { Avatar } from '@mui/joy';
+import { Avatar, Tooltip } from '@mui/joy';
 import { CiSearch } from 'react-icons/ci';
+import { PiTagSimpleFill } from 'react-icons/pi';
 import { useSelector } from 'react-redux';
 
 import MyButton from '~/components/MyButton';
@@ -16,16 +17,30 @@ function ChatBoxHeader({ isOnline = false }) {
             <div className="flex w-full">
                 <div className="relative">
                     <Avatar
-                        alt="Remy Sharp"
-                        src="https://avatars.githubusercontent.com/u/166397227?u=b890f6ef06b108063dca01ecbd15bcf2e0cf46a1&v=4"
-                        sx={{ width: 50, height: 50 }}
-                    />
+                        variant="soft"
+                        alt={`${user?.firstName || ''} ${user?.lastName || ''}`}
+                        src={user?.profilePicture}
+                        sx={{
+                            width: 50,
+                            height: 50,
+                            background: data?.background,
+                        }}
+                        onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = '';
+                        }}
+                    >
+                        <span className="text-white font-semibold text-xl">
+                            <RenderIf value={chat?.isGroup}>{chat?.chatName?.charAt(0).toUpperCase()}</RenderIf>
+                            <RenderIf value={!chat?.isGroup}>{user?.firstName?.charAt(0).toUpperCase()}</RenderIf>
+                        </span>
+                    </Avatar>
                     {isOnline && (
                         <span className="bg-green-500 w-3 h-3 inline-block rounded-full absolute right-1 top-10"></span>
                     )}
                 </div>
-                <div className="flex justify-between items-center w-full h-full">
-                    <div className="ml-4 flex justify-between flex-col">
+                <div className="flex mt-1 justify-between items-center w-full h-full">
+                    <div className="ml-4 h-full flex justify-between flex-col">
                         <RenderIf value={!chat?.isGroup}>
                             <span className="text-text-bold font-semibold">{`${user?.firstName || ''} ${
                                 user?.lastName || ''
@@ -34,7 +49,9 @@ function ChatBoxHeader({ isOnline = false }) {
                         <RenderIf value={chat?.isGroup}>
                             <span className="text-text-bold font-semibold">{chat?.chatName || ''}</span>
                         </RenderIf>
-                        <span className="text-text-bold font-thin">4 hours ago //undefined</span>
+                        <Tooltip title={chat?.isGroup ? 'Group chat' : 'Single chat'} arrow placement="top">
+                            <PiTagSimpleFill className="mr-2 text-lg" color={chat?.isGroup ? 'orange' : 'green'} />
+                        </Tooltip>
                     </div>
                     <MyButton size="sm">
                         <CiSearch className="size-7 text-text-bold" />

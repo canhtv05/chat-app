@@ -1,8 +1,10 @@
-import { Avatar } from '@mui/joy';
+import { Avatar, AvatarGroup, Tooltip } from '@mui/joy';
 import PropTypes from 'prop-types';
 import { forwardRef, memo } from 'react';
-import RenderIf from '../RenderIf';
 import { useSelector } from 'react-redux';
+import { PiTagSimpleFill } from 'react-icons/pi';
+
+import RenderIf from '../RenderIf';
 import useTimeAgo from '~/hooks/useTimeAgo';
 
 const AccountItem = forwardRef(({ separator, isOnline, isActive, onClick, data, isSearchAccount = false }, ref) => {
@@ -22,11 +24,31 @@ const AccountItem = forwardRef(({ separator, isOnline, isActive, onClick, data, 
                 <div className={separator ? 'border-border border-b p-6' : 'p-6'}>
                     <div className="flex">
                         <div className="relative">
-                            <Avatar
-                                alt="Remy Sharp"
-                                src="https://avatars.githubusercontent.com/u/166397227?u=b890f6ef06b108063dca01ecbd15bcf2e0cf46a1&v=4"
-                                sx={{ width: 50, height: 50 }}
-                            />
+                            <AvatarGroup>
+                                <Avatar
+                                    variant="soft"
+                                    alt={`${user?.firstName || ''} ${user?.lastName || ''}`}
+                                    src={user?.profilePicture}
+                                    sx={{
+                                        width: 50,
+                                        height: 50,
+                                        background: data?.background,
+                                    }}
+                                    onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = '';
+                                    }}
+                                >
+                                    <span className="text-white font-semibold text-xl">
+                                        <RenderIf value={chat?.isGroup}>
+                                            {chat?.chatName?.charAt(0).toUpperCase()}
+                                        </RenderIf>
+                                        <RenderIf value={!chat?.isGroup}>
+                                            {user?.firstName?.charAt(0).toUpperCase()}
+                                        </RenderIf>
+                                    </span>
+                                </Avatar>
+                            </AvatarGroup>
                             {isOnline && (
                                 <span className="bg-green-500 w-3 h-3 inline-block rounded-full absolute right-1 top-10"></span>
                             )}
@@ -44,12 +66,24 @@ const AccountItem = forwardRef(({ separator, isOnline, isActive, onClick, data, 
                             {!isSearchAccount && (
                                 <div className="ml-4 mt-1 flex">
                                     <RenderIf value={lastMessage}>
-                                        <span className="text-text-light max-w-[100px] truncate inline-block">
-                                            <RenderIf value={currentUserId === lastMessage?.user?.id}>You</RenderIf>
-                                            <RenderIf value={currentUserId !== lastMessage?.user?.id}>
-                                                {lastMessage?.user?.firstName} {lastMessage?.user?.lastName}
-                                            </RenderIf>
-                                        </span>
+                                        <div className="text-text-light max-w-[120px] truncate inline-block">
+                                            <div className="flex justify-start items-center">
+                                                <Tooltip
+                                                    title={chat?.isGroup ? 'Group chat' : 'Single chat'}
+                                                    arrow
+                                                    placement="top"
+                                                >
+                                                    <PiTagSimpleFill
+                                                        className="mr-2"
+                                                        color={chat?.isGroup ? 'orange' : 'green'}
+                                                    />
+                                                </Tooltip>
+                                                <RenderIf value={currentUserId === lastMessage?.user?.id}>You</RenderIf>
+                                                <RenderIf value={currentUserId !== lastMessage?.user?.id}>
+                                                    {lastMessage?.user?.firstName} {lastMessage?.user?.lastName}
+                                                </RenderIf>
+                                            </div>
+                                        </div>
                                         <span className="inline-block text-text-light">:</span>
                                         <span className="ml-2 text-text-light max-w-[145px] truncate inline-block">
                                             {lastMessage?.content}

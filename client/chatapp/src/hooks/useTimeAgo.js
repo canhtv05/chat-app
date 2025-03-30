@@ -34,6 +34,10 @@ const useTimeAgo = (timestamp) => {
             } else if (seconds < 86400) {
                 const hours = Math.floor(seconds / 3600);
                 setTimeAgo(`${hours}h ago`);
+            } else if (seconds < 86400 * 2) {
+                setTimeAgo(`2 days ago`);
+            } else if (seconds < 86400 * 3) {
+                setTimeAgo(`3 days ago`);
             } else {
                 setTimeAgo(formatDate(timestamp));
             }

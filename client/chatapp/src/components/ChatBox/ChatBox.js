@@ -1,5 +1,10 @@
-import { useContext, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { Client, Stomp } from '@stomp/stompjs';
+
+// import Stomp from 'stompjs';
+// import SockJS from 'sockjs-client/dist/sockjs';
+import SockJS from 'sockjs-client';
 
 import RenderIf from '../RenderIf';
 import icons from '~/assets/icons';
@@ -9,10 +14,12 @@ import ChatBoxFooter from './ChatBoxFooter';
 import { ChatCardContext } from '~/contexts/ChatCardProvider';
 import { getAllMessagesFromChat, sendMessage } from '~/services/message/messageService';
 import { createSingleChat } from '~/services/chat/chatService';
+import cookieUtil from '~/utils/cookieUtils';
 
 function ChatBox() {
     const { currentChat } = useContext(ChatCardContext);
     const { id: targetId, isSearch, idUser } = useSelector((state) => state.chat.data);
+    const idChatOfUser = useSelector((state) => state.chat.idChatOfUser);
     const { id: currentUserId } = useSelector((state) => state.auth.data.data);
 
     const [dataMessage, setDataMessage] = useState([]);
@@ -20,16 +27,128 @@ function ChatBox() {
     const [isChatCreated, setIsChatCreated] = useState(false);
     const [chatId, setChatId] = useState(''); // id string
 
+    const [stompClient, setStompClient] = useState();
+    const [isConnected, setIsConnected] = useState(false);
+
+    const getCookie = (name) => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) {
+            return parts.pop().split(';').shift();
+        }
+    };
+
+    const getIdChatByUserId = useCallback(
+        (userId) => {
+            return idChatOfUser[userId] || null;
+        },
+        [idChatOfUser],
+    );
+
+    const connect = useCallback(() => {
+        const sock = new SockJS('http://localhost:1710/api/ws');
+        const client = new Client({
+            webSocketFactory: () => sock,
+            reconnectDelay: 5000,
+            debug: (str) => console.log(str),
+            connectHeaders: {
+                Authorization: `Bearer ${cookieUtil.getStorage()?.accessToken}`,
+                'X-XSRF-TOKEN': getCookie('XSRF-TOKEN'),
+            },
+            onConnect: () => {
+                console.log('Connected to WebSocket');
+                setIsConnected(true);
+            },
+            onStompError: (error) => {
+                console.error('STOMP Error:', error);
+                setIsConnected(false);
+            },
+            onDisconnect: () => {
+                console.log('Disconnected from WebSocket');
+                setIsConnected(false);
+            },
+        });
+
+        client.activate();
+        setStompClient(client);
+
+        return () => {
+            client.deactivate();
+            setStompClient(null);
+            setIsConnected(false);
+        };
+    }, []);
+
+    // useEffect(() => {
+    //     if (message && stompClient) {
+    //         setDataMessage((prev) => [...prev, message]);
+    //         stompClient?.send('/app/message', {}, JSON.stringify(message));
+    //     }
+    // }, [message, stompClient]);
+
+    // useEffect(() => {
+    //     setMessage(message);
+    // }, [message]);
+
+    const onMessageReceive = useCallback(
+        (payload) => {
+            const received = JSON.parse(payload.body);
+
+            console.log('receive message: ', received);
+            // setDataMessage((prev) => [...prev, received]);
+            console.log(received?.userId, currentUserId);
+            if (received?.userId !== currentUserId) {
+                setDataMessage((prev) => [...prev, received]);
+            }
+        },
+        [currentUserId],
+    );
+
     useEffect(() => {
-        if (!targetId || isSearch) {
+        if (!isConnected || !stompClient || !currentChat) return;
+
+        let idChat = targetId;
+        if (isSearch) {
+            idChat = getIdChatByUserId(targetId); // targetId is currently userId
+        }
+
+        if (isConnected && stompClient && currentChat) {
+            const subscription = stompClient.subscribe(`/group/${idChat}`, onMessageReceive);
+
+            return () => {
+                if (stompClient && stompClient.connected) {
+                    subscription?.unsubscribe();
+                }
+            };
+        }
+    }, [isConnected, currentChat, stompClient, getIdChatByUserId, isSearch, targetId, onMessageReceive]);
+
+    useEffect(() => {
+        const cleanup = connect();
+        return cleanup;
+    }, [connect]);
+
+    // useEffect(() => {
+    //     setDataMessage(message.dataMessage);
+    // }, [message.dataMessage]);
+
+    useEffect(() => {
+        let idChat = targetId;
+        if (!targetId) {
             setDataMessage([]);
             setIsChatCreated(false);
             return;
         }
+
+        if (isSearch) {
+            idChat = getIdChatByUserId(targetId); // targetId is currently userId
+        }
+
         const fetchApi = async () => {
-            const [error, data] = await getAllMessagesFromChat(targetId);
+            const [error, data] = await getAllMessagesFromChat(idChat);
             if (error) {
                 setDataMessage([]);
+                console.log(error);
                 return;
             }
             setIsChatCreated(true);
@@ -37,22 +156,17 @@ function ChatBox() {
             setDataMessage(data.data);
         };
         fetchApi();
-    }, [targetId, isSearch]);
+    }, [targetId, isSearch, getIdChatByUserId]);
 
-    useEffect(() => {
-        console.log(idUser);
-    }, [idUser]);
-
-    const handleSendMessage = async () => {
+    const handleSendMessage = useCallback(async () => {
         if (!content.trim() || !targetId) return;
 
         let currentChatId = chatId;
 
         if (!isChatCreated) {
             const [error, result] = await createSingleChat(idUser);
-            console.log(result);
             if (error) {
-                console.error('Failed to create chat');
+                console.error('Failed to create chat:', error);
                 return;
             }
             setIsChatCreated(true);
@@ -60,15 +174,31 @@ function ChatBox() {
             setChatId(currentChatId);
         }
 
-        const [errorSendMsg, resultSendMsg] = await sendMessage({ chatId: currentChatId, content });
-        if (errorSendMsg) {
-            console.error('Failed to send message');
-            return;
-        }
+        const messagePayload = {
+            chatId: currentChatId,
+            content: content,
+            userId: currentUserId,
+        };
 
-        setDataMessage((prev) => [...prev, resultSendMsg.data]);
-        setContent('');
-    };
+        // Hiển thị tin nhắn ngay lập tức trên giao diện của người gửi
+        const localMessage = {
+            chatId: currentChatId,
+            content: content,
+            user: { id: currentUserId },
+        };
+        setDataMessage((prev) => [...prev, localMessage]);
+
+        // Gửi tin nhắn qua WebSocket
+        if (stompClient && isConnected) {
+            stompClient.publish({
+                destination: '/app/message',
+                body: JSON.stringify(messagePayload),
+            });
+            setContent('');
+        } else {
+            console.error('WebSocket not connected');
+        }
+    }, [chatId, content, idUser, isChatCreated, stompClient, targetId, currentUserId, isConnected]);
 
     return (
         <div className="absolute top-0 left-0 w-full h-full bg-background">
@@ -82,11 +212,16 @@ function ChatBox() {
             <RenderIf value={currentChat}>
                 <div className="flex flex-col h-full">
                     <div className="shrink-0">
-                        <ChatBoxHeader isOnline />
+                        <ChatBoxHeader />
                     </div>
-                    <div className="flex-1 overflow-hidden">
+                    <div className="flex-1 overflow-hidden py-3">
                         <div className="px-10 h-full overflow-y-auto">
                             <div className="space-y-1 flex flex-col mt-2">
+                                <RenderIf value={dataMessage.length === 0}>
+                                    <p className="p-5 text-text-light font-semibold text-center">
+                                        No messages here. Why not send one 😀?
+                                    </p>
+                                </RenderIf>
                                 {dataMessage.map((data, index) => (
                                     <MessageCard
                                         key={index}
