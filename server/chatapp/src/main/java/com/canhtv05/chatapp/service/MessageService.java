@@ -4,14 +4,13 @@ import com.canhtv05.chatapp.dto.response.MessageResponse;
 import com.canhtv05.chatapp.dto.resquest.SendMessageRequest;
 import com.canhtv05.chatapp.entity.Message;
 import com.canhtv05.chatapp.entity.User;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
 
 public interface MessageService {
 
     MessageResponse sendMessage(SendMessageRequest request);
 
-    List<MessageResponse> getChatsMessages(String chatId, User userRequest);
+    Page<MessageResponse> getChatsMessages(String chatId, User userRequest, Integer page, Integer size);
 
     Message findMessageById(String messageId, User userRequest);
 

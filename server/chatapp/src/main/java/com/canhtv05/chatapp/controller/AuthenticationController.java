@@ -12,17 +12,25 @@ import com.canhtv05.chatapp.entity.User;
 import com.canhtv05.chatapp.mapper.UserMapper;
 import com.canhtv05.chatapp.service.AuthenticationService;
 import com.canhtv05.chatapp.service.UserService;
+import com.canhtv05.chatapp.utils.JwtUtil;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
+import java.util.Map;
 
 
+@Slf4j
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
@@ -44,7 +52,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login")
-    public ApiResponse<?> login(@RequestBody AuthenticationRequest request, HttpServletResponse response){
+    public ApiResponse<?> login(@RequestBody AuthenticationRequest request, HttpServletResponse response) throws UnsupportedEncodingException {
         LoginResponse loginResponse = authenticationService.login(request, response);
         User user = userService.findUserById(loginResponse.getUserId());
         UserDetailResponse userResponse = userMapper.toUserResponse(user);
@@ -70,8 +78,17 @@ public class AuthenticationController {
     }
 
     @PostMapping("/refresh-token")
-    public ApiResponse<?> refreshToken(@CookieValue(name = "refreshToken") String refreshToken) throws ParseException {
-        var data = authenticationService.refreshToken(refreshToken);
+    public ApiResponse<?> refreshToken(@CookieValue(name = "MY_CHAT_APP") String cookieValue,
+                                       HttpServletResponse response) throws ParseException, JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, String> tokenData = objectMapper.readValue(cookieValue, Map.class);
+
+        String refreshToken = tokenData.get("refreshToken");
+
+        log.info("cookie value: {}", cookieValue);
+        log.info("refreshToken: {}", refreshToken);
+
+        var data = authenticationService.refreshToken(refreshToken, response);
         return ApiResponse.builder()
                 .message("Refresh token successful!")
                 .data(data)

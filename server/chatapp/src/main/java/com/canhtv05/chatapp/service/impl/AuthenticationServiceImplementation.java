@@ -10,7 +10,9 @@ import com.canhtv05.chatapp.exception.ErrorCode;
 import com.canhtv05.chatapp.repository.UserRepository;
 import com.canhtv05.chatapp.service.AuthenticationService;
 import com.canhtv05.chatapp.service.RedisService;
-import com.canhtv05.chatapp.util.JwtUtil;
+import com.canhtv05.chatapp.utils.JwtUtil;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -18,6 +20,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
@@ -27,6 +30,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -41,6 +46,9 @@ public class AuthenticationServiceImplementation implements AuthenticationServic
     AuthenticationManager authenticationManager;
     JwtUtil jwtUtil;
     RedisService redisService;
+
+    @Value("${app.name}")
+    private static String KEY;
 
     @Override
     public LoginResponse login(AuthenticationRequest request, HttpServletResponse response) {
@@ -61,13 +69,7 @@ public class AuthenticationServiceImplementation implements AuthenticationServic
         user.setRefreshToken(refreshToken);
         userRepository.save(user);
 
-        Cookie cookie = new Cookie("refreshToken", refreshToken);
-        cookie.setHttpOnly(true);
-        cookie.setMaxAge(jwtUtil.getRefreshableDuration().intValue()); // 2 weeks
-        cookie.setPath("/");
-        cookie.setSecure(true); // true nếu chỉ cho gửi qua HTTPS
-        cookie.setDomain("localhost");
-
+        Cookie cookie = setCookie(accessToken, refreshToken);
         response.addCookie(cookie);
 
         return LoginResponse.builder()
@@ -78,7 +80,6 @@ public class AuthenticationServiceImplementation implements AuthenticationServic
                 .userId(user.getId())
                 .build();
     }
-
 
     @Override
     public void logout(String accessToken, HttpServletResponse response) throws ParseException {
@@ -100,7 +101,7 @@ public class AuthenticationServiceImplementation implements AuthenticationServic
                 user.setRefreshToken(null);
                 userRepository.save(user);
 
-                deleteRefreshToken(response);
+                deleteCookie(response);
 
                 SecurityContextHolder.clearContext();
             } catch (ParseException e) {
@@ -110,7 +111,7 @@ public class AuthenticationServiceImplementation implements AuthenticationServic
     }
 
     @Override
-    public RefreshTokenResponse refreshToken(String refreshToken) throws ParseException {
+    public RefreshTokenResponse refreshToken(String refreshToken, HttpServletResponse response) throws ParseException {
         if (StringUtils.isBlank(refreshToken)) {
             throw new AppException(ErrorCode.REFRESH_TOKEN_INVALID);
         }
@@ -130,14 +131,51 @@ public class AuthenticationServiceImplementation implements AuthenticationServic
 
         String accessToken = tokenProvider.generateAccessToken(user);
         String generateRefreshToken = tokenProvider.generateRefreshToken(user);
+
+        Cookie cookie = setCookie(accessToken, generateRefreshToken);
+        response.addCookie(cookie);
+
+        user.setRefreshToken(generateRefreshToken);
+        userRepository.save(user);
+
         return RefreshTokenResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(generateRefreshToken)
                 .build();
     }
 
-    private void deleteRefreshToken(HttpServletResponse response) {
-        Cookie cookie = new Cookie("refreshToken", "");
+    private Cookie setCookie(String accessToken, String refreshToken) {
+        Map<String, String> tokenData = new HashMap<>();
+        tokenData.put("accessToken", accessToken);
+        tokenData.put("refreshToken", refreshToken);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonData;
+
+        try {
+            jsonData = objectMapper.writeValueAsString(tokenData);
+        } catch (JsonProcessingException | AppException e) {
+            throw new AppException(ErrorCode.JSON_PROCESSING_ERROR);
+        }
+
+        // replace các kí tự sao cho giống với thư viện js-cookie
+        // https://www.npmjs.com/package/js-cookie
+        String formattedJsonData = jsonData.replace("\"", "%22").replace(",", "%2C");
+
+        Cookie cookie = new Cookie("MY_CHAT_APP", formattedJsonData);
+        // cookie.setHttpOnly(true);
+
+        // cho phép lấy cookie từ phía client
+        cookie.setHttpOnly(false);
+        cookie.setMaxAge(jwtUtil.getRefreshableDuration().intValue()); // 2 weeks
+        cookie.setPath("/");
+        cookie.setSecure(true); // true nếu chỉ cho gửi qua HTTPS
+        cookie.setDomain("localhost");
+        return cookie;
+    }
+
+    public void deleteCookie(HttpServletResponse response) {
+        Cookie cookie = new Cookie(KEY, "");
         cookie.setHttpOnly(true);
         cookie.setMaxAge(0);
         cookie.setPath("/");

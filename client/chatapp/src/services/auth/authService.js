@@ -20,7 +20,7 @@ export const updateCurrentUser = async (data) => {
     return [error, result];
 };
 
-export const refreshTokenRequest = async (refreshToken) => {
-    const [error, result] = await handlerRequest(httpRequest.post('/auth/refresh-token', { refreshToken }));
+export const refreshTokenRequest = async () => {
+    const [error, result] = await handlerRequest(httpRequest.post('/auth/refresh-token'));
     return [error, result];
 };

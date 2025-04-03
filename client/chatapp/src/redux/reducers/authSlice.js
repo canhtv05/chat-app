@@ -76,15 +76,7 @@ const authSlice = createSlice({
             .addCase(signIn.pending, (state) => {
                 state.loading = true;
             })
-            .addCase(signIn.fulfilled, (state, action) => {
-                const { accessToken, refreshToken } = action.payload?.meta?.tokenInfo;
-                if (accessToken) {
-                    const dataStorage = {
-                        accessToken,
-                        refreshToken,
-                    };
-                    cookieUtil.setStorage(dataStorage, { expires: 14 });
-                }
+            .addCase(signIn.fulfilled, (state) => {
                 state.error = null;
                 state.loading = false;
             })

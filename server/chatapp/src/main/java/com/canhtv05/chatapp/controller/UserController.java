@@ -4,11 +4,9 @@ import com.canhtv05.chatapp.common.Links;
 import com.canhtv05.chatapp.common.Meta;
 import com.canhtv05.chatapp.common.Pagination;
 import com.canhtv05.chatapp.dto.ApiResponse;
-import com.canhtv05.chatapp.dto.response.UserDetailResponse;
 import com.canhtv05.chatapp.dto.response.UserResponse;
-import com.canhtv05.chatapp.entity.User;
 import com.canhtv05.chatapp.service.UserService;
-import com.canhtv05.chatapp.util.BuildPageUrl;
+import com.canhtv05.chatapp.utils.BuildPageUrl;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -32,10 +30,6 @@ public class UserController {
                                                                                 "1", required = false) int page,
                                                                         @RequestParam(value = "size", defaultValue =
                                                                                 "10", required = false) int size) {
-        if (page < 1) page = 1;
-        if (size < 1) size = 10;
-        if (size > 100) size = 100;
-
         Page<UserResponse> userPage = userService.searchUserByFullNameOrEmail(query, page, size);
         List<UserResponse> users = userPage.getContent();
 

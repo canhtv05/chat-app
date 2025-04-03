@@ -1,11 +1,7 @@
-import { useCallback, useContext, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { Client, Stomp } from '@stomp/stompjs';
-
-// import Stomp from 'stompjs';
-// import SockJS from 'sockjs-client/dist/sockjs';
+import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
-
 import RenderIf from '../RenderIf';
 import icons from '~/assets/icons';
 import ChatBoxHeader from './ChatBoxHeader';
@@ -22,51 +18,36 @@ function ChatBox() {
     const idChatOfUser = useSelector((state) => state.chat.idChatOfUser);
     const { id: currentUserId } = useSelector((state) => state.auth.data.data);
 
+    const lastMessageRef = useRef(null);
+    const observer = useRef(null);
+    const firstMessageItemRef = useRef(null);
+    const isInitialFetch = useRef(true);
+
     const [dataMessage, setDataMessage] = useState([]);
     const [content, setContent] = useState('');
     const [isChatCreated, setIsChatCreated] = useState(false);
-    const [chatId, setChatId] = useState(''); // id string
+    const [chatId, setChatId] = useState('');
+    const [shouldScrollToBottom, setShouldScrollToBottom] = useState(true);
+    const [loading, setLoading] = useState(false);
+    const [page, setPage] = useState(-1);
+    const [hasMore, setHasMore] = useState(true);
 
     const [stompClient, setStompClient] = useState();
     const [isConnected, setIsConnected] = useState(false);
 
-    const getCookie = (name) => {
-        const value = `; ${document.cookie}`;
-        const parts = value.split(`; ${name}=`);
-        if (parts.length === 2) {
-            return parts.pop().split(';').shift();
-        }
-    };
-
-    const getIdChatByUserId = useCallback(
-        (userId) => {
-            return idChatOfUser[userId] || null;
-        },
-        [idChatOfUser],
-    );
+    const getIdChatByUserId = useCallback((userId) => idChatOfUser[userId] || null, [idChatOfUser]);
 
     const connect = useCallback(() => {
         const sock = new SockJS('http://localhost:1710/api/ws');
         const client = new Client({
             webSocketFactory: () => sock,
             reconnectDelay: 5000,
-            debug: (str) => console.log(str),
             connectHeaders: {
                 Authorization: `Bearer ${cookieUtil.getStorage()?.accessToken}`,
-                'X-XSRF-TOKEN': getCookie('XSRF-TOKEN'),
             },
-            onConnect: () => {
-                console.log('Connected to WebSocket');
-                setIsConnected(true);
-            },
-            onStompError: (error) => {
-                console.error('STOMP Error:', error);
-                setIsConnected(false);
-            },
-            onDisconnect: () => {
-                console.log('Disconnected from WebSocket');
-                setIsConnected(false);
-            },
+            onConnect: () => setIsConnected(true),
+            onStompError: () => setIsConnected(false),
+            onDisconnect: () => setIsConnected(false),
         });
 
         client.activate();
@@ -79,24 +60,9 @@ function ChatBox() {
         };
     }, []);
 
-    // useEffect(() => {
-    //     if (message && stompClient) {
-    //         setDataMessage((prev) => [...prev, message]);
-    //         stompClient?.send('/app/message', {}, JSON.stringify(message));
-    //     }
-    // }, [message, stompClient]);
-
-    // useEffect(() => {
-    //     setMessage(message);
-    // }, [message]);
-
     const onMessageReceive = useCallback(
         (payload) => {
             const received = JSON.parse(payload.body);
-
-            console.log('receive message: ', received);
-            // setDataMessage((prev) => [...prev, received]);
-            console.log(received?.userId, currentUserId);
             if (received?.userId !== currentUserId) {
                 setDataMessage((prev) => [...prev, received]);
             }
@@ -107,18 +73,11 @@ function ChatBox() {
     useEffect(() => {
         if (!isConnected || !stompClient || !currentChat) return;
 
-        let idChat = targetId;
-        if (isSearch) {
-            idChat = getIdChatByUserId(targetId); // targetId is currently userId
-        }
-
+        let idChat = isSearch ? getIdChatByUserId(targetId) : targetId;
         if (isConnected && stompClient && currentChat) {
             const subscription = stompClient.subscribe(`/group/${idChat}`, onMessageReceive);
-
             return () => {
-                if (stompClient && stompClient.connected) {
-                    subscription?.unsubscribe();
-                }
+                if (stompClient && stompClient.connected) subscription?.unsubscribe();
             };
         }
     }, [isConnected, currentChat, stompClient, getIdChatByUserId, isSearch, targetId, onMessageReceive]);
@@ -128,35 +87,79 @@ function ChatBox() {
         return cleanup;
     }, [connect]);
 
-    // useEffect(() => {
-    //     setDataMessage(message.dataMessage);
-    // }, [message.dataMessage]);
+    const fetchMessages = useCallback(
+        async (currentPage) => {
+            if (!targetId || loading) return;
+
+            let idChat = isSearch ? getIdChatByUserId(targetId) : targetId;
+            console.log('Gọi API với idChat:', idChat, 'page:', currentPage);
+            setLoading(true);
+            const [error, data] = await getAllMessagesFromChat(idChat, currentPage === -1 ? null : currentPage);
+            setLoading(false);
+
+            if (error) {
+                console.log('Lỗi khi lấy tin nhắn:', error);
+                return;
+            }
+
+            if (data) {
+                setIsChatCreated(true);
+                setChatId(targetId);
+                setDataMessage((prev) => (currentPage === -1 ? data.data : [...data.data, ...prev]));
+                setHasMore(data?.meta?.pagination?.currentPage > 1);
+
+                if (isInitialFetch.current) {
+                    setPage(data?.meta?.pagination?.currentPage || -1);
+                    isInitialFetch.current = false;
+                }
+            }
+        },
+        [targetId, isSearch, getIdChatByUserId, loading],
+    );
 
     useEffect(() => {
-        let idChat = targetId;
         if (!targetId) {
             setDataMessage([]);
             setIsChatCreated(false);
+            setHasMore(false);
+            setLoading(false);
+            setPage(-1);
+            isInitialFetch.current = true;
             return;
         }
 
-        if (isSearch) {
-            idChat = getIdChatByUserId(targetId); // targetId is currently userId
+        fetchMessages(-1);
+    }, [targetId, fetchMessages]);
+
+    useEffect(() => {
+        if (page === -1 || loading || !hasMore || isInitialFetch.current) return;
+        fetchMessages(page);
+    }, [page, fetchMessages, hasMore, loading]);
+
+    useEffect(() => {
+        if (!hasMore || loading) return;
+
+        if (observer.current) observer.current.disconnect();
+        observer.current = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting && hasMore && !loading) {
+                setPage((prev) => prev - 1);
+            }
+        });
+
+        if (firstMessageItemRef.current) {
+            observer.current.observe(firstMessageItemRef.current);
         }
 
-        const fetchApi = async () => {
-            const [error, data] = await getAllMessagesFromChat(idChat);
-            if (error) {
-                setDataMessage([]);
-                console.log(error);
-                return;
-            }
-            setIsChatCreated(true);
-            setChatId(targetId);
-            setDataMessage(data.data);
+        return () => {
+            if (observer.current) observer.current.disconnect();
         };
-        fetchApi();
-    }, [targetId, isSearch, getIdChatByUserId]);
+    }, [hasMore, loading]);
+
+    useEffect(() => {
+        if (lastMessageRef.current && shouldScrollToBottom) {
+            lastMessageRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
+    }, [dataMessage, shouldScrollToBottom]);
 
     const handleSendMessage = useCallback(async () => {
         if (!content.trim() || !targetId) return;
@@ -174,13 +177,6 @@ function ChatBox() {
             setChatId(currentChatId);
         }
 
-        const messagePayload = {
-            chatId: currentChatId,
-            content: content,
-            userId: currentUserId,
-        };
-
-        // Hiển thị tin nhắn ngay lập tức trên giao diện của người gửi
         const localMessage = {
             chatId: currentChatId,
             content: content,
@@ -188,16 +184,21 @@ function ChatBox() {
         };
         setDataMessage((prev) => [...prev, localMessage]);
 
-        // Gửi tin nhắn qua WebSocket
         if (stompClient && isConnected) {
             stompClient.publish({
                 destination: '/app/message',
-                body: JSON.stringify(messagePayload),
+                body: JSON.stringify({
+                    chatId: currentChatId,
+                    content: content,
+                    userId: currentUserId,
+                }),
             });
             setContent('');
-        } else {
-            console.error('WebSocket not connected');
         }
+
+        const request = { chatId: currentChatId, content };
+        sendMessage(request);
+        setShouldScrollToBottom(true);
     }, [chatId, content, idUser, isChatCreated, stompClient, targetId, currentUserId, isConnected]);
 
     return (
@@ -215,20 +216,42 @@ function ChatBox() {
                         <ChatBoxHeader />
                     </div>
                     <div className="flex-1 overflow-hidden py-3">
-                        <div className="px-10 h-full overflow-y-auto">
+                        <div className="px-10 h-full overflow-y-auto scroll-smooth">
                             <div className="space-y-1 flex flex-col mt-2">
                                 <RenderIf value={dataMessage.length === 0}>
                                     <p className="p-5 text-text-light font-semibold text-center">
                                         No messages here. Why not send one 😀?
                                     </p>
                                 </RenderIf>
-                                {dataMessage.map((data, index) => (
-                                    <MessageCard
-                                        key={index}
-                                        isMe={currentUserId === dataMessage[index]?.user?.id}
-                                        content={data?.content}
-                                    />
-                                ))}
+                                {dataMessage.map((data, index) => {
+                                    if (index === dataMessage.length - 1) {
+                                        return (
+                                            <MessageCard
+                                                ref={lastMessageRef}
+                                                key={index}
+                                                isMe={currentUserId === dataMessage[index]?.user?.id}
+                                                content={data?.content}
+                                            />
+                                        );
+                                    } else if (index === 0) {
+                                        return (
+                                            <MessageCard
+                                                ref={firstMessageItemRef}
+                                                key={index}
+                                                isMe={currentUserId === dataMessage[index]?.user?.id}
+                                                content={data?.content}
+                                            />
+                                        );
+                                    } else {
+                                        return (
+                                            <MessageCard
+                                                key={index}
+                                                isMe={currentUserId === dataMessage[index]?.user?.id}
+                                                content={data?.content}
+                                            />
+                                        );
+                                    }
+                                })}
                             </div>
                         </div>
                     </div>

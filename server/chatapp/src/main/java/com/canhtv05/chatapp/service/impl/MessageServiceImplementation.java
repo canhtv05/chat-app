@@ -16,13 +16,17 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -56,27 +60,27 @@ public class MessageServiceImplementation implements MessageService {
     }
 
     @Override
-    public List<MessageResponse> getChatsMessages(String chatId, User userRequest) {
+    public Page<MessageResponse> getChatsMessages(String chatId, User userRequest, Integer page, Integer size) {
+        if (size < 1) size = 20;
+        if (size > 100) size = 100;
+
+        long totalMessages = messageRepository.countByChatId(chatId);
+        int totalPages = (int) Math.ceil((double) totalMessages / size);
+
         Chat chat = chatService.findChatById(chatId);
 
-        log.info("1: {}, 2: {}, 3: {}", !chat.getUsers().contains(userRequest),
-                !chat.getAdmins().contains(userRequest), !chat.getCreatedBy().equals(userRequest));
+        int pageIndex = (Objects.isNull(page) || page < 1) ? Math.max(totalPages - 1, 0) : page - 1;
 
-        log.info("email: {}",userRequest.getEmail());
-
-        log.info("o: {}", chat.getUsers().stream()
-                .map(User::getEmail)  // Lấy email của từng user
-                .collect(Collectors.toList())); // Chuyển thành danh sách
-
+        Sort sort = Sort.by(Sort.Direction.ASC, "timestamp");
+        Pageable pageable = PageRequest.of(pageIndex, size, sort);
 
         if (!chat.getUsers().contains(userRequest) && !chat.getAdmins().contains(userRequest) && !chat.getCreatedBy().equals(userRequest)) {
             throw new AppException(ErrorCode.NOT_RELATED_TO_CHAT);
         }
 
-        return messageRepository.findByChatId(chatId).stream()
-                .map(messageMapper::toMessageResponse)
-                .sorted(Comparator.comparing(MessageResponse::getTimestamp))
-                .toList();
+        Page<Message> messagePage = messageRepository.findByChatId(chatId, pageable);
+
+        return messagePage.map(messageMapper::toMessageResponse);
     }
 
     @Override

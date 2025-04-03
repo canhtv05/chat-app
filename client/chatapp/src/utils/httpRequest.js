@@ -59,13 +59,17 @@ httpRequest.interceptors.response.use(
 
         const getRefreshToken = cookieUtil.getStorage()?.refreshToken;
 
-        if (error.response?.data?.code === 401) {
+        console.log(cookieUtil.getStorage());
+
+        if (error.response?.data?.code === 401 && !originalRequest._retry) {
+            originalRequest._retry = true;
+
             try {
                 if (!getRefreshToken) {
                     throw new Error('No refresh token available');
                 }
 
-                const [refreshError, refreshData] = await refreshTokenRequest(getRefreshToken);
+                const [refreshError, refreshData] = await refreshTokenRequest();
 
                 if (refreshError) {
                     cookieUtil.deleteStorage();

@@ -88,6 +88,10 @@ public class UserServiceImplementation implements UserService {
 
     @Override
     public Page<UserResponse> searchUserByFullNameOrEmail(String query, int page, int size) {
+        if (page < 1) page = 1;
+        if (size < 1) size = 10;
+        if (size > 100) size = 100;
+
         User user = this.getCurrentUser();
 
         if (StringUtils.isEmpty(query) || query.length() > 100 || query.startsWith(" ")) {
