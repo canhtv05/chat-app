@@ -1,19 +1,26 @@
 import { Avatar, AvatarGroup, Tooltip } from '@mui/joy';
 import PropTypes from 'prop-types';
-import { forwardRef, memo } from 'react';
+import { forwardRef, memo, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { PiTagSimpleFill } from 'react-icons/pi';
 
 import RenderIf from '../RenderIf';
 import useTimeAgo from '~/hooks/useTimeAgo';
+import useKeyValue from '~/hooks/useKeyValue';
 
 const AccountItem = forwardRef(({ separator, isOnline, isActive, onClick, data, isSearchAccount = false }, ref) => {
     const { id: currentUserId } = useSelector((state) => state.auth.data.data);
+    const lastMessages = useSelector((state) => state.chat.lastMessages);
     const user = isSearchAccount ? data : data?.users.find((user) => user.id !== currentUserId);
     const chat = isSearchAccount ? null : data;
-    const lastMessage = chat?.lastMessage;
 
+    const last = useKeyValue(lastMessages, {});
+    const lastMessage = last(chat?.id);
     const timeAgo = useTimeAgo(lastMessage?.timestamp || '');
+
+    useEffect(() => {
+        console.log(lastMessage);
+    }, [lastMessage]);
 
     return (
         <div ref={ref}>
@@ -66,7 +73,7 @@ const AccountItem = forwardRef(({ separator, isOnline, isActive, onClick, data, 
                             {!isSearchAccount && (
                                 <div className="ml-4 mt-1 flex">
                                     <RenderIf value={lastMessage}>
-                                        <div className="text-text-light max-w-[120px] truncate inline-block">
+                                        <div className="text-text-light">
                                             <div className="flex justify-start items-center">
                                                 <Tooltip
                                                     title={chat?.isGroup ? 'Group chat' : 'Single chat'}
@@ -80,12 +87,20 @@ const AccountItem = forwardRef(({ separator, isOnline, isActive, onClick, data, 
                                                 </Tooltip>
                                                 <RenderIf value={currentUserId === lastMessage?.user?.id}>You</RenderIf>
                                                 <RenderIf value={currentUserId !== lastMessage?.user?.id}>
-                                                    {lastMessage?.user?.firstName} {lastMessage?.user?.lastName}
+                                                    <span className="max-w-[120px] truncate inline-block">
+                                                        {lastMessage?.user?.firstName} {lastMessage?.user?.lastName}
+                                                    </span>
                                                 </RenderIf>
                                             </div>
                                         </div>
                                         <span className="inline-block text-text-light">:</span>
-                                        <span className="ml-2 text-text-light max-w-[145px] truncate inline-block">
+                                        <span
+                                            className={`ml-2 text-text-light truncate inline-block ${
+                                                currentUserId === lastMessage?.user?.id
+                                                    ? 'max-w-[210px]'
+                                                    : 'max-w-[120px]'
+                                            }`}
+                                        >
                                             {lastMessage?.content}
                                         </span>
                                     </RenderIf>

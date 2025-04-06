@@ -1,10 +1,10 @@
 package com.canhtv05.chatapp.entity;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @AllArgsConstructor
@@ -21,7 +21,7 @@ public class Message extends AbstractEntity<String> {
     String content;
 
     @Column(name = "timestamp", nullable = false)
-    LocalDateTime timestamp;
+    Instant timestamp;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)

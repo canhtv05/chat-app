@@ -23,6 +23,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -52,7 +53,7 @@ public class MessageServiceImplementation implements MessageService {
         Message message = Message.builder()
                 .chat(chat)
                 .user(user)
-                .timestamp(LocalDateTime.now())
+                .timestamp(Instant.now())
                 .content(request.getContent())
                 .build();
 

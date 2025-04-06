@@ -4,7 +4,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Data
 @AllArgsConstructor
@@ -15,7 +15,7 @@ public class MessageResponse implements Serializable {
 
     String id;
     String content;
-    LocalDateTime timestamp;
+    Instant timestamp;
     UserResponse user;
     String chatId;
 }

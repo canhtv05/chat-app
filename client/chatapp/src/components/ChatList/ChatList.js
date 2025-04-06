@@ -11,10 +11,15 @@ import useDebounce from '~/hooks/useDebounce';
 import { searchUser } from '~/services/user/userService';
 import RenderIf from '../RenderIf';
 import { useDispatch, useSelector } from 'react-redux';
-import { setIdChatOfUser, setInfoCurrentChat } from '~/redux/reducers/chatSlice';
+import { setIdChatOfUser, setInfoCurrentChat, setLastMessage } from '~/redux/reducers/chatSlice';
 import { getAllMyChats } from '~/services/chat/chatService';
 import { getAllMessagesFromChat } from '~/services/message/messageService';
 import colors from '../AccountItem/colors';
+
+const getRandomBackground = () => {
+    const randomIndex = Math.floor(Math.random() * colors.backgrounds.length);
+    return colors.backgrounds[randomIndex];
+};
 
 function ChatList() {
     const dispatch = useDispatch();
@@ -26,7 +31,6 @@ function ChatList() {
     const [isShowModalAddGroup, setIsShowModalAddGroup] = useState(false);
     const [searchRes, setSearchRes] = useState([]);
     const [chats, setChats] = useState([]);
-    const [lastMessages, setLastMessages] = useState({});
 
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
@@ -36,11 +40,6 @@ function ChatList() {
 
     const debounceValue = useDebounce(query, 500);
     const { setCurrentChat } = useContext(ChatCardContext);
-
-    const getRandomBackground = () => {
-        const randomIndex = Math.floor(Math.random() * colors.backgrounds.length);
-        return colors.backgrounds[randomIndex];
-    };
 
     useEffect(() => {
         setPage(1);
@@ -87,7 +86,7 @@ function ChatList() {
                     initialLastMessages[chatsData[i].id] = result.data[result.data.length - 1];
                 }
             }
-            setLastMessages(initialLastMessages);
+            dispatch(setLastMessage(initialLastMessages));
         };
 
         fetchApi();
@@ -230,7 +229,7 @@ function ChatList() {
                             separator={index !== chats.length - 1}
                             isActive={index === activeIndex}
                             onClick={() => handleClick(index, chat)}
-                            data={{ ...chat, lastMessage: lastMessages[chat.id] }}
+                            data={chat}
                         />
                     ))}
                 </RenderIf>

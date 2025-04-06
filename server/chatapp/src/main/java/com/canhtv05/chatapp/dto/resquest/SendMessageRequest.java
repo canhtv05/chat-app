@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.io.Serializable;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -19,4 +20,5 @@ public class SendMessageRequest implements Serializable {
 
     @NotBlank(message = "Content can't be blank")
     String content;
+    Instant timestamp;
 }

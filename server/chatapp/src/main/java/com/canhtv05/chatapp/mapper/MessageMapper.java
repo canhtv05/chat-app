@@ -9,6 +9,7 @@ import org.mapstruct.Mapping;
 public interface MessageMapper {
 
     @Mapping(target = "chatId", source = "chat.id")
+    @Mapping(target = "timestamp", source = "timestamp")
     MessageResponse toMessageResponse(Message message);
 
 }

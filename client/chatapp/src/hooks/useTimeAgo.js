@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 const getTimeDifferenceInSeconds = (timestamp) => {
     const now = new Date();
     const past = new Date(timestamp);
+    // console.log('Now:', now, 'Past:', past);
     const diffInMs = now - past;
     return Math.floor(diffInMs / 1000);
 };
@@ -19,6 +20,7 @@ const formatDate = (timestamp) => {
 };
 
 const useTimeAgo = (timestamp) => {
+    // console.log(timestamp);
     const [timeAgo, setTimeAgo] = useState('');
 
     useEffect(() => {
@@ -28,6 +30,7 @@ const useTimeAgo = (timestamp) => {
             if (seconds < 60) {
                 // setTimeAgo(`${seconds}s ago`);
                 setTimeAgo('now');
+                // console.log('second: ', seconds);
             } else if (seconds < 3600) {
                 const minutes = Math.floor(seconds / 60);
                 setTimeAgo(`${minutes}m ago`);

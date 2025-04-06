@@ -1,13 +1,15 @@
 import { useSelector } from 'react-redux';
 import images from '~/assets/images';
+import useWindowSize from '~/hooks/useWindowSize';
 
 function DefaultLayout({ children }) {
     const isAuth = useSelector((state) => state.auth.isAuth);
+    const { width } = useWindowSize();
 
     return (
         <div className="relative">
             <img src={images.background} alt="div" className="w-full h-screen object-cover" />
-            <div className="flex w-full top-0 left-0 absolute h-full p-10">
+            <div className={`flex w-full top-0 left-0 absolute h-full ${width < 1024 ? 'p-5' : 'p-10'}`}>
                 <div
                     className={`${
                         isAuth && 'border-border border'

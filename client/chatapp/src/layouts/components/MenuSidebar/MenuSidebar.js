@@ -1,6 +1,6 @@
 import { BsChatText } from 'react-icons/bs';
 import { IoSettingsOutline } from 'react-icons/io5';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Avatar } from '@mui/joy';
 
 import { Profile } from '~/components/Profile';
@@ -16,10 +16,10 @@ function MenuSidebar() {
         setIsOpen(true);
     };
 
-    const getRandomBackground = () => {
+    const background = useMemo(() => {
         const randomIndex = Math.floor(Math.random() * colors.backgrounds.length);
         return colors.backgrounds[randomIndex];
-    };
+    }, []);
 
     return (
         <div className="bg-background px-2 h-full pt-9 pb-10 flex flex-col justify-between items-center border-r border-border">
@@ -28,7 +28,7 @@ function MenuSidebar() {
                     <Avatar
                         alt={`${firstName || ''} ${lastName || ''}`}
                         src={profilePicture}
-                        sx={{ width: 50, height: 50, background: getRandomBackground() }}
+                        sx={{ width: 50, height: 50, background: background }}
                         onError={(e) => {
                             e.target.onerror = null;
                             e.target.src = '';

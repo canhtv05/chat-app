@@ -1,7 +1,8 @@
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
+
 import RenderIf from '../RenderIf';
 import icons from '~/assets/icons';
 import ChatBoxHeader from './ChatBoxHeader';
@@ -11,12 +12,15 @@ import { ChatCardContext } from '~/contexts/ChatCardProvider';
 import { getAllMessagesFromChat, sendMessage } from '~/services/message/messageService';
 import { createSingleChat } from '~/services/chat/chatService';
 import cookieUtil from '~/utils/cookieUtils';
+import useKeyValue from '~/hooks/useKeyValue';
+import { updateLastMessage } from '~/redux/reducers/chatSlice';
 
 function ChatBox() {
+    const dispatch = useDispatch();
     const { currentChat } = useContext(ChatCardContext);
     const { id: targetId, isSearch, idUser } = useSelector((state) => state.chat.data);
     const idChatOfUser = useSelector((state) => state.chat.idChatOfUser);
-    const { id: currentUserId } = useSelector((state) => state.auth.data.data);
+    const { id: currentUserId, firstName, lastName } = useSelector((state) => state.auth.data.data);
 
     const lastMessageRef = useRef(null);
     const observer = useRef(null);
@@ -37,7 +41,7 @@ function ChatBox() {
     const [stompClient, setStompClient] = useState();
     const [isConnected, setIsConnected] = useState(false);
 
-    const getIdChatByUserId = useCallback((userId) => idChatOfUser[userId] || null, [idChatOfUser]);
+    const getIdChatByUserId = useKeyValue(idChatOfUser, null);
 
     const connect = useCallback(() => {
         const sock = new SockJS('http://localhost:1710/api/ws');
@@ -65,11 +69,13 @@ function ChatBox() {
     const onMessageReceive = useCallback(
         (payload) => {
             const received = JSON.parse(payload.body);
-            if (received?.userId !== currentUserId) {
+            if (received?.user?.id !== currentUserId) {
                 setDataMessage((prev) => [...prev, received]);
             }
+            // console.log('Received message:', received);
+            dispatch(updateLastMessage(received));
         },
-        [currentUserId],
+        [currentUserId, dispatch],
     );
 
     useEffect(() => {
@@ -94,6 +100,9 @@ function ChatBox() {
             if (!targetId || loading) return;
 
             let idChat = isSearch ? getIdChatByUserId(targetId) : targetId;
+            if (!idChat) {
+                return;
+            }
             setLoading(true);
 
             const scrollContainer = containerRef.current;
@@ -198,11 +207,18 @@ function ChatBox() {
             setChatId(currentChatId);
         }
 
+        const timestamp = new Date().toISOString();
+
         const localMessage = {
             chatId: currentChatId,
             content: content,
-            user: { id: currentUserId },
+            user: { id: currentUserId, firstName, lastName },
+            timestamp,
         };
+
+        // console.log('local: ', localMessage);
+
+        dispatch(updateLastMessage(localMessage));
         setDataMessage((prev) => [...prev, localMessage]);
 
         if (stompClient && isConnected) {
@@ -212,15 +228,28 @@ function ChatBox() {
                     chatId: currentChatId,
                     content: content,
                     userId: currentUserId,
+                    timestamp,
                 }),
             });
             setContent('');
         }
 
         const request = { chatId: currentChatId, content };
-        sendMessage(request);
         setShouldScrollToBottom(true);
-    }, [chatId, content, idUser, isChatCreated, stompClient, targetId, currentUserId, isConnected]);
+        sendMessage(request);
+    }, [
+        chatId,
+        content,
+        idUser,
+        isChatCreated,
+        stompClient,
+        targetId,
+        currentUserId,
+        isConnected,
+        dispatch,
+        firstName,
+        lastName,
+    ]);
 
     return (
         <div className="absolute top-0 left-0 w-full h-full bg-background">

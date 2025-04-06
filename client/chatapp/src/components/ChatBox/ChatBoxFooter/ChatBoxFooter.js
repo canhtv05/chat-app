@@ -30,6 +30,32 @@ function ChatBoxFooter({ content, setContent, onSend }) {
         [setContent, onSend],
     );
 
+    const handleOnEmojiClick = useCallback(
+        (emojiData, event) => {
+            const textarea = textAreaRef.current;
+            if (!textarea) return;
+
+            const { selectionStart, selectionEnd, value } = textarea;
+            const emoji = emojiData?.emoji;
+
+            const newContent = value.slice(0, selectionStart) + emoji + value.slice(selectionEnd);
+
+            setContent(newContent);
+
+            const timeout = setTimeout(() => {
+                // update cursor position
+                const pos = selectionStart + emoji.length;
+                textarea.focus();
+                textarea.setSelectionRange(pos, pos);
+            }, 0);
+
+            return () => {
+                clearTimeout(timeout);
+            };
+        },
+        [setContent],
+    );
+
     return (
         <div
             className={`p-5 relative flex ${
@@ -49,7 +75,7 @@ function ChatBoxFooter({ content, setContent, onSend }) {
                 <MyButton size="sm" onClick={() => setOpenEmoji((prev) => !prev)}>
                     <CiFaceSmile className="size-7 text-text-bold cursor-pointer" />
                 </MyButton>
-                <MyButton size="sm">
+                <MyButton size="sm" onClick={() => onSend()}>
                     <IoIosSend className="size-7 text-text-bold cursor-pointer rotate-45" />
                 </MyButton>
             </div>
@@ -63,6 +89,7 @@ function ChatBoxFooter({ content, setContent, onSend }) {
                             }}
                             emojiStyle="facebook"
                             open={openEmoji}
+                            onEmojiClick={handleOnEmojiClick}
                         />
                     </div>
                 </RenderIf>

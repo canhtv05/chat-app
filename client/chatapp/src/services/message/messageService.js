@@ -13,7 +13,6 @@ export const getAllMessagesFromChat = async (chatId, page) => {
 
 export const sendMessage = async (request) => {
     // request = {chatId, content}
-    console.log(request);
     const [error, result] = await handlerRequest(httpRequest.post('/messages/send', request));
     return [error, result];
 };

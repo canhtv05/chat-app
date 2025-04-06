@@ -1,7 +1,7 @@
 import Home from '~/pages/Home';
-import Message from '~/pages/Message';
 import Auth from '~/pages/Auth';
 import config from '~/configs';
+import Chat from '~/pages/Chat';
 
 const publicRoutes = [
     {
@@ -16,8 +16,8 @@ const publicRoutes = [
 
 const privateRoutes = [
     {
-        path: config.routes.messages,
-        component: Message,
+        path: config.routes.chats,
+        component: Chat,
     },
 ];
 

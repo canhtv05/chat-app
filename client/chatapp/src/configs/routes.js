@@ -1,6 +1,6 @@
 const routes = {
     home: '/',
-    messages: '/messages',
+    chats: '/chats',
     login: '/login',
 };
 

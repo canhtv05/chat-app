@@ -28,15 +28,17 @@ public class RealtimeChatController {
 
     @MessageMapping("/message")
 //    @SendTo("/group/public")
-    public MessageResponse receiveMessage(@Payload SendMessageRequest request) {
-        simpMessagingTemplate.convertAndSend("/group/" + request.getChatId(), request);
+    public void receiveMessage(@Payload SendMessageRequest request) {
 
         User user = userService.findUserById(request.getUserId());
 
-        return MessageResponse.builder()
+        var response =  MessageResponse.builder()
                 .chatId(request.getChatId())
                 .content(request.getContent())
                 .user(userMapper.toUser(user))
+                .timestamp(request.getTimestamp())
                 .build();
+
+        simpMessagingTemplate.convertAndSend("/group/" + request.getChatId(), response);
     }
 }

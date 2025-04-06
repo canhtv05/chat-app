@@ -1,10 +1,10 @@
 import Container from '~/layouts/components/Container';
 import MenuSidebar from '~/layouts/components/MenuSidebar';
 
-function Message() {
+function Chat() {
     return (
         <>
-            <div className="left w-[5%]">
+            <div className="left w-[78px]">
                 <MenuSidebar />
             </div>
             <div className="right w-full">
@@ -14,4 +14,4 @@ function Message() {
     );
 }
 
-export default Message;
+export default Chat;
