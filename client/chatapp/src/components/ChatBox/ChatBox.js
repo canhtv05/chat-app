@@ -21,7 +21,9 @@ function ChatBox() {
     const lastMessageRef = useRef(null);
     const observer = useRef(null);
     const firstMessageItemRef = useRef(null);
+    const containerRef = useRef(null);
     const isInitialFetch = useRef(true);
+    const prevPage = useRef(-1);
 
     const [dataMessage, setDataMessage] = useState([]);
     const [content, setContent] = useState('');
@@ -92,8 +94,12 @@ function ChatBox() {
             if (!targetId || loading) return;
 
             let idChat = isSearch ? getIdChatByUserId(targetId) : targetId;
-            console.log('Gọi API với idChat:', idChat, 'page:', currentPage);
             setLoading(true);
+
+            const scrollContainer = containerRef.current;
+            const scrollHeightBefore = scrollContainer ? scrollContainer.scrollHeight : 0;
+            const scrollTopBefore = scrollContainer ? scrollContainer.scrollTop : 0;
+
             const [error, data] = await getAllMessagesFromChat(idChat, currentPage === -1 ? null : currentPage);
             setLoading(false);
 
@@ -106,15 +112,25 @@ function ChatBox() {
                 setIsChatCreated(true);
                 setChatId(targetId);
                 setDataMessage((prev) => (currentPage === -1 ? data.data : [...data.data, ...prev]));
-                setHasMore(data?.meta?.pagination?.currentPage > 1);
+                const currentPageFromApi = data?.meta?.pagination?.currentPage || 1;
+                setHasMore(currentPageFromApi > 1);
 
-                if (isInitialFetch.current) {
-                    setPage(data?.meta?.pagination?.currentPage || -1);
-                    isInitialFetch.current = false;
+                if (isInitialFetch.current || prevPage.current !== currentPageFromApi) {
+                    setPage(currentPageFromApi);
+                    prevPage.current = currentPageFromApi;
                 }
+
+                if (!isInitialFetch.current && scrollContainer) {
+                    requestAnimationFrame(() => {
+                        const scrollHeightAfter = scrollContainer.scrollHeight;
+                        scrollContainer.scrollTop = scrollTopBefore + (scrollHeightAfter - scrollHeightBefore);
+                    });
+                }
+                isInitialFetch.current = false;
             }
         },
-        [targetId, isSearch, getIdChatByUserId, loading],
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [targetId, isSearch, getIdChatByUserId],
     );
 
     useEffect(() => {
@@ -125,30 +141,35 @@ function ChatBox() {
             setLoading(false);
             setPage(-1);
             isInitialFetch.current = true;
+            prevPage.current = -1;
             return;
         }
-
         fetchMessages(-1);
     }, [targetId, fetchMessages]);
 
     useEffect(() => {
-        if (page === -1 || loading || !hasMore || isInitialFetch.current) return;
+        // ngan call api vo han voi prev page
+        if (page === -1 || loading || !hasMore || page === prevPage.current) return;
         fetchMessages(page);
     }, [page, fetchMessages, hasMore, loading]);
 
     useEffect(() => {
-        if (!hasMore || loading) return;
+        if (!hasMore || loading || !firstMessageItemRef.current) return;
 
         if (observer.current) observer.current.disconnect();
-        observer.current = new IntersectionObserver((entries) => {
-            if (entries[0].isIntersecting && hasMore && !loading) {
-                setPage((prev) => prev - 1);
-            }
-        });
+        observer.current = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && hasMore && !loading) {
+                    setPage((prev) => {
+                        const nextPage = prev - 1;
+                        return nextPage >= 1 ? nextPage : prev;
+                    });
+                }
+            },
+            { threshold: 0.1 },
+        );
 
-        if (firstMessageItemRef.current) {
-            observer.current.observe(firstMessageItemRef.current);
-        }
+        observer.current.observe(firstMessageItemRef.current);
 
         return () => {
             if (observer.current) observer.current.disconnect();
@@ -216,7 +237,7 @@ function ChatBox() {
                         <ChatBoxHeader />
                     </div>
                     <div className="flex-1 overflow-hidden py-3">
-                        <div className="px-10 h-full overflow-y-auto scroll-smooth">
+                        <div className="px-10 h-full overflow-y-auto scroll-smooth" ref={containerRef}>
                             <div className="space-y-1 flex flex-col mt-2">
                                 <RenderIf value={dataMessage.length === 0}>
                                     <p className="p-5 text-text-light font-semibold text-center">
@@ -224,33 +245,17 @@ function ChatBox() {
                                     </p>
                                 </RenderIf>
                                 {dataMessage.map((data, index) => {
-                                    if (index === dataMessage.length - 1) {
-                                        return (
-                                            <MessageCard
-                                                ref={lastMessageRef}
-                                                key={index}
-                                                isMe={currentUserId === dataMessage[index]?.user?.id}
-                                                content={data?.content}
-                                            />
-                                        );
-                                    } else if (index === 0) {
-                                        return (
-                                            <MessageCard
-                                                ref={firstMessageItemRef}
-                                                key={index}
-                                                isMe={currentUserId === dataMessage[index]?.user?.id}
-                                                content={data?.content}
-                                            />
-                                        );
-                                    } else {
-                                        return (
-                                            <MessageCard
-                                                key={index}
-                                                isMe={currentUserId === dataMessage[index]?.user?.id}
-                                                content={data?.content}
-                                            />
-                                        );
-                                    }
+                                    const isLast = index === dataMessage.length - 1;
+                                    const isFirst = index === 0;
+
+                                    return (
+                                        <MessageCard
+                                            key={index}
+                                            ref={isFirst ? firstMessageItemRef : isLast ? lastMessageRef : null}
+                                            isMe={currentUserId === data?.user?.id}
+                                            content={data?.content}
+                                        />
+                                    );
                                 })}
                             </div>
                         </div>
