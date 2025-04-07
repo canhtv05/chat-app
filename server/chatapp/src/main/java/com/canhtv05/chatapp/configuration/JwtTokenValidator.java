@@ -1,32 +1,29 @@
 package com.canhtv05.chatapp.configuration;
 
-import com.canhtv05.chatapp.entity.User;
-import com.canhtv05.chatapp.exception.AppException;
-import com.canhtv05.chatapp.exception.ErrorCode;
-import com.canhtv05.chatapp.service.CustomUserDetailService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nimbusds.jose.JOSEException;
+import java.io.IOException;
+import java.text.ParseException;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
+
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import com.canhtv05.chatapp.entity.User;
+import com.canhtv05.chatapp.exception.AppException;
+import com.canhtv05.chatapp.exception.ErrorCode;
+import com.canhtv05.chatapp.service.CustomUserDetailService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
 @Component
 @RequiredArgsConstructor
@@ -38,8 +35,8 @@ public class JwtTokenValidator extends OncePerRequestFilter {
     ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
         String header = request.getHeader(HttpHeaders.AUTHORIZATION);
 
         if (header == null || !header.startsWith("Bearer ")) {
@@ -63,8 +60,8 @@ public class JwtTokenValidator extends OncePerRequestFilter {
 
         User user = customUserDetailService.loadUserByUsername(email);
 
-        var usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(user, null,
-                user.getAuthorities());
+        var usernamePasswordAuthenticationToken =
+                new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
         usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
         filterChain.doFilter(request, response);

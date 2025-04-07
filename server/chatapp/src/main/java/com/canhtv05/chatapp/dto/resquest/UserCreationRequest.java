@@ -1,15 +1,17 @@
 package com.canhtv05.chatapp.dto.resquest;
 
-import com.canhtv05.chatapp.common.Gender;
-import com.canhtv05.chatapp.validator.DobConstraint;
+import java.io.Serializable;
+import java.time.LocalDate;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+
+import com.canhtv05.chatapp.common.Gender;
+import com.canhtv05.chatapp.validator.DobConstraint;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.io.Serializable;
-import java.time.LocalDate;
 
 @AllArgsConstructor
 @NoArgsConstructor

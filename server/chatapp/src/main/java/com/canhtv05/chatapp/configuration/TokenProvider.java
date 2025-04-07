@@ -1,5 +1,12 @@
 package com.canhtv05.chatapp.configuration;
 
+import java.text.ParseException;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+
+import org.springframework.stereotype.Service;
+
 import com.canhtv05.chatapp.entity.User;
 import com.canhtv05.chatapp.exception.AppException;
 import com.canhtv05.chatapp.exception.ErrorCode;
@@ -10,17 +17,12 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+
 import io.micrometer.common.util.StringUtils;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-
-import java.text.ParseException;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
 
 @Slf4j
 @Service
@@ -37,8 +39,14 @@ public class TokenProvider {
     public String generateAccessToken(User user) {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS256);
 
-        JWTClaimsSet jwtClaimsSet =
-                new JWTClaimsSet.Builder().subject(user.getId()).issuer(ISSUER).issueTime(Date.from(Instant.now())).expirationTime(Date.from(Instant.now().plus(jwtUtil.getValidDuration(), ChronoUnit.SECONDS))).claim(EMAIL_CLAIM, user.getEmail()).jwtID(UUID.randomUUID().toString()).build();
+        JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
+                .subject(user.getId())
+                .issuer(ISSUER)
+                .issueTime(Date.from(Instant.now()))
+                .expirationTime(Date.from(Instant.now().plus(jwtUtil.getValidDuration(), ChronoUnit.SECONDS)))
+                .claim(EMAIL_CLAIM, user.getEmail())
+                .jwtID(UUID.randomUUID().toString())
+                .build();
 
         Payload payload = new Payload(jwtClaimsSet.toJSONObject());
         JWSObject jwsObject = new JWSObject(header, payload);
@@ -54,8 +62,16 @@ public class TokenProvider {
     public String generateRefreshToken(User user) {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS256);
 
-        var claimsSet =
-                new JWTClaimsSet.Builder().subject(user.getId()).issuer(ISSUER).issueTime(Date.from(Instant.now())).expirationTime(new Date(Instant.now().plus(jwtUtil.getRefreshableDuration(), ChronoUnit.SECONDS).toEpochMilli())).claim(EMAIL_CLAIM, user.getEmail()).jwtID(UUID.randomUUID().toString()).build();
+        var claimsSet = new JWTClaimsSet.Builder()
+                .subject(user.getId())
+                .issuer(ISSUER)
+                .issueTime(Date.from(Instant.now()))
+                .expirationTime(new Date(Instant.now()
+                        .plus(jwtUtil.getRefreshableDuration(), ChronoUnit.SECONDS)
+                        .toEpochMilli()))
+                .claim(EMAIL_CLAIM, user.getEmail())
+                .jwtID(UUID.randomUUID().toString())
+                .build();
 
         var payload = new Payload(claimsSet.toJSONObject());
         JWSObject jwsObject = new JWSObject(header, payload);
@@ -83,7 +99,8 @@ public class TokenProvider {
                 throw new AppException(ErrorCode.UNAUTHORIZED);
             }
 
-            if (StringUtils.isNotBlank(redisService.get(signedJWT.getJWTClaimsSet().getJWTID()))) {
+            if (StringUtils.isNotBlank(
+                    redisService.get(signedJWT.getJWTClaimsSet().getJWTID()))) {
                 throw new AppException(ErrorCode.TOKEN_BLACKLISTED);
             }
             return signedJWT;

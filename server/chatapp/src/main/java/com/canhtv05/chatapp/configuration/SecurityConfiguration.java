@@ -1,8 +1,7 @@
 package com.canhtv05.chatapp.configuration;
 
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
@@ -22,7 +21,9 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.List;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
 @EnableJpaAuditing
 @Configuration
@@ -34,20 +35,19 @@ public class SecurityConfiguration {
     UserDetailsService userDetailsService;
 
     private static final String[] PUBLIC_ENDPOINTS = {
-        "/auth/login", "/auth/logout", "/auth/refresh-token", "/auth/register","users/search", "/ws/**"
+        "/auth/login", "/auth/logout", "/auth/refresh-token", "/auth/register", "users/search", "/ws/**"
     };
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+        http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
-                        .anyRequest().authenticated())
+                .authorizeHttpRequests(auth -> auth.requestMatchers(PUBLIC_ENDPOINTS)
+                        .permitAll()
+                        .anyRequest()
+                        .authenticated())
                 .addFilterBefore(jwtTokenValidator, UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint(new JwtAuthenticationEntryPoint()))
+                .exceptionHandling(exception -> exception.authenticationEntryPoint(new JwtAuthenticationEntryPoint()))
                 .csrf(AbstractHttpConfigurer::disable);
 
         return http.build();
@@ -55,7 +55,8 @@ public class SecurityConfiguration {
 
     // config authentication
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+            throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
@@ -88,5 +89,4 @@ public class SecurityConfiguration {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(10);
     }
-
 }

@@ -1,11 +1,11 @@
 package com.canhtv05.chatapp.entity;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.*;
+
 import jakarta.persistence.*;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.util.*;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -27,8 +27,7 @@ public class Chat extends AbstractEntity<String> {
     @JoinTable(
             name = "chat_admins",
             joinColumns = @JoinColumn(name = "chat_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
+            inverseJoinColumns = @JoinColumn(name = "user_id"))
     Set<User> admins = new HashSet<>();
 
     @Column(name = "is_group", nullable = false)
@@ -43,8 +42,7 @@ public class Chat extends AbstractEntity<String> {
     @JoinTable(
             name = "chat_users",
             joinColumns = @JoinColumn(name = "chat_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
+            inverseJoinColumns = @JoinColumn(name = "user_id"))
     Set<User> users = new HashSet<>();
 
     @Builder.Default
@@ -55,12 +53,12 @@ public class Chat extends AbstractEntity<String> {
     public boolean equals(Object object) {
         if (object == null || getClass() != object.getClass()) return false;
         Chat chat = (Chat) object;
-        return Objects.equals(chatName, chat.chatName) &&
-                Objects.equals(chatImage, chat.chatImage) &&
-                Objects.equals(isGroup, chat.isGroup) &&
-                Objects.equals(createdBy, chat.createdBy) &&
-                Objects.equals(users, chat.users) &&
-                Objects.equals(messages, chat.messages);
+        return Objects.equals(chatName, chat.chatName)
+                && Objects.equals(chatImage, chat.chatImage)
+                && Objects.equals(isGroup, chat.isGroup)
+                && Objects.equals(createdBy, chat.createdBy)
+                && Objects.equals(users, chat.users)
+                && Objects.equals(messages, chat.messages);
     }
 
     @Override

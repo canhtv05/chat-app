@@ -1,13 +1,13 @@
 package com.canhtv05.chatapp.dto.resquest;
 
+import java.io.Serializable;
+import java.util.List;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
-
-import java.io.Serializable;
-import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor

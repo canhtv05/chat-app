@@ -7,10 +7,12 @@ import { Profile } from '~/components/Profile';
 import MyButton from '~/components/MyButton';
 import { useSelector } from 'react-redux';
 import colors from '~/components/AccountItem/colors';
+import useWindowSize from '~/hooks/useWindowSize';
 
-function MenuSidebar() {
+function MenuSidebar({ setShowChatList }) {
     const { profilePicture, firstName, lastName } = useSelector((state) => state.auth.data.data);
     const [isOpen, setIsOpen] = useState(false);
+    const { width } = useWindowSize();
 
     const handleShowInfo = () => {
         setIsOpen(true);
@@ -20,6 +22,16 @@ function MenuSidebar() {
         const randomIndex = Math.floor(Math.random() * colors.backgrounds.length);
         return colors.backgrounds[randomIndex];
     }, []);
+
+    const handleToggleChatList = () => {
+        if (width < 1024) {
+            // Chỉ toggle khi width < 1024
+            setShowChatList((prev) => {
+                console.log('MenuSidebar - Toggling showChatList, prev:', prev, 'new:', !prev);
+                return !prev;
+            });
+        }
+    };
 
     return (
         <div className="bg-background px-2 h-full pt-9 pb-10 flex flex-col justify-between items-center border-r border-border">
@@ -38,7 +50,7 @@ function MenuSidebar() {
                     </Avatar>
                 </MyButton>
             </div>
-            <MyButton active>
+            <MyButton active onClick={handleToggleChatList}>
                 <BsChatText className="size-8 text-text-bold" />
             </MyButton>
             <div className="mt-auto">

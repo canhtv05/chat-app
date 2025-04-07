@@ -1,5 +1,15 @@
 package com.canhtv05.chatapp.service.impl;
 
+import java.time.Instant;
+import java.util.Objects;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.canhtv05.chatapp.dto.response.MessageResponse;
 import com.canhtv05.chatapp.dto.resquest.SendMessageRequest;
 import com.canhtv05.chatapp.entity.Chat;
@@ -12,22 +22,11 @@ import com.canhtv05.chatapp.repository.MessageRepository;
 import com.canhtv05.chatapp.service.ChatService;
 import com.canhtv05.chatapp.service.MessageService;
 import com.canhtv05.chatapp.service.UserService;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
 
 @Slf4j
 @Service
@@ -46,7 +45,7 @@ public class MessageServiceImplementation implements MessageService {
 
         Chat chat = chatService.findChatById(request.getChatId());
 
-        if  (!chat.getUsers().contains(user) && !chat.getAdmins().contains(user)) {
+        if (!chat.getUsers().contains(user) && !chat.getAdmins().contains(user)) {
             throw new AppException(ErrorCode.NOT_RELATED_TO_CHAT);
         }
 
@@ -75,7 +74,9 @@ public class MessageServiceImplementation implements MessageService {
         Sort sort = Sort.by(Sort.Direction.ASC, "timestamp");
         Pageable pageable = PageRequest.of(pageIndex, size, sort);
 
-        if (!chat.getUsers().contains(userRequest) && !chat.getAdmins().contains(userRequest) && !chat.getCreatedBy().equals(userRequest)) {
+        if (!chat.getUsers().contains(userRequest)
+                && !chat.getAdmins().contains(userRequest)
+                && !chat.getCreatedBy().equals(userRequest)) {
             throw new AppException(ErrorCode.NOT_RELATED_TO_CHAT);
         }
 
@@ -86,11 +87,13 @@ public class MessageServiceImplementation implements MessageService {
 
     @Override
     public Message findMessageById(String messageId, User userRequest) {
-        Message message = messageRepository.findById(messageId)
-                .orElseThrow(() -> new AppException(ErrorCode.MESSAGE_NOT_FOUND));
+        Message message =
+                messageRepository.findById(messageId).orElseThrow(() -> new AppException(ErrorCode.MESSAGE_NOT_FOUND));
 
         Chat chat = message.getChat();
-        if (!chat.getUsers().contains(userRequest) && !chat.getAdmins().contains(userRequest) && !chat.getCreatedBy().equals(userRequest)) {
+        if (!chat.getUsers().contains(userRequest)
+                && !chat.getAdmins().contains(userRequest)
+                && !chat.getCreatedBy().equals(userRequest)) {
             throw new AppException(ErrorCode.NOT_RELATED_TO_CHAT);
         }
 

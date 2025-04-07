@@ -1,11 +1,11 @@
 package com.canhtv05.chatapp.entity;
 
+import java.time.Instant;
+
 import jakarta.persistence.*;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.time.Instant;
-import java.time.LocalDateTime;
 
 @AllArgsConstructor
 @NoArgsConstructor

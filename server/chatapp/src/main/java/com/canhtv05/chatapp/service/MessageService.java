@@ -1,10 +1,11 @@
 package com.canhtv05.chatapp.service;
 
+import org.springframework.data.domain.Page;
+
 import com.canhtv05.chatapp.dto.response.MessageResponse;
 import com.canhtv05.chatapp.dto.resquest.SendMessageRequest;
 import com.canhtv05.chatapp.entity.Message;
 import com.canhtv05.chatapp.entity.User;
-import org.springframework.data.domain.Page;
 
 public interface MessageService {
 

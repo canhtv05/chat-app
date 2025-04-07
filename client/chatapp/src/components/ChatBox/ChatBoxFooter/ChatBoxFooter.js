@@ -79,10 +79,11 @@ function ChatBoxFooter({ content, setContent, onSend }) {
                     <IoIosSend className="size-7 text-text-bold cursor-pointer rotate-45" />
                 </MyButton>
             </div>
-            <div className="absolute top-[-440px] right-[390px]">
+            <div className="absolute top-[-440px] right-[310px]">
                 <RenderIf value={openEmoji}>
                     <div className="absolute">
                         <EmojiPicker
+                            width={300}
                             theme={dataStorage?.theme === 'dark' ? 'dark' : 'light'}
                             previewConfig={{
                                 showPreview: false,

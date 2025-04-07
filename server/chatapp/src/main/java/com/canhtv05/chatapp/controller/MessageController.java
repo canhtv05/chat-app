@@ -1,5 +1,13 @@
 package com.canhtv05.chatapp.controller;
 
+import java.time.Instant;
+import java.util.List;
+import java.util.Objects;
+
+import jakarta.validation.Valid;
+
+import org.springframework.web.bind.annotation.*;
+
 import com.canhtv05.chatapp.common.Links;
 import com.canhtv05.chatapp.common.Meta;
 import com.canhtv05.chatapp.common.Pagination;
@@ -10,13 +18,10 @@ import com.canhtv05.chatapp.entity.User;
 import com.canhtv05.chatapp.service.MessageService;
 import com.canhtv05.chatapp.service.UserService;
 import com.canhtv05.chatapp.utils.BuildPageUrl;
-import jakarta.validation.Valid;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -33,19 +38,23 @@ public class MessageController {
         User user = userService.getCurrentUser();
 
         request.setUserId(user.getId());
+        Instant timestamp = null;
+
+        if (Objects.isNull(request.getTimestamp())) {
+            timestamp = Instant.now();
+            request.setTimestamp(timestamp);
+        }
 
         MessageResponse messageResponse = messageService.sendMessage(request);
 
-        return ApiResponse.<MessageResponse>builder()
-                .data(messageResponse)
-                .build();
+        return ApiResponse.<MessageResponse>builder().data(messageResponse).build();
     }
 
     @GetMapping("/chats/{chatId}")
-    public ApiResponse<List<MessageResponse>> getChatsMessages(@RequestParam(value = "page", required = false) Integer page,
-                                                               @RequestParam(value = "size", defaultValue = "20",
-                                                                       required = false) Integer size,
-                                                               @PathVariable String chatId) {
+    public ApiResponse<List<MessageResponse>> getChatsMessages(
+            @RequestParam(value = "page", required = false) Integer page,
+            @RequestParam(value = "size", defaultValue = "20", required = false) Integer size,
+            @PathVariable String chatId) {
         User user = userService.getCurrentUser();
 
         var messagesPage = messageService.getChatsMessages(chatId, user, page, size);
@@ -53,7 +62,7 @@ public class MessageController {
 
         String url = "/messages/" + chatId + "?page=%d&size=%d";
 
-        long currentPage = (long)messagesPage.getNumber() + 1;
+        long currentPage = (long) messagesPage.getNumber() + 1;
         long totalPages = messagesPage.getTotalPages();
 
         int safePage = (page == null || page < 1) ? (int) currentPage : page;
@@ -87,8 +96,6 @@ public class MessageController {
 
         messageService.deleteMessage(messageId, user);
 
-        return ApiResponse.<Void>builder()
-                .message("Message deleted")
-                .build();
+        return ApiResponse.<Void>builder().message("Message deleted").build();
     }
 }

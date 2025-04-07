@@ -1,11 +1,11 @@
 package com.canhtv05.chatapp.service;
 
+import java.util.List;
+
 import com.canhtv05.chatapp.dto.response.ChatResponse;
 import com.canhtv05.chatapp.dto.resquest.GroupChatCreationRequest;
 import com.canhtv05.chatapp.entity.Chat;
 import com.canhtv05.chatapp.entity.User;
-
-import java.util.List;
 
 public interface ChatService {
 

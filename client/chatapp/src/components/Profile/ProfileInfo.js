@@ -75,6 +75,7 @@ function ProfileInfo({ setIsShowEditForm }) {
         <>
             <div className="w-[450px] relative">
                 <img
+                    loading
                     src="https://images.all-free-download.com/images/graphicwebp/belgium_514505.webp"
                     alt="background"
                     className="bg-contain block w-[450px]"

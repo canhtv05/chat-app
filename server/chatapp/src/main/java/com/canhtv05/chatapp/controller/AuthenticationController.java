@@ -1,5 +1,14 @@
 package com.canhtv05.chatapp.controller;
 
+import java.io.UnsupportedEncodingException;
+import java.text.ParseException;
+import java.util.Map;
+
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.web.bind.annotation.*;
 
 import com.canhtv05.chatapp.common.Meta;
 import com.canhtv05.chatapp.dto.ApiResponse;
@@ -12,23 +21,13 @@ import com.canhtv05.chatapp.entity.User;
 import com.canhtv05.chatapp.mapper.UserMapper;
 import com.canhtv05.chatapp.service.AuthenticationService;
 import com.canhtv05.chatapp.service.UserService;
-import com.canhtv05.chatapp.utils.JwtUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
-import org.springframework.web.bind.annotation.*;
-
-import java.io.UnsupportedEncodingException;
-import java.text.ParseException;
-import java.util.Map;
-
 
 @Slf4j
 @RestController
@@ -52,15 +51,15 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login")
-    public ApiResponse<?> login(@RequestBody AuthenticationRequest request, HttpServletResponse response) throws UnsupportedEncodingException {
+    public ApiResponse<?> login(@RequestBody AuthenticationRequest request, HttpServletResponse response)
+            throws UnsupportedEncodingException {
         LoginResponse loginResponse = authenticationService.login(request, response);
         User user = userService.findUserById(loginResponse.getUserId());
         UserDetailResponse userResponse = userMapper.toUserResponse(user);
         loginResponse.setUserId(null);
 
-        Meta<LoginResponse> meta = Meta.<LoginResponse>builder()
-                .tokenInfo(loginResponse)
-                .build();
+        Meta<LoginResponse> meta =
+                Meta.<LoginResponse>builder().tokenInfo(loginResponse).build();
 
         return ApiResponse.builder()
                 .message("Login successful!")
@@ -70,16 +69,17 @@ public class AuthenticationController {
     }
 
     @PostMapping("/logout")
-    public ApiResponse<Void> logout(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, HttpServletResponse response) throws ParseException{
+    public ApiResponse<Void> logout(
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String token, HttpServletResponse response)
+            throws ParseException {
         authenticationService.logout(token, response);
-        return ApiResponse.<Void>builder()
-                .message("Logout successful!")
-                .build();
+        return ApiResponse.<Void>builder().message("Logout successful!").build();
     }
 
     @PostMapping("/refresh-token")
-    public ApiResponse<?> refreshToken(@CookieValue(name = "MY_CHAT_APP") String cookieValue,
-                                       HttpServletResponse response) throws ParseException, JsonProcessingException {
+    public ApiResponse<?> refreshToken(
+            @CookieValue(name = "MY_CHAT_APP") String cookieValue, HttpServletResponse response)
+            throws ParseException, JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         Map<String, String> tokenData = objectMapper.readValue(cookieValue, Map.class);
 

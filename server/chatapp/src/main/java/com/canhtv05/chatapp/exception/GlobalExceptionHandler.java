@@ -1,24 +1,22 @@
 package com.canhtv05.chatapp.exception;
 
-import com.canhtv05.chatapp.dto.ApiResponse;
-import com.nimbusds.jose.JOSEException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+
 import jakarta.validation.ConstraintViolation;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
-import java.text.ParseException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import com.canhtv05.chatapp.dto.ApiResponse;
+
+import lombok.extern.slf4j.Slf4j;
 
 @RestControllerAdvice
 @Slf4j
@@ -121,5 +119,4 @@ public class GlobalExceptionHandler {
         }
         return result;
     }
-
 }

@@ -1,5 +1,23 @@
 package com.canhtv05.chatapp.service.impl;
 
+import java.text.ParseException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+
 import com.canhtv05.chatapp.configuration.TokenProvider;
 import com.canhtv05.chatapp.dto.response.LoginResponse;
 import com.canhtv05.chatapp.dto.response.RefreshTokenResponse;
@@ -13,27 +31,12 @@ import com.canhtv05.chatapp.service.RedisService;
 import com.canhtv05.chatapp.utils.JwtUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.micrometer.common.util.StringUtils;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.InternalAuthenticationServiceException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
-
-import java.text.ParseException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
@@ -55,8 +58,7 @@ public class AuthenticationServiceImplementation implements AuthenticationServic
         Authentication authentication = null;
         try {
             authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-            );
+                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
             // not found account
         } catch (InternalAuthenticationServiceException | BadCredentialsException e) {
             throw new AppException(ErrorCode.INVALID_EMAIL_OR_PASSWORD);
@@ -84,8 +86,7 @@ public class AuthenticationServiceImplementation implements AuthenticationServic
     @Override
     public void logout(String accessToken, HttpServletResponse response) throws ParseException {
         String email = tokenProvider.verifyAndExtractEmail(accessToken);
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         long accessTokenExpired = tokenProvider.verifyAndExtractTokenExpired(accessToken);
         long currentTime = System.currentTimeMillis();
@@ -93,7 +94,8 @@ public class AuthenticationServiceImplementation implements AuthenticationServic
         // con han
         if (currentTime < accessTokenExpired) {
             try {
-                String jwtId = tokenProvider.verifyToken(accessToken).getJWTClaimsSet().getJWTID();
+                String jwtId =
+                        tokenProvider.verifyToken(accessToken).getJWTClaimsSet().getJWTID();
 
                 long ttl = accessTokenExpired - currentTime;
                 redisService.save(jwtId, accessToken, ttl, TimeUnit.MILLISECONDS);
@@ -117,8 +119,7 @@ public class AuthenticationServiceImplementation implements AuthenticationServic
         }
 
         String email = tokenProvider.verifyAndExtractEmail(refreshToken);
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         if (!Objects.equals(user.getRefreshToken(), refreshToken) || StringUtils.isBlank(user.getRefreshToken())) {
             throw new AppException(ErrorCode.REFRESH_TOKEN_INVALID);

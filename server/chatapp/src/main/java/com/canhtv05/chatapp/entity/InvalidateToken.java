@@ -1,14 +1,14 @@
 package com.canhtv05.chatapp.entity;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.Serializable;
+import java.util.Date;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.io.Serializable;
-import java.util.Date;
 
 @AllArgsConstructor
 @NoArgsConstructor

@@ -255,7 +255,7 @@ function ChatBox() {
         <div className="absolute top-0 left-0 w-full h-full bg-background">
             <RenderIf value={!currentChat}>
                 <div className="absolute top-1/4 left-1/2 transform -translate-x-1/2 -translate-y-1/4 flex flex-col items-center">
-                    <img className="object-cover w-[80%] h-[80%]" src={icons.meow} alt={Math.random(0, 100)} />
+                    <img loading className="object-cover w-[80%] h-[80%]" src={icons.meow} alt={Math.random(0, 100)} />
                     <span className="text-text-bold font-semibold">It looks a little quiet here...</span>
                     <span className="text-text-bold font-semibold">Start a new conversation and let's talk!</span>
                 </div>

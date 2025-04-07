@@ -1,11 +1,12 @@
 package com.canhtv05.chatapp.mapper;
 
+import org.mapstruct.*;
+
 import com.canhtv05.chatapp.dto.response.UserDetailResponse;
 import com.canhtv05.chatapp.dto.response.UserResponse;
 import com.canhtv05.chatapp.dto.resquest.UserCreationRequest;
 import com.canhtv05.chatapp.dto.resquest.UserUpdateRequest;
 import com.canhtv05.chatapp.entity.User;
-import org.mapstruct.*;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {

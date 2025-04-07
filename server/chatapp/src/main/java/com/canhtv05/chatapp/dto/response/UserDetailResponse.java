@@ -1,12 +1,13 @@
 package com.canhtv05.chatapp.dto.response;
 
-import com.canhtv05.chatapp.common.Gender;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
-
 import java.io.Serializable;
 import java.time.Instant;
 import java.time.LocalDate;
+
+import com.canhtv05.chatapp.common.Gender;
+
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @AllArgsConstructor
 @NoArgsConstructor

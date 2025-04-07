@@ -1,12 +1,14 @@
 package com.canhtv05.chatapp.service.impl;
 
+import org.springframework.stereotype.Service;
+
 import com.canhtv05.chatapp.entity.InvalidateToken;
 import com.canhtv05.chatapp.repository.InvalidateTokenRepository;
 import com.canhtv05.chatapp.service.InvalidateTokenService;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor

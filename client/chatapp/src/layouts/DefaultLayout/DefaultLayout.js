@@ -9,7 +9,7 @@ function DefaultLayout({ children }) {
     return (
         <div className="relative">
             <img src={images.background} alt="div" className="w-full h-screen object-cover" />
-            <div className={`flex w-full top-0 left-0 absolute h-full ${width < 1024 ? 'p-5' : 'p-10'}`}>
+            <div className={`flex w-full top-0 left-0 absolute h-full ${width < 1024 ? 'p-2' : 'p-10'}`}>
                 <div
                     className={`${
                         isAuth && 'border-border border'
@@ -17,6 +17,7 @@ function DefaultLayout({ children }) {
                 >
                     {isAuth && (
                         <img
+                            loading
                             src={images.background}
                             alt="div"
                             className="w-full h-full object-cover absolute blur-lg z-0"

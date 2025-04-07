@@ -1,5 +1,13 @@
 package com.canhtv05.chatapp.service.impl;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.canhtv05.chatapp.dto.response.ChatResponse;
 import com.canhtv05.chatapp.dto.resquest.GroupChatCreationRequest;
 import com.canhtv05.chatapp.entity.Chat;
@@ -10,17 +18,11 @@ import com.canhtv05.chatapp.mapper.ChatMapper;
 import com.canhtv05.chatapp.repository.ChatRepository;
 import com.canhtv05.chatapp.service.ChatService;
 import com.canhtv05.chatapp.service.UserService;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 
 @Slf4j
 @Service
@@ -53,8 +55,7 @@ public class ChatServiceImplementation implements ChatService {
 
     @Override
     public Chat findChatById(String chatId) {
-        return chatRepository.findById(chatId)
-                .orElseThrow(() -> new AppException(ErrorCode.CHAT_NOT_FOUND));
+        return chatRepository.findById(chatId).orElseThrow(() -> new AppException(ErrorCode.CHAT_NOT_FOUND));
     }
 
     @Override
@@ -77,8 +78,14 @@ public class ChatServiceImplementation implements ChatService {
 
         users.add(userRequest);
 
-        Chat chat =
-                Chat.builder().isGroup(true).chatImage(request.getChat_image()).chatName(request.getChat_name()).createdBy(userRequest).admins(new HashSet<>(Set.of(userRequest))).users(users).build();
+        Chat chat = Chat.builder()
+                .isGroup(true)
+                .chatImage(request.getChat_image())
+                .chatName(request.getChat_name())
+                .createdBy(userRequest)
+                .admins(new HashSet<>(Set.of(userRequest)))
+                .users(users)
+                .build();
 
         return chatMapper.toChatResponse(chatRepository.save(chat));
     }
@@ -89,7 +96,9 @@ public class ChatServiceImplementation implements ChatService {
 
         User user = userService.findUserById(userId);
 
-        if (!chat.getAdmins().contains(userRequest) && !chat.getUsers().contains(userRequest) && !chat.getCreatedBy().equals(userRequest)) {
+        if (!chat.getAdmins().contains(userRequest)
+                && !chat.getUsers().contains(userRequest)
+                && !chat.getCreatedBy().equals(userRequest)) {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
 

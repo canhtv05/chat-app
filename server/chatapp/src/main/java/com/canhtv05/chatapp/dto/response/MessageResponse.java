@@ -1,10 +1,10 @@
 package com.canhtv05.chatapp.dto.response;
 
-import lombok.*;
-import lombok.experimental.FieldDefaults;
-
 import java.io.Serializable;
 import java.time.Instant;
+
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Data
 @AllArgsConstructor

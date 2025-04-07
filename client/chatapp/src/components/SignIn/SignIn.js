@@ -79,7 +79,7 @@ function SignIn({ isClick }) {
         const data = await dispatch(signIn(dataSignin));
         if (signIn.fulfilled.match(data)) {
             window.location.reload();
-            navigate('/messages');
+            navigate('/chats');
         } else if (signIn.rejected.match(data)) {
             setErrorSignIn(data.payload?.message);
             return;

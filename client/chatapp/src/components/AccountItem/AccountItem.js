@@ -1,6 +1,6 @@
 import { Avatar, AvatarGroup, Tooltip } from '@mui/joy';
 import PropTypes from 'prop-types';
-import { forwardRef, memo, useEffect } from 'react';
+import { forwardRef, memo } from 'react';
 import { useSelector } from 'react-redux';
 import { PiTagSimpleFill } from 'react-icons/pi';
 
@@ -17,10 +17,6 @@ const AccountItem = forwardRef(({ separator, isOnline, isActive, onClick, data, 
     const last = useKeyValue(lastMessages, {});
     const lastMessage = last(chat?.id);
     const timeAgo = useTimeAgo(lastMessage?.timestamp || '');
-
-    useEffect(() => {
-        console.log(lastMessage);
-    }, [lastMessage]);
 
     return (
         <div ref={ref}>
@@ -97,8 +93,8 @@ const AccountItem = forwardRef(({ separator, isOnline, isActive, onClick, data, 
                                         <span
                                             className={`ml-2 text-text-light truncate inline-block ${
                                                 currentUserId === lastMessage?.user?.id
-                                                    ? 'max-w-[210px]'
-                                                    : 'max-w-[120px]'
+                                                    ? 'max-w-[150px]'
+                                                    : 'max-w-[70px]'
                                             }`}
                                         >
                                             {lastMessage?.content}
