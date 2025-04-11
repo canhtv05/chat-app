@@ -6,18 +6,18 @@ import { BrowserRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 
 import store from './redux/store';
-import ContextProvider from './contexts/Context';
+import GlobalStyles from './components/GlobalStyle';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
     // <React.StrictMode>
-    <ContextProvider>
-        <Provider store={store}>
+    <Provider store={store}>
+        <GlobalStyles>
             <BrowserRouter>
                 <App />
             </BrowserRouter>
-        </Provider>
-    </ContextProvider>,
+        </GlobalStyles>
+    </Provider>,
     // </React.StrictMode>,
 );
 

@@ -5,8 +5,8 @@ const MessageCard = forwardRef(({ isMe, content }, ref) => {
     return (
         <div
             ref={ref}
-            className={`p-2 max-w-[50%] px-3 text-text-light rounded-3xl border-border border break-words ${
-                isMe ? 'self-end bg-green-700 text-white' : 'self-start bg-background-secondary'
+            className={`p-2 max-w-[50%] px-3 rounded-3xl border-base-300 border break-words ${
+                isMe ? 'self-end bg-primary text-neutral-content' : 'self-start bg-base-200'
             }`}
         >
             <p>{content}</p>

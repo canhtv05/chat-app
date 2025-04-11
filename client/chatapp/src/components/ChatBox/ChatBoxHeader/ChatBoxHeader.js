@@ -13,7 +13,7 @@ function ChatBoxHeader({ isOnline = false }) {
     const chat = data?.createdBy?.id ? data : null;
 
     return (
-        <div className="p-5 flex justify-between items-center border-b border-border relative shrink-0 w-full">
+        <div className="p-5 flex justify-between items-center border-b border-base-300 relative shrink-0 w-full">
             <div className="flex w-full">
                 <div className="relative">
                     <Avatar
@@ -42,19 +42,19 @@ function ChatBoxHeader({ isOnline = false }) {
                 <div className="flex mt-1 justify-between items-center w-full h-full">
                     <div className="ml-4 h-full flex justify-between flex-col">
                         <RenderIf value={!chat?.isGroup}>
-                            <span className="text-text-bold font-semibold">{`${user?.firstName || ''} ${
+                            <span className="text-base-content font-semibold">{`${user?.firstName || ''} ${
                                 user?.lastName || ''
                             }`}</span>
                         </RenderIf>
                         <RenderIf value={chat?.isGroup}>
-                            <span className="text-text-bold font-semibold">{chat?.chatName || ''}</span>
+                            <span className="text-base-content font-semibold">{chat?.chatName || ''}</span>
                         </RenderIf>
                         <Tooltip title={chat?.isGroup ? 'Group chat' : 'Single chat'} arrow placement="top">
                             <PiTagSimpleFill className="mr-2 text-lg" color={chat?.isGroup ? 'orange' : 'green'} />
                         </Tooltip>
                     </div>
                     <MyButton size="sm">
-                        <CiSearch className="size-7 text-text-bold" />
+                        <CiSearch className="size-7 text-base-content" />
                     </MyButton>
                 </div>
             </div>

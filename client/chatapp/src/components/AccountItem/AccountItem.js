@@ -20,11 +20,8 @@ const AccountItem = forwardRef(({ separator, isOnline, isActive, onClick, data, 
 
     return (
         <div ref={ref}>
-            <div
-                className={`cursor-pointer ${isActive ? 'bg-background-secondary' : 'hover:bg-active'}`}
-                onClick={onClick}
-            >
-                <div className={separator ? 'border-border border-b p-6' : 'p-6'}>
+            <div className={`cursor-pointer ${isActive ? 'bg-base-200' : 'hover:bg-active'}`} onClick={onClick}>
+                <div className={separator ? 'border-base-300 border-b p-6' : 'p-6'}>
                     <div className="flex">
                         <div className="relative">
                             <AvatarGroup>
@@ -58,18 +55,18 @@ const AccountItem = forwardRef(({ separator, isOnline, isActive, onClick, data, 
                         </div>
                         <div className={`flex w-full ${isSearchAccount ? 'flex-row items-center' : 'flex-col'}`}>
                             <div className="ml-4 flex justify-between">
-                                <span className="text-text-bold font-semibold max-w-[150px] truncate inline-block">
+                                <span className="text-base-content font-semibold max-w-[150px] truncate inline-block">
                                     <RenderIf value={chat?.isGroup}>{chat?.chatName}</RenderIf>
                                     <RenderIf value={!chat?.isGroup}>
                                         {user?.firstName} {user?.lastName}
                                     </RenderIf>
                                 </span>
-                                {!isSearchAccount && <span className="text-text-bold font-thin">{timeAgo}</span>}
+                                {!isSearchAccount && <span className="text-base-content font-thin">{timeAgo}</span>}
                             </div>
                             {!isSearchAccount && (
                                 <div className="ml-4 mt-1 flex">
                                     <RenderIf value={lastMessage}>
-                                        <div className="text-text-light">
+                                        <div className="text-base-content">
                                             <div className="flex justify-start items-center">
                                                 <Tooltip
                                                     title={chat?.isGroup ? 'Group chat' : 'Single chat'}
@@ -83,15 +80,15 @@ const AccountItem = forwardRef(({ separator, isOnline, isActive, onClick, data, 
                                                 </Tooltip>
                                                 <RenderIf value={currentUserId === lastMessage?.user?.id}>You</RenderIf>
                                                 <RenderIf value={currentUserId !== lastMessage?.user?.id}>
-                                                    <span className="max-w-[120px] truncate inline-block">
+                                                    <span className="max-w-[120px] truncate inline-block text-base-content">
                                                         {lastMessage?.user?.firstName} {lastMessage?.user?.lastName}
                                                     </span>
                                                 </RenderIf>
                                             </div>
                                         </div>
-                                        <span className="inline-block text-text-light">:</span>
+                                        <span className="inline-block text-base-content">:</span>
                                         <span
-                                            className={`ml-2 text-text-light truncate inline-block ${
+                                            className={`ml-2 text-base-content truncate inline-block ${
                                                 currentUserId === lastMessage?.user?.id
                                                     ? 'max-w-[150px]'
                                                     : 'max-w-[70px]'
@@ -101,7 +98,7 @@ const AccountItem = forwardRef(({ separator, isOnline, isActive, onClick, data, 
                                         </span>
                                     </RenderIf>
                                     <RenderIf value={!lastMessage}>
-                                        <span className="text-text-light">No messages yet!</span>
+                                        <span className="text-base-content">No messages yet!</span>
                                     </RenderIf>
                                 </div>
                             )}

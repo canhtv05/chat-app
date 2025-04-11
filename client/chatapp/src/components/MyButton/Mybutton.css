@@ -1,5 +1,5 @@
 .active {
-    background-color: rgba(var(--active));
+    background-color: var(--color-base-300);
     display: flex;
     align-items: center;
     justify-content: center;

@@ -1,16 +1,10 @@
 /** @type {import('tailwindcss').Config} */
+import daisyui from "daisyui";
+
 module.exports = {
     content: ["./src/**/*.{js,jsx,ts,tsx}"],
     theme: {
         extend: {
-            colors: {
-                background: "rgba(var(--background))",
-                border: "rgba(var(--border))",
-                "text-bold": "rgba(var(--text-bold))",
-                "text-light": "rgba(var(--text-light))",
-                "background-secondary": "rgba(var(--background-secondary))",
-                active: "rgba(var(--active))",
-            },
             keyframes: {
                 fadeIn: {},
             },
@@ -19,5 +13,48 @@ module.exports = {
             },
         },
     },
-    plugins: [],
+    plugins: [daisyui],
+    // darkMode: "class",
+    daisyui: {
+        // styled: true,
+        themes: [
+            "light",
+            "dark",
+            "cupcake",
+            "bumblebee",
+            "emerald",
+            "corporate",
+            "synthwave",
+            "retro",
+            "cyberpunk",
+            "valentine",
+            "halloween",
+            "garden",
+            "forest",
+            "aqua",
+            "lofi",
+            "pastel",
+            "fantasy",
+            "wireframe",
+            "black",
+            "luxury",
+            "dracula",
+            "cmyk",
+            "autumn",
+            "business",
+            "acid",
+            "lemonade",
+            "night",
+            "coffee",
+            "winter",
+            "dim",
+            "nord",
+            "sunset",
+        ],
+        // base: true,
+        // utils: true,
+        // logs: false,
+        // rtl: false,
+        // prefix: "",
+    },
 };

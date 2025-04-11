@@ -75,19 +75,19 @@ function ProfileInfo({ setIsShowEditForm }) {
         <>
             <div className="w-[450px] relative">
                 <img
-                    loading
+                    loading="lazy"
                     src="https://images.all-free-download.com/images/graphicwebp/belgium_514505.webp"
                     alt="background"
                     className="bg-contain block w-[450px]"
                 />
                 <div className="absolute left-[14px] bottom-[-64px] cursor-pointer">
                     <div onClick={handleClickUpload}>
-                        <div className="border-border border-4 rounded-full">
+                        <div className="border-base-300 border-4 rounded-full">
                             <Avatar sx={{ width: 90, height: 90 }} src={profilePicture || tempPicture} />
                         </div>
-                        <div className="absolute right-0 bottom-0 bg-background-secondary rounded-full border-2 border-border">
+                        <div className="absolute right-0 bottom-0 bg-base-200 rounded-full border-2 border-base-300">
                             <MyButton isRounded height={36} width={36}>
-                                <MdOutlineCameraAlt className="text-text-bold size-5" />
+                                <MdOutlineCameraAlt className="text-base-content size-5" />
                             </MyButton>
                         </div>
                         <input
@@ -100,23 +100,23 @@ function ProfileInfo({ setIsShowEditForm }) {
                     </div>
                     <div className="absolute top-1/2 left-[260px] transform -translate-x-1/2 -translate-y-1/2 w-[300px]">
                         <div className="flex items-center">
-                            <span className="text-text-bold font-semibold text-xl mr-2 break-words max-w-[234px] line-clamp-2">
+                            <span className="text-base-content font-semibold text-xl mr-2 break-words max-w-[234px] line-clamp-2">
                                 {`${firstName} ${lastName}`}
                             </span>
                             <MyButton isRounded height={36} width={36} onClick={() => setIsShowEditForm(true)}>
-                                <LuPenLine className="text-text-bold size-5" />
+                                <LuPenLine className="text-base-content size-5" />
                             </MyButton>
                         </div>
                     </div>
                 </div>
             </div>
-            <div className="py-1 bg-background mt-[75px]"></div>
+            <div className="py-1 bg-base-100 mt-[75px]"></div>
             <div className="px-4 py-1 flex flex-col">
-                <span className="text-text-bold font-semibold text-lg mb-2">Thông tin cá nhân</span>
+                <span className="text-base-content font-semibold text-lg mb-2">Thông tin cá nhân</span>
                 {dataInfo.map((info, index) => (
                     <div className="flex items-center my-2" key={index}>
-                        <span className="text-text-light text-lg w-[120px] inline-block">{info.label}</span>
-                        <span className="text-text-bold text-lg font-semibold">
+                        <span className="text-base-content text-lg w-[120px] inline-block">{info.label}</span>
+                        <span className="text-base-content text-lg font-semibold">
                             {info.label === 'Giới tính'
                                 ? info.value === 'MALE'
                                     ? 'Nam'
@@ -128,10 +128,10 @@ function ProfileInfo({ setIsShowEditForm }) {
                     </div>
                 ))}
             </div>
-            <div className="w-full border-border border-t-2">
+            <div className="w-full border-base-300 border-t-2">
                 <MyButton width={'100%'} onClick={() => setIsShowEditForm(true)}>
-                    <LuPenLine className="text-text-bold size-6" />
-                    <span className="text-text-bold font-semibold text-lg text-no ml-3">Cập nhật</span>
+                    <LuPenLine className="text-base-content size-6" />
+                    <span className="text-base-content font-semibold text-lg text-no ml-3">Cập nhật</span>
                 </MyButton>
             </div>
         </>

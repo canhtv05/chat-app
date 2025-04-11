@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
@@ -8,7 +8,6 @@ import icons from '~/assets/icons';
 import ChatBoxHeader from './ChatBoxHeader';
 import MessageCard from '../MessageCard';
 import ChatBoxFooter from './ChatBoxFooter';
-import { ChatCardContext } from '~/contexts/ChatCardProvider';
 import { getAllMessagesFromChat, sendMessage } from '~/services/message/messageService';
 import { createSingleChat } from '~/services/chat/chatService';
 import cookieUtil from '~/utils/cookieUtils';
@@ -17,8 +16,11 @@ import { updateLastMessage } from '~/redux/reducers/chatSlice';
 
 function ChatBox() {
     const dispatch = useDispatch();
-    const { currentChat } = useContext(ChatCardContext);
-    const { id: targetId, isSearch, idUser } = useSelector((state) => state.chat.data);
+    const {
+        data: { id: targetId, isSearch, idUser },
+        currentChat,
+    } = useSelector((state) => state.chat);
+
     const idChatOfUser = useSelector((state) => state.chat.idChatOfUser);
     const { id: currentUserId, firstName, lastName } = useSelector((state) => state.auth.data.data);
 
@@ -252,12 +254,17 @@ function ChatBox() {
     ]);
 
     return (
-        <div className="absolute top-0 left-0 w-full h-full bg-background">
+        <div className="absolute top-0 left-0 w-full h-full bg-base-100">
             <RenderIf value={!currentChat}>
                 <div className="absolute top-1/4 left-1/2 transform -translate-x-1/2 -translate-y-1/4 flex flex-col items-center">
-                    <img loading className="object-cover w-[80%] h-[80%]" src={icons.meow} alt={Math.random(0, 100)} />
-                    <span className="text-text-bold font-semibold">It looks a little quiet here...</span>
-                    <span className="text-text-bold font-semibold">Start a new conversation and let's talk!</span>
+                    <img
+                        loading="lazy"
+                        className="object-cover w-[80%] h-[80%]"
+                        src={icons.meow}
+                        alt={Math.random(0, 100)}
+                    />
+                    <span className="text-base-content font-semibold">It looks a little quiet here...</span>
+                    <span className="text-base-content font-semibold">Start a new conversation and let's talk!</span>
                 </div>
             </RenderIf>
             <RenderIf value={currentChat}>
@@ -269,7 +276,7 @@ function ChatBox() {
                         <div className="px-10 h-full overflow-y-auto scroll-smooth" ref={containerRef}>
                             <div className="space-y-1 flex flex-col mt-2">
                                 <RenderIf value={dataMessage.length === 0}>
-                                    <p className="p-5 text-text-light font-semibold text-center">
+                                    <p className="p-5 text-base-content font-semibold text-center">
                                         No messages here. Why not send one 😀?
                                     </p>
                                 </RenderIf>
@@ -289,7 +296,7 @@ function ChatBox() {
                             </div>
                         </div>
                     </div>
-                    <div className="shrink-0 border-border border-t">
+                    <div className="shrink-0 border-base-300 border-t">
                         <ChatBoxFooter content={content} setContent={setContent} onSend={handleSendMessage} />
                     </div>
                 </div>

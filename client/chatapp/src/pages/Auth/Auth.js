@@ -40,7 +40,7 @@ function Auth() {
 
     return (
         <>
-            <div className="wrapper border-border border-2" id="container">
+            <div className="wrapper border-base-300 border-2" id="container">
                 <SignUp isClick={isClickSignUp} />
                 <SignIn isClick={isClickSignIn} />
                 <div className="overlay-container">

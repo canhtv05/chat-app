@@ -6,6 +6,7 @@ const chatSlice = createSlice({
         data: {},
         idChatOfUser: {},
         lastMessages: {},
+        currentChat: false,
     },
     reducers: {
         setInfoCurrentChat(state, action) {
@@ -36,9 +37,18 @@ const chatSlice = createSlice({
 
             state.lastMessages = newState;
         },
+        setCurrentChat(state, action) {
+            state.currentChat = action.payload;
+        },
     },
 });
 
-export const { setInfoCurrentChat, clearInfoCurrentChat, setIdChatOfUser, setLastMessage, updateLastMessage } =
-    chatSlice.actions;
+export const {
+    setInfoCurrentChat,
+    clearInfoCurrentChat,
+    setIdChatOfUser,
+    setLastMessage,
+    updateLastMessage,
+    setCurrentChat,
+} = chatSlice.actions;
 export default chatSlice.reducer;

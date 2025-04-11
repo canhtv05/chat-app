@@ -6,8 +6,8 @@ function MyInput({ className, ...props }) {
             <Input
                 {...props}
                 sx={{
-                    background: 'rgba(var(--background-secondary))',
-                    color: 'rgba(var(--text-bold))',
+                    background: 'var(--color-base-200)',
+                    color: 'var(--color-base-content)',
                     minWidth: 0,
                     width: 'auto',
                 }}

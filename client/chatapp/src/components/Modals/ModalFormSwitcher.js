@@ -1,7 +1,6 @@
 import { memo, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
-
-import Modal from './Modal';
+import ModalLink from './ModalLink';
 
 function ModalFormSwitcher({
     mainForm,
@@ -55,7 +54,7 @@ function ModalFormSwitcher({
     }, [isShowSubForm, valueScrollHeight]);
 
     return (
-        <Modal setIsOpen={setIsOpen} outline isOpen={isOpen} title="Thông tin tài khoản">
+        <ModalLink outline title="Thông tin tài khoản">
             <div className="relative overflow-hidden transition-all" ref={containerRef}>
                 <div
                     className={`relative w-full transition-transform duration-300 ease-in-out ${
@@ -74,7 +73,7 @@ function ModalFormSwitcher({
                     {subForm}
                 </div>
             </div>
-        </Modal>
+        </ModalLink>
     );
 }
 

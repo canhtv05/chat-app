@@ -1,8 +1,7 @@
 import { CiSearch } from 'react-icons/ci';
 import { AiOutlineLoading, AiOutlineUserAdd, AiOutlineUsergroupAdd } from 'react-icons/ai';
-import { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { ChatCardContext } from '~/contexts/ChatCardProvider';
 import MyInput from '../MyInput';
 import MyButton from '../MyButton';
 import AccountItem from '../AccountItem';
@@ -11,7 +10,7 @@ import useDebounce from '~/hooks/useDebounce';
 import { searchUser } from '~/services/user/userService';
 import RenderIf from '../RenderIf';
 import { useDispatch, useSelector } from 'react-redux';
-import { setIdChatOfUser, setInfoCurrentChat, setLastMessage } from '~/redux/reducers/chatSlice';
+import { setCurrentChat, setIdChatOfUser, setInfoCurrentChat, setLastMessage } from '~/redux/reducers/chatSlice';
 import { getAllMyChats } from '~/services/chat/chatService';
 import { getAllMessagesFromChat } from '~/services/message/messageService';
 import colors from '../AccountItem/colors';
@@ -39,7 +38,6 @@ function ChatList() {
     const lastAccountItemRef = useRef();
 
     const debounceValue = useDebounce(query, 500);
-    const { setCurrentChat } = useContext(ChatCardContext);
 
     useEffect(() => {
         setPage(1);
@@ -155,7 +153,7 @@ function ChatList() {
     const handleClick = useCallback(
         (index, data) => {
             setActiveIndex(index);
-            setCurrentChat(true);
+            dispatch(setCurrentChat(true));
             // kiểm tra xem nếu có created by thì là list chat, còn ko thì là search user
             if (!!data?.createdBy)
                 dispatch(setInfoCurrentChat({ ...data, idUser: data?.createdBy?.id, background: data.background }));
@@ -164,7 +162,7 @@ function ChatList() {
                     setInfoCurrentChat({ ...data, isSearch: true, idUser: data?.id, background: data.background }),
                 );
         },
-        [setCurrentChat, dispatch],
+        [dispatch],
     );
 
     const handleSearch = (e) => {
@@ -179,14 +177,14 @@ function ChatList() {
     const LoadingIcon = ({ ...props }) => {
         return (
             <div {...props}>
-                <AiOutlineLoading className="animate-spin text-lg text-text-bold" />
+                <AiOutlineLoading className="animate-spin text-lg text-base-content" />
             </div>
         );
     };
 
     return (
-        <div className="w-full h-full border-border border-r bg-background flex flex-col">
-            <div className="p-5 flex justify-between items-center border-b border-border relative shrink-0">
+        <div className="w-full h-full border-base-300 border-r bg-base-100 flex flex-col">
+            <div className="p-5 flex justify-between items-center border-b border-base-300 relative shrink-0">
                 <div className="relative">
                     <MyInput
                         startDecorator={<CiSearch className="size-5" />}
@@ -201,10 +199,10 @@ function ChatList() {
                     </RenderIf>
                 </div>
                 <MyButton size="sm">
-                    <AiOutlineUserAdd className="size-6 text-text-bold cursor-pointer" />
+                    <AiOutlineUserAdd className="size-6 text-base-content cursor-pointer" />
                 </MyButton>
                 <MyButton size="sm" onClick={() => setIsShowModalAddGroup(true)}>
-                    <AiOutlineUsergroupAdd className="size-6 text-text-bold cursor-pointer" />
+                    <AiOutlineUsergroupAdd className="size-6 text-base-content cursor-pointer" />
                 </MyButton>
             </div>
             <div className="overflow-y-auto" tabIndex={-1}>
@@ -235,7 +233,7 @@ function ChatList() {
                 </RenderIf>
 
                 <RenderIf value={!loading && debounceValue && searchRes.length === 0}>
-                    <div className="p-5 text-center text-text-bold">No users found!</div>
+                    <div className="p-5 text-center text-base-content">No users found!</div>
                 </RenderIf>
 
                 <RenderIf value={error}>

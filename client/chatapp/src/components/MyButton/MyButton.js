@@ -21,7 +21,7 @@ function MyButton({
     const [minHeight, setMinHeight] = useState(height);
 
     const LoadingIcon = () => {
-        return <AiOutlineLoading className="animate-spin text-3xl text-text-bold" />;
+        return <AiOutlineLoading className="animate-spin text-3xl text-base-content" />;
     };
 
     useEffect(() => {
@@ -38,8 +38,8 @@ function MyButton({
     return (
         <div
             className={`flex justify-center items-center ${
-                isActive ? 'active' : `hover:bg-background transition-all ease-in-out duration-500`
-            } rounded-xl ${className} ${loading ? 'pointer-events-none pl-3' : 'hover:bg-background'}`}
+                isActive ? 'active' : `hover:bg-base-100 transition-all ease-in-out duration-500`
+            } rounded-xl ${className} ${loading ? 'pointer-events-none pl-3' : 'hover:bg-base-100'}`}
             style={isRounded && { borderRadius: '50%' }}
         >
             {loading && <LoadingIcon />}

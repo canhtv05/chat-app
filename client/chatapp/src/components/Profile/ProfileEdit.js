@@ -101,7 +101,7 @@ function ProfileEdit({ setIsShowEditForm, getScrollHeight }) {
         <form className="px-4 py-1 flex flex-col items-center h-full" ref={formRef} onSubmit={handleSubmitForm}>
             <div className="flex my-2 w-full">
                 <div className="flex flex-col w-full">
-                    <span className="mb-2 text-text-bold font-semibold">Tên</span>
+                    <span className="mb-2 text-base-content font-semibold">Tên</span>
                     <MyInput
                         name="firstName"
                         className="mb-2 max-w-[200px] w-full"
@@ -113,7 +113,7 @@ function ProfileEdit({ setIsShowEditForm, getScrollHeight }) {
                     />
                 </div>
                 <div className="flex flex-col w-full">
-                    <span className="mb-2 text-text-bold font-semibold">Họ</span>
+                    <span className="mb-2 text-base-content font-semibold">Họ</span>
                     <MyInput
                         name="lastName"
                         className="mb-2 max-w-[200px] w-full"
@@ -131,7 +131,7 @@ function ProfileEdit({ setIsShowEditForm, getScrollHeight }) {
                 </p>
             )}
             <div className="flex flex-col my-2 w-full">
-                <span className="mb-2 text-text-bold text-lg font-semibold">Thông tin cá nhân</span>
+                <span className="mb-2 text-base-content text-lg font-semibold">Thông tin cá nhân</span>
                 <RadioGroup value={dataUpdateCurrentUser.gender} name="gender" onChange={handleChange}>
                     <div className="flex my-2">
                         <MyRadio value="MALE" label="Nam" size="md" />
@@ -144,7 +144,7 @@ function ProfileEdit({ setIsShowEditForm, getScrollHeight }) {
                 <p className="text-red-500 text-left text-sm font-semibold mb-1 w-full">{errors.gender}</p>
             )}
             <div className="flex flex-col my-2 w-full">
-                <span className="mb-2 text-text-bold font-semibold">Ngày sinh</span>
+                <span className="mb-2 text-base-content font-semibold">Ngày sinh</span>
                 <MyInput
                     name="dob"
                     size="lg"
@@ -158,12 +158,12 @@ function ProfileEdit({ setIsShowEditForm, getScrollHeight }) {
             {errorUpdateCurrentUser && (
                 <p className="text-red-500 font-semibold text-sm mb-2">{errorUpdateCurrentUser}</p>
             )}
-            <div className="border-border border-t-2 w-full flex justify-end items-center p-2">
+            <div className="border-base-300 border-t-2 w-full flex justify-end items-center p-2">
                 <MyButton height={50} onClick={() => setIsShowEditForm(false)}>
-                    <span className="text-text-bold font-semibold">Hủy</span>
+                    <span className="text-base-content font-semibold">Hủy</span>
                 </MyButton>
-                <MyButton height={50} width={'100px'} className="bg-background ml-4" loading={loading} type="submit">
-                    <span className="text-text-bold font-semibold">Cập nhật</span>
+                <MyButton height={50} width={'100px'} className="bg-base-100 ml-4" loading={loading} type="submit">
+                    <span className="text-base-content font-semibold">Cập nhật</span>
                 </MyButton>
             </div>
         </form>

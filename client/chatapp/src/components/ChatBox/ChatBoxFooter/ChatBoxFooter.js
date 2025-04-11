@@ -60,7 +60,7 @@ function ChatBoxFooter({ content, setContent, onSend }) {
         <div
             className={`p-5 relative flex ${
                 isLineBeak ? 'flex-col pb-3' : 'flex-row'
-            } justify-between items-center border-b border-border relative w-full`}
+            } justify-between items-center border-b border-base-300 relative w-full`}
         >
             <MyTextArea
                 ref={textAreaRef}
@@ -73,10 +73,10 @@ function ChatBoxFooter({ content, setContent, onSend }) {
             />
             <div className={`items-center flex ${isLineBeak ? 'mt-2 justify-end w-full' : 'justify-center'}`}>
                 <MyButton size="sm" onClick={() => setOpenEmoji((prev) => !prev)}>
-                    <CiFaceSmile className="size-7 text-text-bold cursor-pointer" />
+                    <CiFaceSmile className="size-7 text-base-content cursor-pointer" />
                 </MyButton>
                 <MyButton size="sm" onClick={() => onSend()}>
-                    <IoIosSend className="size-7 text-text-bold cursor-pointer rotate-45" />
+                    <IoIosSend className="size-7 text-base-content cursor-pointer rotate-45" />
                 </MyButton>
             </div>
             <div className="absolute top-[-440px] right-[310px]">

@@ -1,4 +1,4 @@
-import Modal from '~/components/Modals/Modal';
+import { Modal } from '../Modals';
 
 function ModalAddGroup({ isOpen, setIsOpen }) {
     return (
