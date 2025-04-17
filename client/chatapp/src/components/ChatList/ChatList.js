@@ -1,5 +1,5 @@
 import { CiSearch } from 'react-icons/ci';
-import { AiOutlineLoading, AiOutlineUserAdd, AiOutlineUsergroupAdd } from 'react-icons/ai';
+import { AiOutlineUserAdd, AiOutlineUsergroupAdd } from 'react-icons/ai';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import MyInput from '../MyInput';
@@ -14,6 +14,8 @@ import { setCurrentChat, setIdChatOfUser, setInfoCurrentChat, setLastMessage } f
 import { getAllMyChats } from '~/services/chat/chatService';
 import { getAllMessagesFromChat } from '~/services/message/messageService';
 import colors from '../AccountItem/colors';
+import socketService from '~/services/socket/socketService';
+import LoadingIcon from '../LoadingIcon';
 
 const getRandomBackground = () => {
     const randomIndex = Math.floor(Math.random() * colors.backgrounds.length);
@@ -22,7 +24,7 @@ const getRandomBackground = () => {
 
 function ChatList() {
     const dispatch = useDispatch();
-    const { id: currentUserId } = useSelector((state) => state.auth.data.data);
+    const { id: currentUserId, email } = useSelector((state) => state.auth.data.data);
     const [activeIndex, setActiveIndex] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -38,6 +40,20 @@ function ChatList() {
     const lastAccountItemRef = useRef();
 
     const debounceValue = useDebounce(query, 500);
+
+    const onChatCreated = (payload) => {
+        const received = JSON.parse(payload.body);
+        console.log(received);
+        setChats((prev) => [received, ...prev]);
+    };
+
+    useEffect(() => {
+        console.log(email);
+        socketService.subscribe(`/create-single-chat`, onChatCreated);
+        return () => {
+            socketService.unsubscribe(`/create-single-chat`);
+        };
+    }, [email]);
 
     useEffect(() => {
         setPage(1);
@@ -152,12 +168,13 @@ function ChatList() {
 
     const handleClick = useCallback(
         (index, data) => {
+            console.log(data);
             setActiveIndex(index);
             dispatch(setCurrentChat(true));
             // kiểm tra xem nếu có created by thì là list chat, còn ko thì là search user
-            if (!!data?.createdBy)
+            if (!!data?.createdBy) {
                 dispatch(setInfoCurrentChat({ ...data, idUser: data?.createdBy?.id, background: data.background }));
-            else
+            } else
                 dispatch(
                     setInfoCurrentChat({ ...data, isSearch: true, idUser: data?.id, background: data.background }),
                 );
@@ -172,14 +189,6 @@ function ChatList() {
         } else {
             setQuery('');
         }
-    };
-
-    const LoadingIcon = ({ ...props }) => {
-        return (
-            <div {...props}>
-                <AiOutlineLoading className="animate-spin text-lg text-base-content" />
-            </div>
-        );
     };
 
     return (

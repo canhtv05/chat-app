@@ -7,6 +7,7 @@ const chatSlice = createSlice({
         idChatOfUser: {},
         lastMessages: {},
         currentChat: false,
+        chats: [],
     },
     reducers: {
         setInfoCurrentChat(state, action) {
@@ -37,6 +38,10 @@ const chatSlice = createSlice({
 
             state.lastMessages = newState;
         },
+        addLastMessage(state, action) {
+            if (!action.payload || typeof action.payload !== 'object') return;
+            state.lastMessages = { ...state.lastMessages, ...action.payload };
+        },
         setCurrentChat(state, action) {
             state.currentChat = action.payload;
         },
@@ -48,6 +53,7 @@ export const {
     clearInfoCurrentChat,
     setIdChatOfUser,
     setLastMessage,
+    addLastMessage,
     updateLastMessage,
     setCurrentChat,
 } = chatSlice.actions;

@@ -1,7 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Client } from '@stomp/stompjs';
-import SockJS from 'sockjs-client';
 
 import RenderIf from '../RenderIf';
 import icons from '~/assets/icons';
@@ -10,19 +8,40 @@ import MessageCard from '../MessageCard';
 import ChatBoxFooter from './ChatBoxFooter';
 import { getAllMessagesFromChat, sendMessage } from '~/services/message/messageService';
 import { createSingleChat } from '~/services/chat/chatService';
-import cookieUtil from '~/utils/cookieUtils';
 import useKeyValue from '~/hooks/useKeyValue';
 import { updateLastMessage } from '~/redux/reducers/chatSlice';
+import socketService from '~/services/socket/socketService';
+import LoadingIcon from '../LoadingIcon';
+import colors from '../AccountItem/colors';
+
+const getRandomBackground = () => {
+    const randomIndex = Math.floor(Math.random() * colors.backgrounds.length);
+    return colors.backgrounds[randomIndex];
+};
 
 function ChatBox() {
     const dispatch = useDispatch();
     const {
-        data: { id: targetId, isSearch, idUser },
+        data: {
+            id: targetId,
+            isSearch,
+            idUser,
+            firstName: firstNameCurrentChat,
+            lastName: lastNameCurrentChat,
+            email: emailCurrentChat,
+            profilePicture: profilePictureCurrentChat,
+        },
         currentChat,
     } = useSelector((state) => state.chat);
 
     const idChatOfUser = useSelector((state) => state.chat.idChatOfUser);
-    const { id: currentUserId, firstName, lastName } = useSelector((state) => state.auth.data.data);
+    const {
+        id: currentUserId,
+        firstName,
+        lastName,
+        email,
+        profilePicture,
+    } = useSelector((state) => state.auth.data.data);
 
     const lastMessageRef = useRef(null);
     const observer = useRef(null);
@@ -40,33 +59,7 @@ function ChatBox() {
     const [page, setPage] = useState(-1);
     const [hasMore, setHasMore] = useState(true);
 
-    const [stompClient, setStompClient] = useState();
-    const [isConnected, setIsConnected] = useState(false);
-
     const getIdChatByUserId = useKeyValue(idChatOfUser, null);
-
-    const connect = useCallback(() => {
-        const sock = new SockJS('http://localhost:1710/api/ws');
-        const client = new Client({
-            webSocketFactory: () => sock,
-            reconnectDelay: 5000,
-            connectHeaders: {
-                Authorization: `Bearer ${cookieUtil.getStorage()?.accessToken}`,
-            },
-            onConnect: () => setIsConnected(true),
-            onStompError: () => setIsConnected(false),
-            onDisconnect: () => setIsConnected(false),
-        });
-
-        client.activate();
-        setStompClient(client);
-
-        return () => {
-            client.deactivate();
-            setStompClient(null);
-            setIsConnected(false);
-        };
-    }, []);
 
     const onMessageReceive = useCallback(
         (payload) => {
@@ -74,28 +67,22 @@ function ChatBox() {
             if (received?.user?.id !== currentUserId) {
                 setDataMessage((prev) => [...prev, received]);
             }
-            // console.log('Received message:', received);
             dispatch(updateLastMessage(received));
         },
         [currentUserId, dispatch],
     );
 
     useEffect(() => {
-        if (!isConnected || !stompClient || !currentChat) return;
+        if (!currentChat || !targetId || !socketService.isReady()) return;
 
         let idChat = isSearch ? getIdChatByUserId(targetId) : targetId;
-        if (isConnected && stompClient && currentChat) {
-            const subscription = stompClient.subscribe(`/group/${idChat}`, onMessageReceive);
-            return () => {
-                if (stompClient && stompClient.connected) subscription?.unsubscribe();
-            };
-        }
-    }, [isConnected, currentChat, stompClient, getIdChatByUserId, isSearch, targetId, onMessageReceive]);
 
-    useEffect(() => {
-        const cleanup = connect();
-        return cleanup;
-    }, [connect]);
+        socketService.subscribe(`/group/${idChat}`, onMessageReceive);
+
+        return () => {
+            socketService.unsubscribe(`/group/${idChat}`);
+        };
+    }, [currentChat, getIdChatByUserId, isSearch, onMessageReceive, targetId]);
 
     const fetchMessages = useCallback(
         async (currentPage) => {
@@ -103,6 +90,7 @@ function ChatBox() {
 
             let idChat = isSearch ? getIdChatByUserId(targetId) : targetId;
             if (!idChat) {
+                setDataMessage([]);
                 return;
             }
             setLoading(true);
@@ -193,10 +181,35 @@ function ChatBox() {
         }
     }, [dataMessage, shouldScrollToBottom]);
 
+    useEffect(() => {
+        if (dataMessage.length > 0) {
+            setIsChatCreated(true);
+        } else {
+            setIsChatCreated(false);
+        }
+    }, [dataMessage]);
+
     const handleSendMessage = useCallback(async () => {
         if (!content.trim() || !targetId) return;
 
         let currentChatId = chatId;
+        const timestamp = new Date().toISOString();
+
+        const currentUser = {
+            id: currentUserId,
+            firstName,
+            lastName,
+            email,
+            profilePicture,
+        };
+
+        const targetUser = {
+            id: targetId,
+            firstName: firstNameCurrentChat,
+            lastName: lastNameCurrentChat,
+            email: emailCurrentChat,
+            profilePicture: profilePictureCurrentChat,
+        };
 
         if (!isChatCreated) {
             const [error, result] = await createSingleChat(idUser);
@@ -204,53 +217,64 @@ function ChatBox() {
                 console.error('Failed to create chat:', error);
                 return;
             }
-            setIsChatCreated(true);
-            currentChatId = result.data.id;
-            setChatId(currentChatId);
-        }
 
-        const timestamp = new Date().toISOString();
+            currentChatId = result?.data?.id;
+            const body = {
+                background: getRandomBackground(),
+                chatImage: null,
+                chatName: null,
+                createdBy: currentUser,
+                id: currentChatId,
+                isGroup: false,
+                users: [currentUser, targetUser],
+                content,
+                timestamp,
+                chatId: currentChatId,
+            };
+
+            socketService.send('single-chat-created', body);
+            setChatId(currentChatId);
+            setIsChatCreated(true);
+        }
 
         const localMessage = {
             chatId: currentChatId,
-            content: content,
-            user: { id: currentUserId, firstName, lastName },
+            content,
+            user: currentUser,
             timestamp,
         };
-
-        // console.log('local: ', localMessage);
 
         dispatch(updateLastMessage(localMessage));
         setDataMessage((prev) => [...prev, localMessage]);
 
-        if (stompClient && isConnected) {
-            stompClient.publish({
-                destination: '/app/message',
-                body: JSON.stringify({
-                    chatId: currentChatId,
-                    content: content,
-                    userId: currentUserId,
-                    timestamp,
-                }),
+        if (socketService.isReady()) {
+            socketService.send('message', {
+                chatId: currentChatId,
+                content,
+                userId: currentUserId,
+                timestamp,
             });
             setContent('');
         }
 
-        const request = { chatId: currentChatId, content };
         setShouldScrollToBottom(true);
-        sendMessage(request);
+        await sendMessage({ chatId: currentChatId, content });
     }, [
         chatId,
         content,
+        currentUserId,
+        dispatch,
+        email,
+        emailCurrentChat,
+        firstName,
+        firstNameCurrentChat,
         idUser,
         isChatCreated,
-        stompClient,
-        targetId,
-        currentUserId,
-        isConnected,
-        dispatch,
-        firstName,
         lastName,
+        lastNameCurrentChat,
+        profilePicture,
+        profilePictureCurrentChat,
+        targetId,
     ]);
 
     return (
@@ -274,6 +298,11 @@ function ChatBox() {
                     </div>
                     <div className="flex-1 overflow-hidden py-3">
                         <div className="px-10 h-full overflow-y-auto scroll-smooth" ref={containerRef}>
+                            <RenderIf value={loading}>
+                                <div className="mt-4 absolute left-1/2 transform -translate-y-1/2">
+                                    <LoadingIcon size={30} />
+                                </div>
+                            </RenderIf>
                             <div className="space-y-1 flex flex-col mt-2">
                                 <RenderIf value={dataMessage.length === 0}>
                                     <p className="p-5 text-base-content font-semibold text-center">

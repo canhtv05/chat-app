@@ -6,8 +6,8 @@ function MyInput({ className, ...props }) {
             <Input
                 {...props}
                 sx={{
-                    background: 'var(--color-base-200)',
-                    color: 'var(--color-base-content)',
+                    background: 'oklch(var(--b2))',
+                    color: 'oklch(var(--bc))',
                     minWidth: 0,
                     width: 'auto',
                 }}

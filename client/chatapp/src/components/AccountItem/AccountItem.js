@@ -1,6 +1,6 @@
 import { Avatar, AvatarGroup, Tooltip } from '@mui/joy';
 import PropTypes from 'prop-types';
-import { forwardRef, memo } from 'react';
+import { forwardRef, memo, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { PiTagSimpleFill } from 'react-icons/pi';
 
@@ -17,6 +17,22 @@ const AccountItem = forwardRef(({ separator, isOnline, isActive, onClick, data, 
     const last = useKeyValue(lastMessages, {});
     const lastMessage = last(chat?.id);
     const timeAgo = useTimeAgo(lastMessage?.timestamp || '');
+
+    const [lastMessageRealTime, setLastMessageRealTime] = useState({});
+
+    useEffect(() => {
+        if (!lastMessage || Object.keys(lastMessage).length === 0) {
+            const dataLast = {
+                id: null,
+                content: data?.content,
+                timestamp: data?.timestamp,
+                chatId: data?.chatId,
+                user: data?.createdBy,
+            };
+            setLastMessageRealTime(dataLast);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [data]);
 
     return (
         <div ref={ref}>
@@ -78,10 +94,25 @@ const AccountItem = forwardRef(({ separator, isOnline, isActive, onClick, data, 
                                                         color={chat?.isGroup ? 'orange' : 'green'}
                                                     />
                                                 </Tooltip>
-                                                <RenderIf value={currentUserId === lastMessage?.user?.id}>You</RenderIf>
-                                                <RenderIf value={currentUserId !== lastMessage?.user?.id}>
+                                                <RenderIf
+                                                    value={
+                                                        currentUserId === lastMessage?.user?.id ??
+                                                        currentUserId === lastMessageRealTime?.user?.id
+                                                    }
+                                                >
+                                                    You
+                                                </RenderIf>
+                                                <RenderIf
+                                                    value={
+                                                        currentUserId !== lastMessage?.user?.id ??
+                                                        currentUserId !== lastMessageRealTime?.user?.id
+                                                    }
+                                                >
                                                     <span className="max-w-[120px] truncate inline-block text-base-content">
-                                                        {lastMessage?.user?.firstName} {lastMessage?.user?.lastName}
+                                                        {lastMessage?.user?.firstName ??
+                                                            lastMessageRealTime?.user?.firstName}{' '}
+                                                        {lastMessage?.user?.lastName ??
+                                                            lastMessageRealTime?.user?.lastName}
                                                     </span>
                                                 </RenderIf>
                                             </div>
@@ -89,12 +120,13 @@ const AccountItem = forwardRef(({ separator, isOnline, isActive, onClick, data, 
                                         <span className="inline-block text-base-content">:</span>
                                         <span
                                             className={`ml-2 text-base-content truncate inline-block ${
-                                                currentUserId === lastMessage?.user?.id
+                                                currentUserId === lastMessage?.user?.id ??
+                                                currentUserId === lastMessageRealTime?.user?.id
                                                     ? 'max-w-[150px]'
                                                     : 'max-w-[70px]'
                                             }`}
                                         >
-                                            {lastMessage?.content}
+                                            {lastMessage?.content ?? lastMessageRealTime?.content}
                                         </span>
                                     </RenderIf>
                                     <RenderIf value={!lastMessage}>

@@ -5,6 +5,9 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.server.ServerHttpRequest;
+import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.stereotype.Service;
 
 import com.canhtv05.chatapp.entity.User;
@@ -110,6 +113,15 @@ public class TokenProvider {
     }
 
     public String verifyAndExtractEmail(String token) throws ParseException {
+        Object emailClaim = this.verifyToken(token).getJWTClaimsSet().getClaim(EMAIL_CLAIM);
+        if (Objects.isNull(emailClaim)) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+        return emailClaim.toString();
+    }
+
+    public String verifyAndExtractEmail(ServerHttpRequest request) throws ParseException {
+        String token = ((ServletServerHttpRequest) request).getServletRequest().getHeader(HttpHeaders.AUTHORIZATION);
         Object emailClaim = this.verifyToken(token).getJWTClaimsSet().getClaim(EMAIL_CLAIM);
         if (Objects.isNull(emailClaim)) {
             throw new AppException(ErrorCode.UNAUTHORIZED);

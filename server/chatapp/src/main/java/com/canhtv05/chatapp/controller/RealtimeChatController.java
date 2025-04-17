@@ -1,5 +1,8 @@
 package com.canhtv05.chatapp.controller;
 
+import com.canhtv05.chatapp.dto.resquest.SingleChatCreationRequest;
+import com.canhtv05.chatapp.dto.resquest.SingleChatRealTimeCreationRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -15,8 +18,8 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
+@Slf4j
 @RestController
-// @RequestMapping("/users")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class RealtimeChatController {
@@ -26,7 +29,6 @@ public class RealtimeChatController {
     UserMapper userMapper;
 
     @MessageMapping("/message")
-    //    @SendTo("/group/public")
     public void receiveMessage(@Payload SendMessageRequest request) {
 
         User user = userService.findUserById(request.getUserId());
@@ -39,5 +41,10 @@ public class RealtimeChatController {
                 .build();
 
         simpMessagingTemplate.convertAndSend("/group/" + request.getChatId(), response);
+    }
+
+    @MessageMapping("/single-chat-created")
+    public void createChat(@Payload SingleChatRealTimeCreationRequest request) {
+        simpMessagingTemplate.convertAndSend( "/create-single-chat", request);
     }
 }
