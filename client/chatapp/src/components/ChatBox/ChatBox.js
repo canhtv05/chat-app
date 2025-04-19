@@ -77,10 +77,10 @@ function ChatBox() {
 
         let idChat = isSearch ? getIdChatByUserId(targetId) : targetId;
 
-        socketService.subscribe(`/group/${idChat}`, onMessageReceive);
+        const subscription = socketService.subscribe(`/group/${idChat}`, onMessageReceive);
 
         return () => {
-            socketService.unsubscribe(`/group/${idChat}`);
+            subscription.unsubscribe();
         };
     }, [currentChat, getIdChatByUserId, isSearch, onMessageReceive, targetId]);
 

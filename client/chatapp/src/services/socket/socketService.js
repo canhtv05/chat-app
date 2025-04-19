@@ -44,15 +44,7 @@ class SocketService {
     subscribe(topic, callback) {
         if (this.subscriptions.has(topic)) return;
         if (this.client && this.client.connected) {
-            this.client.subscribe(topic, callback);
-        }
-    }
-
-    unsubscribe(topic) {
-        const sub = this.subscriptions.get(topic);
-        if (sub) {
-            sub.unsubscribe();
-            this.subscriptions.delete(topic);
+            return this.client.subscribe(topic, callback); // them return
         }
     }
 

@@ -48,7 +48,7 @@ const AccountItem = forwardRef(({ separator, isOnline, isActive, onClick, data, 
                                     sx={{
                                         width: 50,
                                         height: 50,
-                                        background: data?.background,
+                                        background: data?.background ?? lastMessageRealTime?.background,
                                     }}
                                     onError={(e) => {
                                         e.target.onerror = null;
