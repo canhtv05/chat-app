@@ -1,4 +1,5 @@
 import { Button, Input } from '@mui/joy';
+import { toast } from 'react-hot-toast';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -33,46 +34,29 @@ function SignIn({ isClick }) {
     useEffect(() => {
         if (isClick) {
             setDataSignin({ email: '', password: '' });
-            setErrorSignIn('');
-            setErrors({});
         }
     }, [isClick]);
-
-    const [errors, setErrors] = useState({});
-    const [errorSignIn, setErrorSignIn] = useState('');
 
     const handleChangeSignin = (e) => {
         setDataSignin((prev) => ({
             ...prev,
             [e.target.name]: e.target.value,
         }));
-
-        setErrors((prev) => ({
-            ...prev,
-            [e.target.name]: '',
-        }));
-
-        setErrorSignIn('');
-    };
-
-    const handleBlur = (e) => {
-        if (!e.target.value.trim()) {
-            setErrors((prev) => ({
-                ...prev,
-                [e.target.name]: 'Please enter this field!',
-            }));
-        }
     };
 
     const handleSignin = async (e) => {
         e.preventDefault();
 
-        const newErrors = {};
-        if (!dataSignin.email.trim()) newErrors.email = 'Please enter your email!';
-        if (!dataSignin.password.trim()) newErrors.password = 'Please enter your password!';
-        if (Object.keys(newErrors).length > 0) {
-            setErrors(newErrors);
-            return;
+        const requireFields = {
+            email: 'Please enter your email!',
+            password: 'Please enter your password!',
+        };
+
+        for (let [field, message] of Object.entries(requireFields)) {
+            if (!dataSignin[field].trim()) {
+                toast.error(message);
+                return;
+            }
         }
 
         // unwrap
@@ -81,11 +65,9 @@ function SignIn({ isClick }) {
             window.location.reload();
             navigate('/chats');
         } else if (signIn.rejected.match(data)) {
-            setErrorSignIn(data.payload?.message);
+            toast.error(data.payload?.message);
             return;
         }
-        setErrorSignIn('');
-        setErrors({});
     };
 
     return (
@@ -108,34 +90,20 @@ function SignIn({ isClick }) {
                     name="email"
                     value={dataSignin.email}
                     onChange={handleChangeSignin}
-                    onBlur={handleBlur}
                     variant="soft"
                     type="email"
                     placeholder="Email"
                     className="mb-2 w-full"
                 />
-                {errors.email && (
-                    <p className="text-red-500 text-left text-sm font-semibold mb-1 w-full">{errors.email}</p>
-                )}
-
                 <Input
                     name="password"
                     value={dataSignin.password}
                     onChange={handleChangeSignin}
-                    onBlur={handleBlur}
                     variant="soft"
                     type="password"
                     placeholder="Password"
                     className="mb-2 w-full"
                 />
-                {errors.password && (
-                    <p className="text-red-500 text-left text-sm font-semibold mb-1 w-full">{errors.password}</p>
-                )}
-
-                {errorSignIn && (
-                    <p className="text-red-500 text-left text-sm font-semibold mb-1 w-full">{errorSignIn}</p>
-                )}
-
                 <Button variant="soft" loading={loading} className="button mt-2" sx={buttonStyle} type="submit">
                     Sign In
                 </Button>

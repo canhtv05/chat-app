@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 const getTimeDifferenceInSeconds = (timestamp) => {
     const now = new Date();
     const past = new Date(timestamp);
-    // console.log('Now:', now, 'Past:', past);
     const diffInMs = now - past;
     return Math.floor(diffInMs / 1000);
 };
@@ -14,35 +13,49 @@ const formatDate = (timestamp) => {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
 
-    let result = `${day}/${month}/${year}`;
-    if (result.includes('NaN')) result = '';
-    return result;
+    return { day, month, year };
 };
 
 const useTimeAgo = (timestamp) => {
-    // console.log(timestamp);
     const [timeAgo, setTimeAgo] = useState('');
 
     useEffect(() => {
         const updateTimeAgo = () => {
             const seconds = getTimeDifferenceInSeconds(timestamp);
+            const now = new Date();
+            const past = new Date(timestamp);
 
+            // Thời gian dưới 1 phút
             if (seconds < 60) {
-                // setTimeAgo(`${seconds}s ago`);
                 setTimeAgo('now');
-                // console.log('second: ', seconds);
-            } else if (seconds < 3600) {
+            }
+            // Thời gian dưới 1 giờ
+            else if (seconds < 3600) {
                 const minutes = Math.floor(seconds / 60);
                 setTimeAgo(`${minutes}m ago`);
-            } else if (seconds < 86400) {
+            }
+            // Thời gian dưới 1 ngày
+            else if (seconds < 86400) {
                 const hours = Math.floor(seconds / 3600);
                 setTimeAgo(`${hours}h ago`);
-            } else if (seconds < 86400 * 2) {
-                setTimeAgo(`2 days ago`);
-            } else if (seconds < 86400 * 3) {
-                setTimeAgo(`3 days ago`);
-            } else {
-                setTimeAgo(formatDate(timestamp));
+            }
+            // Thời gian dưới 3 ngày
+            else if (seconds < 86400 * 3) {
+                const days = Math.floor(seconds / 86400);
+                setTimeAgo(`${days} days ago`);
+            }
+            // Thời gian lớn hơn 3 ngày
+            else {
+                const { day, month, year } = formatDate(timestamp);
+                const isNewYear = past.getFullYear() !== now.getFullYear();
+
+                if (isNewYear) {
+                    // Nếu lệch năm, hiển thị ngày/tháng/năm
+                    setTimeAgo(`${day}/${month}/${year}`);
+                } else {
+                    // Nếu không lệch năm, chỉ hiển thị ngày/tháng
+                    setTimeAgo(`${day}/${month}`);
+                }
             }
         };
 

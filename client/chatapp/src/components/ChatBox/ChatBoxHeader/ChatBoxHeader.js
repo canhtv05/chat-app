@@ -2,6 +2,7 @@ import { Avatar, Tooltip } from '@mui/joy';
 import { CiSearch } from 'react-icons/ci';
 import { PiTagSimpleFill } from 'react-icons/pi';
 import { useSelector } from 'react-redux';
+import images from '~/assets/images';
 
 import MyButton from '~/components/MyButton';
 import RenderIf from '~/components/RenderIf';
@@ -13,13 +14,13 @@ function ChatBoxHeader({ isOnline = false }) {
     const chat = data?.createdBy?.id ? data : null;
 
     return (
-        <div className="p-5 flex justify-between items-center border-b border-base-300 relative shrink-0 w-full">
+        <div className="p-5 flex justify-between items-center border-b border-base-300 relative w-full">
             <div className="flex w-full">
                 <div className="relative">
                     <Avatar
                         variant="soft"
                         alt={`${user?.firstName || ''} ${user?.lastName || ''}`}
-                        src={user?.profilePicture}
+                        src={user?.profilePicture ?? images.fallbackAvt}
                         sx={{
                             width: 50,
                             height: 50,

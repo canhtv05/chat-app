@@ -1,4 +1,5 @@
-import { Avatar } from '@mui/material';
+import { Avatar } from '@mui/joy';
+import { toast } from 'react-hot-toast';
 import MyButton from '../MyButton/MyButton';
 import { MdOutlineCameraAlt } from 'react-icons/md';
 import { LuPenLine } from 'react-icons/lu';
@@ -6,6 +7,7 @@ import { memo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateMyInfo } from '~/redux/reducers/authSlice';
+import { setLoading } from '~/redux/reducers/eventSlice';
 
 function ProfileInfo({ setIsShowEditForm }) {
     const dispatch = useDispatch();
@@ -13,25 +15,22 @@ function ProfileInfo({ setIsShowEditForm }) {
 
     const inputRef = useRef(null);
     const [tempPicture, setTempPicture] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
 
     const handleUploadFile = async (picture) => {
         if (!picture) return;
 
         if (!picture.type.startsWith('image/')) {
-            setError('Please upload an image file (jpg, png, etc.)');
+            toast.error('Please upload an image file (jpg, png, etc.)');
             return;
         }
 
         const maxSize = 5 * 1024 * 1024; // 5MB
         if (picture.size > maxSize) {
-            setError('File size exceeds 5MB limit');
+            toast.error('File size exceeds 5MB limit');
             return;
         }
 
-        setLoading(true);
-        setError(null);
+        dispatch(setLoading(true));
 
         const formData = new FormData();
         formData.append('file', picture);
@@ -45,19 +44,17 @@ function ProfileInfo({ setIsShowEditForm }) {
 
             const data = await response.json();
 
-            console.log(data);
-
             if (data.secure_url) {
                 setTempPicture(data.secure_url);
                 dispatch(updateMyInfo({ profilePicture: data.secure_url }));
             } else {
-                setError('Upload failed. Please try again.');
+                toast.error('Upload failed. Please try again.');
             }
         } catch (error) {
-            setError('Error uploading file. Please try again.');
-            console.error('Error uploading file:', error);
+            toast.error('Error uploading file. Please try again.');
         } finally {
-            setLoading(false);
+            dispatch(setLoading(false));
+            toast.success('Change avatar success!');
         }
     };
 
@@ -110,7 +107,7 @@ function ProfileInfo({ setIsShowEditForm }) {
                     </div>
                 </div>
             </div>
-            <div className="py-1 bg-base-100 mt-[75px]"></div>
+            <div className="py-1 mt-[75px]"></div>
             <div className="px-4 py-1 flex flex-col">
                 <span className="text-base-content font-semibold text-lg mb-2">Thông tin cá nhân</span>
                 {dataInfo.map((info, index) => (

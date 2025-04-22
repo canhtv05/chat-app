@@ -44,7 +44,16 @@ class SocketService {
     subscribe(topic, callback) {
         if (this.subscriptions.has(topic)) return;
         if (this.client && this.client.connected) {
-            return this.client.subscribe(topic, callback); // them return
+            const subscription = this.client.subscribe(topic, callback); // them return
+            this.subscriptions.set(topic, subscription);
+            return subscription;
+        } else return null;
+    }
+
+    unsubscription(topic) {
+        const subscription = this.subscriptions.get(topic);
+        if (subscription) {
+            subscription.unsubscribe();
         }
     }
 
@@ -58,7 +67,7 @@ class SocketService {
     }
 
     isReady() {
-        return this.client && this.client.connected;
+        return this.client && this.isConnected;
     }
 }
 

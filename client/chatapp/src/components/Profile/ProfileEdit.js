@@ -1,9 +1,11 @@
+import { useDispatch, useSelector } from 'react-redux';
+import { toast } from 'react-hot-toast';
 import { RadioGroup } from '@mui/joy';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import MyInput from '../MyInput/MyInput';
+
 import MyRadio from '../MyRadio/MyRadio';
 import MyButton from '../MyButton/MyButton';
-import { useDispatch, useSelector } from 'react-redux';
-import { useCallback, useEffect, useRef, useState } from 'react';
 import { updateMyInfo } from '~/redux/reducers/authSlice';
 
 function ProfileEdit({ setIsShowEditForm, getScrollHeight }) {
@@ -25,26 +27,6 @@ function ProfileEdit({ setIsShowEditForm, getScrollHeight }) {
         }
     }, []);
 
-    const [errors, setErrors] = useState({});
-    const [errorUpdateCurrentUser, setErrorUpdateCurrentUser] = useState('');
-
-    const handleBlur = (e) => {
-        const { name, value } = e.target;
-
-        let error = '';
-
-        if (!value.trim()) {
-            error = 'Please enter this field!';
-        } else if (value.length < 3 && (name === 'firstName' || name === 'lastName')) {
-            error = 'Must be at least 3 characters!';
-        }
-
-        setErrors((prev) => ({
-            ...prev,
-            [name]: error,
-        }));
-    };
-
     const handleChange = (e) => {
         const { value, name } = e.target;
 
@@ -52,121 +34,107 @@ function ProfileEdit({ setIsShowEditForm, getScrollHeight }) {
             ...prev,
             [name]: value,
         }));
-
-        setErrors((prev) => ({
-            ...prev,
-            [name]: '',
-        }));
-
-        setErrorUpdateCurrentUser('');
     };
 
     const handleSubmitForm = useCallback(
         async (e) => {
             e.preventDefault();
 
-            const newErrors = {};
-            if (!dataUpdateCurrentUser.firstName.trim()) newErrors.firstName = 'Please enter your first name!';
-            if (!dataUpdateCurrentUser.lastName.trim()) newErrors.lastName = 'Please enter your last name!';
-            if (!dataUpdateCurrentUser.dob.trim()) newErrors.dob = 'Please enter your date of birth!';
-            if (!dataUpdateCurrentUser.gender.trim()) newErrors.gender = 'Please enter your gender!';
-            if (Object.keys(newErrors).length > 0) {
-                setErrors(newErrors);
-                return;
+            const requireFields = {
+                firstName: 'Please enter your first name!',
+                lastName: 'Please enter your last name!',
+                dob: 'Please enter your date of birth!',
+                gender: 'Please enter your gender!',
+            };
+
+            for (let [field, message] of Object.entries(requireFields)) {
+                if (!dataUpdateCurrentUser[field].trim()) {
+                    toast.error(message);
+                    return;
+                }
             }
 
             const data = await dispatch(updateMyInfo(dataUpdateCurrentUser));
             if (updateMyInfo.fulfilled.match(data)) {
                 setIsShowEditForm(false);
             } else if (updateMyInfo.rejected.match(data)) {
-                setErrorUpdateCurrentUser(data.payload?.message);
+                toast.error(data.payload?.message);
                 return;
             }
-            setErrorUpdateCurrentUser('');
-            setErrors({});
         },
         [dataUpdateCurrentUser, dispatch, setIsShowEditForm],
     );
 
     useEffect(() => {
         if (formRef.current) {
-            if (errors || errorUpdateCurrentUser) {
-                // formRef.current.style.height = `${formRef.current.scrollHeight}px`;
-                getScrollHeight(formRef.current.scrollHeight);
-            }
+            // formRef.current.style.height = `${formRef.current.scrollHeight}px`;
+            getScrollHeight(formRef.current.scrollHeight);
         }
-    }, [errors, getScrollHeight, errorUpdateCurrentUser]);
+    }, [getScrollHeight]);
 
     return (
-        <form className="px-4 py-1 flex flex-col items-center h-full" ref={formRef} onSubmit={handleSubmitForm}>
-            <div className="flex my-2 w-full">
-                <div className="flex flex-col w-full">
-                    <span className="mb-2 text-base-content font-semibold">Tên</span>
-                    <MyInput
-                        name="firstName"
-                        className="mb-2 max-w-[200px] w-full"
-                        placeholder="First name"
-                        size="lg"
-                        value={dataUpdateCurrentUser.firstName}
-                        onBlur={handleBlur}
-                        onChange={handleChange}
-                    />
-                </div>
-                <div className="flex flex-col w-full">
-                    <span className="mb-2 text-base-content font-semibold">Họ</span>
-                    <MyInput
-                        name="lastName"
-                        className="mb-2 max-w-[200px] w-full"
-                        placeholder="Last name"
-                        size="lg"
-                        value={dataUpdateCurrentUser.lastName}
-                        onBlur={handleBlur}
-                        onChange={handleChange}
-                    />
-                </div>
-            </div>
-            {(errors.firstName || errors.lastName) && (
-                <p className="text-red-500 text-left text-sm font-semibold mb-1 w-full">
-                    {errors.firstName || errors.lastName}
-                </p>
-            )}
-            <div className="flex flex-col my-2 w-full">
-                <span className="mb-2 text-base-content text-lg font-semibold">Thông tin cá nhân</span>
-                <RadioGroup value={dataUpdateCurrentUser.gender} name="gender" onChange={handleChange}>
-                    <div className="flex my-2">
-                        <MyRadio value="MALE" label="Nam" size="md" />
-                        <span className="mx-6"></span>
-                        <MyRadio value="FEMALE" label="Nữ" size="md" />
+        <>
+            <form className="px-4 py-1 flex flex-col items-center h-full" ref={formRef} onSubmit={handleSubmitForm}>
+                <div className="flex my-2 w-full">
+                    <div className="flex flex-col w-full">
+                        <span className="mb-2 text-base-content font-semibold">Tên</span>
+                        <MyInput
+                            name="firstName"
+                            className="mb-2 max-w-[200px] w-full"
+                            placeholder="First name"
+                            size="lg"
+                            value={dataUpdateCurrentUser.firstName}
+                            onChange={handleChange}
+                        />
                     </div>
-                </RadioGroup>
-            </div>
-            {errors.gender && (
-                <p className="text-red-500 text-left text-sm font-semibold mb-1 w-full">{errors.gender}</p>
-            )}
-            <div className="flex flex-col my-2 w-full">
-                <span className="mb-2 text-base-content font-semibold">Ngày sinh</span>
-                <MyInput
-                    name="dob"
-                    size="lg"
-                    type="date"
-                    defaultValue={dataUpdateCurrentUser.dob}
-                    onBlur={handleBlur}
-                    onChange={handleChange}
-                />
-            </div>
-            {errors.dob && <p className="text-red-500 text-left text-sm font-semibold mb-1 w-full">{errors.dob}</p>}
-            {errorUpdateCurrentUser && (
-                <p className="text-red-500 font-semibold text-sm mb-2">{errorUpdateCurrentUser}</p>
-            )}
+                    <div className="flex flex-col w-full">
+                        <span className="mb-2 text-base-content font-semibold">Họ</span>
+                        <MyInput
+                            name="lastName"
+                            className="mb-2 max-w-[200px] w-full"
+                            placeholder="Last name"
+                            size="lg"
+                            value={dataUpdateCurrentUser.lastName}
+                            onChange={handleChange}
+                        />
+                    </div>
+                </div>
+                <div className="flex flex-col my-2 w-full">
+                    <span className="mb-2 text-base-content text-lg font-semibold">Thông tin cá nhân</span>
+                    <RadioGroup value={dataUpdateCurrentUser.gender} name="gender" onChange={handleChange}>
+                        <div className="flex my-2 text-base-content">
+                            <MyRadio value="MALE" label="Nam" size="md" />
+                            <span className="mx-6"></span>
+                            <MyRadio value="FEMALE" label="Nữ" size="md" />
+                        </div>
+                    </RadioGroup>
+                </div>
+                <div className="flex flex-col my-2 w-full">
+                    <span className="mb-2 text-base-content font-semibold">Ngày sinh</span>
+                    <MyInput
+                        name="dob"
+                        size="lg"
+                        type="date"
+                        defaultValue={dataUpdateCurrentUser.dob}
+                        onChange={handleChange}
+                    />
+                </div>
+            </form>
             <div className="border-base-300 border-t-2 w-full flex justify-end items-center p-2">
                 <MyButton height={50} onClick={() => setIsShowEditForm(false)}>
                     <span className="text-base-content font-semibold">Hủy</span>
                 </MyButton>
-                <MyButton height={50} width={'100px'} className="bg-base-100 ml-4" loading={loading} type="submit">
+                <MyButton
+                    height={50}
+                    width={'100px'}
+                    className="bg-base-100 ml-4"
+                    loading={loading}
+                    onClick={handleSubmitForm}
+                >
                     <span className="text-base-content font-semibold">Cập nhật</span>
                 </MyButton>
             </div>
-        </form>
+        </>
     );
 }
 

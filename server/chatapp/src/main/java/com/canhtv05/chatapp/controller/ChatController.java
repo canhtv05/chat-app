@@ -30,7 +30,6 @@ public class ChatController {
     ChatService chatService;
     UserService userService;
     ChatMapper chatMapper;
-    UserMapper userMapper;
 
     @PostMapping("/single")
     public ApiResponse<ChatResponse> creationChat(@RequestBody SingleChatCreationRequest request) {

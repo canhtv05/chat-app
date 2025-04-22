@@ -16,3 +16,8 @@ export const sendMessage = async (request) => {
     const [error, result] = await handlerRequest(httpRequest.post('/messages/send', request));
     return [error, result];
 };
+
+export const getLastMessageByIdChat = async (chatId) => {
+    const [error, result] = await handlerRequest(httpRequest.get(`/messages/${chatId}/last-message`));
+    return [error, result];
+};

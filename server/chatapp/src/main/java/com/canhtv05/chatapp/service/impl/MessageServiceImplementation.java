@@ -74,6 +74,9 @@ public class MessageServiceImplementation implements MessageService {
         Sort sort = Sort.by(Sort.Direction.ASC, "timestamp");
         Pageable pageable = PageRequest.of(pageIndex, size, sort);
 
+        log.info("check 1: {}, check 2: {}, check 3: {}", chat.getUsers(),
+                !chat.getAdmins().contains(userRequest), !chat.getCreatedBy().equals(userRequest));
+
         if (!chat.getUsers().contains(userRequest)
                 && !chat.getAdmins().contains(userRequest)
                 && !chat.getCreatedBy().equals(userRequest)) {
@@ -110,5 +113,11 @@ public class MessageServiceImplementation implements MessageService {
         } else {
             throw new AppException(ErrorCode.CANT_DELETE_OTHER_MESSAGE);
         }
+    }
+
+    @Override
+    public MessageResponse getLastMessageByChatId(String chatId) {
+        Message message = messageRepository.getLastMessageByChatId(chatId);
+        return messageMapper.toMessageResponse(message);
     }
 }

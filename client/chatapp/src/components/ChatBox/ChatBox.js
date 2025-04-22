@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { toast } from 'react-hot-toast';
 
 import RenderIf from '../RenderIf';
 import icons from '~/assets/icons';
@@ -12,12 +13,6 @@ import useKeyValue from '~/hooks/useKeyValue';
 import { updateLastMessage } from '~/redux/reducers/chatSlice';
 import socketService from '~/services/socket/socketService';
 import LoadingIcon from '../LoadingIcon';
-import colors from '../AccountItem/colors';
-
-const getRandomBackground = () => {
-    const randomIndex = Math.floor(Math.random() * colors.backgrounds.length);
-    return colors.backgrounds[randomIndex];
-};
 
 function ChatBox() {
     const dispatch = useDispatch();
@@ -51,6 +46,7 @@ function ChatBox() {
     const prevPage = useRef(-1);
 
     const [dataMessage, setDataMessage] = useState([]);
+    const [isSending, setIsSending] = useState(false);
     const [content, setContent] = useState('');
     const [isChatCreated, setIsChatCreated] = useState(false);
     const [chatId, setChatId] = useState('');
@@ -77,10 +73,10 @@ function ChatBox() {
 
         let idChat = isSearch ? getIdChatByUserId(targetId) : targetId;
 
-        const subscription = socketService.subscribe(`/group/${idChat}`, onMessageReceive);
+        socketService.subscribe(`/group/${idChat}`, onMessageReceive);
 
         return () => {
-            subscription.unsubscribe();
+            socketService.unsubscription(`/group/${idChat}`);
         };
     }, [currentChat, getIdChatByUserId, isSearch, onMessageReceive, targetId]);
 
@@ -103,7 +99,7 @@ function ChatBox() {
             setLoading(false);
 
             if (error) {
-                console.log('Lỗi khi lấy tin nhắn:', error);
+                toast.error(error?.data?.message);
                 return;
             }
 
@@ -178,6 +174,11 @@ function ChatBox() {
     useEffect(() => {
         if (lastMessageRef.current && shouldScrollToBottom) {
             lastMessageRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+
+            const scrollContainer = containerRef.current;
+            if (scrollContainer) {
+                scrollContainer.scrollTop += 50;
+            }
         }
     }, [dataMessage, shouldScrollToBottom]);
 
@@ -189,98 +190,104 @@ function ChatBox() {
         }
     }, [dataMessage]);
 
-    const handleSendMessage = useCallback(async () => {
-        if (!content.trim() || !targetId) return;
+    const handleSendMessage = useCallback(
+        async (message) => {
+            const contentToSend = message || content.trim();
+            if (!contentToSend || !targetId) return;
+            let currentChatId = chatId;
+            const timestamp = new Date().toISOString();
 
-        let currentChatId = chatId;
-        const timestamp = new Date().toISOString();
-
-        const currentUser = {
-            id: currentUserId,
-            firstName,
-            lastName,
-            email,
-            profilePicture,
-        };
-
-        const targetUser = {
-            id: targetId,
-            firstName: firstNameCurrentChat,
-            lastName: lastNameCurrentChat,
-            email: emailCurrentChat,
-            profilePicture: profilePictureCurrentChat,
-        };
-
-        if (!isChatCreated) {
-            const [error, result] = await createSingleChat(idUser);
-            if (error) {
-                console.error('Failed to create chat:', error);
-                return;
-            }
-
-            currentChatId = result?.data?.id;
-            const body = {
-                background: getRandomBackground(),
-                chatImage: null,
-                chatName: null,
-                createdBy: currentUser,
-                id: currentChatId,
-                isGroup: false,
-                users: [currentUser, targetUser],
-                content,
-                timestamp,
-                chatId: currentChatId,
+            const currentUser = {
+                id: currentUserId,
+                firstName,
+                lastName,
+                email,
+                profilePicture,
             };
 
-            socketService.send('single-chat-created', body);
-            setChatId(currentChatId);
-            setIsChatCreated(true);
-        }
+            const targetUser = {
+                id: targetId,
+                firstName: firstNameCurrentChat,
+                lastName: lastNameCurrentChat,
+                email: emailCurrentChat,
+                profilePicture: profilePictureCurrentChat,
+            };
 
-        const localMessage = {
-            chatId: currentChatId,
-            content,
-            user: currentUser,
-            timestamp,
-        };
+            if (!isChatCreated) {
+                const [error, result] = await createSingleChat(idUser);
+                if (error) {
+                    toast.error(error?.data?.message);
+                    return;
+                }
 
-        dispatch(updateLastMessage(localMessage));
-        setDataMessage((prev) => [...prev, localMessage]);
+                currentChatId = result?.data?.id;
+                const body = {
+                    chatImage: null,
+                    chatName: null,
+                    createdBy: currentUser,
+                    id: currentChatId,
+                    isGroup: false,
+                    users: [currentUser, targetUser],
+                    content: contentToSend,
+                    timestamp,
+                    chatId: currentChatId,
+                };
 
-        if (socketService.isReady()) {
-            socketService.send('message', {
+                socketService.send('single-chat-created', body);
+                socketService.subscribe(`/group/${currentChatId}`, onMessageReceive);
+                setChatId(currentChatId);
+                setIsChatCreated(true);
+            }
+
+            const localMessage = {
                 chatId: currentChatId,
-                content,
-                userId: currentUserId,
+                content: contentToSend,
+                user: currentUser,
                 timestamp,
-            });
-            setContent('');
-        }
+            };
 
-        setShouldScrollToBottom(true);
-        await sendMessage({ chatId: currentChatId, content });
-    }, [
-        chatId,
-        content,
-        currentUserId,
-        dispatch,
-        email,
-        emailCurrentChat,
-        firstName,
-        firstNameCurrentChat,
-        idUser,
-        isChatCreated,
-        lastName,
-        lastNameCurrentChat,
-        profilePicture,
-        profilePictureCurrentChat,
-        targetId,
-    ]);
+            dispatch(updateLastMessage(localMessage));
+            setDataMessage((prev) => [...prev, localMessage]);
+
+            if (socketService.isReady()) {
+                socketService.send('message', {
+                    chatId: currentChatId,
+                    content: contentToSend,
+                    userId: currentUserId,
+                    timestamp,
+                });
+                setContent('');
+            }
+
+            setShouldScrollToBottom(true);
+            setIsSending(true);
+            await sendMessage({ chatId: currentChatId, content: contentToSend });
+            setIsSending(false);
+        },
+        [
+            chatId,
+            content,
+            currentUserId,
+            dispatch,
+            email,
+            emailCurrentChat,
+            firstName,
+            firstNameCurrentChat,
+            idUser,
+            isChatCreated,
+            lastName,
+            lastNameCurrentChat,
+            profilePicture,
+            profilePictureCurrentChat,
+            targetId,
+            onMessageReceive,
+        ],
+    );
 
     return (
         <div className="absolute top-0 left-0 w-full h-full bg-base-100">
             <RenderIf value={!currentChat}>
-                <div className="absolute top-1/4 left-1/2 transform -translate-x-1/2 -translate-y-1/4 flex flex-col items-center">
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
                     <img
                         loading="lazy"
                         className="object-cover w-[80%] h-[80%]"
@@ -315,8 +322,10 @@ function ChatBox() {
 
                                     return (
                                         <MessageCard
+                                            isSending={isSending}
                                             key={index}
                                             ref={isFirst ? firstMessageItemRef : isLast ? lastMessageRef : null}
+                                            isLast={isLast}
                                             isMe={currentUserId === data?.user?.id}
                                             content={data?.content}
                                         />

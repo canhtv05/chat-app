@@ -39,11 +39,29 @@ const chatSlice = createSlice({
             state.lastMessages = newState;
         },
         addLastMessage(state, action) {
-            if (!action.payload || typeof action.payload !== 'object') return;
-            state.lastMessages = { ...state.lastMessages, ...action.payload };
+            const data = action.payload;
+
+            if (!data || typeof data !== 'object') return;
+
+            const { chatId, content, createdBy, timestamp } = data;
+
+            if (!chatId || !createdBy) return;
+
+            state.lastMessages[chatId] = {
+                content,
+                user: {
+                    id: createdBy.id,
+                    firstName: createdBy.firstName,
+                    lastName: createdBy.lastName,
+                },
+                timestamp,
+            };
         },
         setCurrentChat(state, action) {
             state.currentChat = action.payload;
+        },
+        setChats(state, action) {
+            state.chats = action.payload;
         },
     },
 });
@@ -56,5 +74,6 @@ export const {
     addLastMessage,
     updateLastMessage,
     setCurrentChat,
+    setChats,
 } = chatSlice.actions;
 export default chatSlice.reducer;

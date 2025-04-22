@@ -4,7 +4,6 @@ const routes = {
     login: '/login',
     modals: {
         settings: '/settings',
-        profile: '/profile',
     },
 };
 

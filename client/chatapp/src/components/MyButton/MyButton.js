@@ -1,4 +1,4 @@
-import { Button } from '@mui/material';
+import { Button } from '@mui/joy';
 import { useEffect, useState } from 'react';
 import { AiOutlineLoading } from 'react-icons/ai';
 import PropTypes from 'prop-types';
@@ -37,8 +37,8 @@ function MyButton({
 
     return (
         <div
-            className={`flex justify-center items-center ${
-                isActive ? 'active' : `hover:bg-base-100 transition-all ease-in-out duration-500`
+            className={`flex justify-center items-center transition-all ease-in-out duration-300 ${
+                isActive ? 'bg-base-200' : `hover:bg-base-100`
             } rounded-xl ${className} ${loading ? 'pointer-events-none pl-3' : 'hover:bg-base-100'}`}
             style={isRounded && { borderRadius: '50%' }}
         >
@@ -53,6 +53,11 @@ function MyButton({
                     minHeight,
                     minWidth,
                     opacity: loading && '0.1',
+                    background: 'transparent',
+                    padding: 0,
+                    ':hover': {
+                        background: 'oklch(var(--b3))',
+                    },
                 }}
             >
                 {children}

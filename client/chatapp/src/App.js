@@ -1,5 +1,5 @@
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
-import { Fragment, useCallback, useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
 import { modals, privateRoutes, publicRoutes } from './routes';
@@ -8,7 +8,7 @@ import PrivateRoute from './routes/PrivateRoute';
 import { getMyInfo } from './redux/reducers/authSlice';
 import PublicRoute from './routes/PublicRoute';
 import cookieUtil from './utils/cookieUtils';
-import socketService from './services/socket/socketService';
+import { Toaster } from 'react-hot-toast';
 
 function App() {
     const location = useLocation();
@@ -17,14 +17,6 @@ function App() {
     const background = location.state && location.state.background;
 
     const [isLoadUser, setIsLoadUser] = useState(true);
-
-    const connect = useCallback(() => {
-        socketService.onconnect();
-    }, []);
-
-    useEffect(() => {
-        connect();
-    }, [connect]);
 
     useEffect(() => {
         if (cookieUtil.getStorage()?.accessToken) {
@@ -87,6 +79,7 @@ function App() {
                     )}
                 </>
             )}
+            <Toaster position="top-center" reverseOrder={false} />
         </>
     );
 }

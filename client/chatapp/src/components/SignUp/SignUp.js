@@ -1,4 +1,5 @@
 import { Button, Input, Radio, RadioGroup } from '@mui/joy';
+import { toast } from 'react-hot-toast';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { signUp } from '~/redux/reducers/authSlice';
@@ -21,9 +22,7 @@ const buttonStyle = {
 
 function SignUp({ isClick }) {
     const dispatch = useDispatch();
-    const [errorSignUp, setErrorSignUp] = useState('');
     const { loading } = useSelector((state) => state.auth);
-    const [errors, setErrors] = useState({});
     const [dataSignup, setDataSignup] = useState({
         firstName: '',
         lastName: '',
@@ -45,8 +44,6 @@ function SignUp({ isClick }) {
                 gender: 'MALE',
                 phone: '',
             });
-            setErrorSignUp('');
-            setErrors({});
         }
     }, [isClick]);
 
@@ -55,50 +52,26 @@ function SignUp({ isClick }) {
             ...prev,
             [e.target.name]: e.target.value,
         }));
-
-        setErrors((prev) => ({
-            ...prev,
-            [e.target.name]: '',
-        }));
-
-        setErrorSignUp('');
-    };
-
-    const handleBlur = (e) => {
-        const { name, value } = e.target;
-
-        let error = '';
-
-        if (!value.trim()) {
-            error = 'Please enter this field!';
-        } else if (value.length < 3 && name !== 'email') {
-            error = 'Must be at least 3 characters!';
-        } else if (name === 'email' && !/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(value)) {
-            error = 'Please enter correct email format. Ex: abc@gmail.com';
-        } else if (name === 'password' && !/^(?=.*\d)(?=.*[A-Za-z]).{4,}$/.test(value)) {
-            error = 'Password must contain at least 1 letter and 1 number!';
-        }
-
-        setErrors((prev) => ({
-            ...prev,
-            [name]: error,
-        }));
     };
 
     const handleSignUp = async (e) => {
         e.preventDefault();
 
-        const newErrors = {};
-        if (!dataSignup.firstName.trim()) newErrors.email = 'Please enter your first name!';
-        if (!dataSignup.lastName.trim()) newErrors.lastName = 'Please enter your first name!';
-        if (!dataSignup.dob.trim()) newErrors.dob = 'Please enter your dob!';
-        if (!dataSignup.gender.trim()) newErrors.gender = 'Please enter your gender!';
-        if (!dataSignup.phone.trim()) newErrors.phone = 'Please enter your phone!';
-        if (!dataSignup.email.trim()) newErrors.email = 'Please enter your email!';
-        if (!dataSignup.password.trim()) newErrors.password = 'Please enter your password!';
-        if (Object.keys(newErrors).length > 0) {
-            setErrors(newErrors);
-            return;
+        const requireFields = {
+            firstName: 'Please enter your first name!',
+            lastName: 'Please enter your last name!',
+            dob: 'Please enter your dob!',
+            gender: 'Please enter your gender!',
+            phone: 'Please enter your phone!',
+            email: 'Please enter your email!',
+            password: 'Please enter your password!',
+        };
+
+        for (const [field, message] of Object.entries(requireFields)) {
+            if (!dataSignup[field].trim()) {
+                toast.error(message);
+                return;
+            }
         }
 
         // eslint-disable-next-line no-unused-vars
@@ -114,12 +87,9 @@ function SignUp({ isClick }) {
                 phone: '',
             });
         } else if (signUp.rejected.match(data)) {
-            setErrorSignUp(data.payload?.message);
+            toast.error(data.payload?.message);
             return;
         }
-
-        setErrorSignUp('');
-        setErrors({});
     };
 
     return (
@@ -151,7 +121,6 @@ function SignUp({ isClick }) {
                         type="text"
                         placeholder="First name"
                         className="mb-2 max-w-[134px]"
-                        onBlur={handleBlur}
                     />
                     <Input
                         name="lastName"
@@ -161,14 +130,8 @@ function SignUp({ isClick }) {
                         type="text"
                         placeholder="Last name"
                         className="mb-2 max-w-[134px]"
-                        onBlur={handleBlur}
                     />
                 </div>
-                {(errors.firstName || errors.lastName) && (
-                    <p className="text-red-500 text-left text-sm font-semibold mb-1 w-full">
-                        {errors.firstName || errors.lastName}
-                    </p>
-                )}
                 <span className="text-left text-white text-sm font-semibold mb-1 w-full">Date of birth</span>
                 <Input
                     name="dob"
@@ -177,9 +140,7 @@ function SignUp({ isClick }) {
                     variant="soft"
                     type="date"
                     className="mb-2 w-full"
-                    onBlur={handleBlur}
                 />
-                {errors.dob && <p className="text-red-500 text-left text-sm font-semibold mb-1 w-full">{errors.dob}</p>}
                 <span className="text-left text-white text-sm font-semibold mb-1 w-full">Gender</span>
                 <RadioGroup
                     defaultValue={String(dataSignup.gender)}
@@ -203,11 +164,7 @@ function SignUp({ isClick }) {
                     type="text"
                     placeholder="Phone number"
                     className="mb-2 w-full"
-                    onBlur={handleBlur}
                 />
-                {errors.phone && (
-                    <p className="text-red-500 text-left text-sm font-semibold mb-1 w-full">{errors.phone}</p>
-                )}
                 <span className="text-left text-white text-sm font-semibold mb-1 w-full">Email</span>
                 <Input
                     name="email"
@@ -217,11 +174,7 @@ function SignUp({ isClick }) {
                     type="email"
                     placeholder="Email"
                     className="mb-2 w-full"
-                    onBlur={handleBlur}
                 />
-                {errors.email && (
-                    <p className="text-red-500 text-left text-sm font-semibold mb-1 w-full">{errors.email}</p>
-                )}
                 <span className="text-left text-white text-sm font-semibold mb-1 w-full">Password</span>
                 <Input
                     name="password"
@@ -231,12 +184,7 @@ function SignUp({ isClick }) {
                     type="password"
                     placeholder="Password"
                     className="mb-2 w-full"
-                    onBlur={handleBlur}
                 />
-                {errors.password && (
-                    <p className="text-red-500 text-left text-sm font-semibold mb-1 w-full">{errors.password}</p>
-                )}
-                {errorSignUp && <p className="text-red-500 font-semibold text-sm mb-2">{errorSignUp}</p>}
                 <Button variant="soft" loading={loading} className="button mt-2" sx={buttonStyle} type="submit">
                     Sign Up
                 </Button>

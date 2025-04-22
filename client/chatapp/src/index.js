@@ -7,6 +7,7 @@ import { Provider } from 'react-redux';
 
 import store from './redux/store';
 import GlobalStyles from './components/GlobalStyle';
+import SocketProvider from './components/SocketProvider/SocketProvider';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -14,7 +15,9 @@ root.render(
     <Provider store={store}>
         <GlobalStyles>
             <BrowserRouter>
-                <App />
+                <SocketProvider>
+                    <App />
+                </SocketProvider>
             </BrowserRouter>
         </GlobalStyles>
     </Provider>,

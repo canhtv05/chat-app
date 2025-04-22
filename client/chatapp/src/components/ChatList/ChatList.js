@@ -1,37 +1,40 @@
 import { CiSearch } from 'react-icons/ci';
+import { toast } from 'react-hot-toast';
 import { AiOutlineUserAdd, AiOutlineUsergroupAdd } from 'react-icons/ai';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
 import MyInput from '../MyInput';
 import MyButton from '../MyButton';
 import AccountItem from '../AccountItem';
 import ModalAddGroup from './ModalAddGroup';
 import useDebounce from '~/hooks/useDebounce';
-import { searchUser } from '~/services/user/userService';
 import RenderIf from '../RenderIf';
-import { useDispatch, useSelector } from 'react-redux';
-import { setCurrentChat, setIdChatOfUser, setInfoCurrentChat, setLastMessage } from '~/redux/reducers/chatSlice';
+import {
+    addLastMessage,
+    setChats,
+    setCurrentChat,
+    setIdChatOfUser,
+    setInfoCurrentChat,
+    setLastMessage,
+} from '~/redux/reducers/chatSlice';
+import { searchUser } from '~/services/user/userService';
 import { getAllMyChats } from '~/services/chat/chatService';
-import { getAllMessagesFromChat } from '~/services/message/messageService';
-import colors from '../AccountItem/colors';
+import { getLastMessageByIdChat } from '~/services/message/messageService';
 import socketService from '~/services/socket/socketService';
 import LoadingIcon from '../LoadingIcon';
-
-const getRandomBackground = () => {
-    const randomIndex = Math.floor(Math.random() * colors.backgrounds.length);
-    return colors.backgrounds[randomIndex];
-};
+import { ChatListSkeleton } from '../Skeleton';
 
 function ChatList() {
     const dispatch = useDispatch();
     const { id: currentUserId, email } = useSelector((state) => state.auth.data.data);
     const [activeIndex, setActiveIndex] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
+    const [loadingChatList, setLoadingChatList] = useState(false);
     const [query, setQuery] = useState('');
     const [isShowModalAddGroup, setIsShowModalAddGroup] = useState(false);
     const [searchRes, setSearchRes] = useState([]);
-    const [chats, setChats] = useState([]);
+    const { chats } = useSelector((state) => state.chat);
 
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
@@ -41,40 +44,41 @@ function ChatList() {
 
     const debounceValue = useDebounce(query, 500);
 
-    const onChatCreated = (payload) => {
-        const received = JSON.parse(payload.body);
-        console.log(received);
-        setChats((prev) => [received, ...prev]);
-    };
+    const onChatCreated = useCallback(
+        (payload) => {
+            const received = JSON.parse(payload.body);
+            if (!received?.users?.some((user) => user.id === currentUserId)) return;
+            setChats((prev) => [received, ...prev]);
+            dispatch(addLastMessage(received));
+        },
+        [dispatch, currentUserId],
+    );
 
     useEffect(() => {
-        console.log(email);
         socketService.subscribe(`/create-single-chat`, onChatCreated);
         return () => {
-            socketService.unsubscribe(`/create-single-chat`);
+            socketService.unsubscription(`/create-single-chat`);
         };
-    }, [email]);
+    }, [email, onChatCreated]);
 
     useEffect(() => {
         setPage(1);
         setSearchRes([]);
         setHasMore(true);
-        setError(null);
         setActiveIndex(null);
-        setError(null);
     }, [debounceValue]);
 
     useEffect(() => {
         const fetchApi = async () => {
+            setLoadingChatList(true);
             const [error, result] = await getAllMyChats();
             if (error) {
-                setError('Failed to load chats. Please try again.');
+                toast.error('Failed to load chats. Please try again.');
                 return;
             }
-
             const chatsData = result.data || [];
             const chatUserMapping = {};
-            const chatsWithBackground = chatsData.map((chat) => {
+            const chats = chatsData.map((chat) => {
                 if (!chat?.isGroup) {
                     const otherUser = chat?.users?.find((user) => user?.id !== currentUserId);
                     if (otherUser) {
@@ -85,22 +89,22 @@ function ChatList() {
 
                 return {
                     ...chat,
-                    background: getRandomBackground(),
                 };
             });
 
-            setChats(chatsWithBackground);
+            dispatch(setChats(chats));
             dispatch(setIdChatOfUser(chatUserMapping));
 
             // get last message
             const initialLastMessages = {};
             for (let i = 0; i < chatsData.length; i++) {
-                const [error, result] = await getAllMessagesFromChat(chatsData[i].id);
-                if (!error && result.data && result.data.length > 0) {
-                    initialLastMessages[chatsData[i].id] = result.data[result.data.length - 1];
+                const [err, res] = await getLastMessageByIdChat(chatsData[i].id);
+                if (!err && res.data) {
+                    initialLastMessages[chatsData[i].id] = res.data;
                 }
             }
             dispatch(setLastMessage(initialLastMessages));
+            setLoadingChatList(false);
         };
 
         fetchApi();
@@ -116,11 +120,10 @@ function ChatList() {
 
         const fetchApi = async () => {
             setLoading(true);
-            setError(null);
 
             const [error, result] = await searchUser(debounceValue, page);
             if (error) {
-                setError('Failed to load search results. Please try again.');
+                toast.error('Failed to load search results. Please try again.');
                 setSearchRes([]);
                 setHasMore(false);
                 setLoading(false);
@@ -133,7 +136,6 @@ function ChatList() {
                 const newData = result?.data || [];
                 const newDataWithBackground = newData.map((user) => ({
                     ...user,
-                    background: getRandomBackground(),
                 }));
                 const existingIds = new Set(prev.map((item) => item.id));
                 const uniqueNewData = newDataWithBackground.filter((item) => !existingIds.has(item.id));
@@ -168,7 +170,6 @@ function ChatList() {
 
     const handleClick = useCallback(
         (index, data) => {
-            console.log(data);
             setActiveIndex(index);
             dispatch(setCurrentChat(true));
             // kiểm tra xem nếu có created by thì là list chat, còn ko thì là search user
@@ -202,18 +203,24 @@ function ChatList() {
                         size="md"
                         onChange={handleSearch}
                         value={query}
+                        className={`w-[90%]`}
                     />
-                    <RenderIf value={loading}>
-                        <LoadingIcon className="absolute top-1/2 right-0 -translate-x-1/2 -translate-y-1/2 " />
-                    </RenderIf>
                 </div>
-                <MyButton size="sm">
-                    <AiOutlineUserAdd className="size-6 text-base-content cursor-pointer" />
-                </MyButton>
-                <MyButton size="sm" onClick={() => setIsShowModalAddGroup(true)}>
-                    <AiOutlineUsergroupAdd className="size-6 text-base-content cursor-pointer" />
-                </MyButton>
+
+                <div className="flex -ml-3">
+                    <MyButton size="sm">
+                        <AiOutlineUserAdd className="size-6 text-base-content cursor-pointer" />
+                    </MyButton>
+                    <MyButton size="sm" onClick={() => setIsShowModalAddGroup(true)}>
+                        <AiOutlineUsergroupAdd className="size-6 text-base-content cursor-pointer" />
+                    </MyButton>
+                </div>
             </div>
+            <RenderIf value={loading}>
+                <div className="flex w-full justify-center my-2">
+                    <LoadingIcon size={30} />
+                </div>
+            </RenderIf>
             <div className="overflow-y-auto" tabIndex={-1}>
                 <RenderIf value={debounceValue && searchRes.length > 0}>
                     {searchRes.map((data, index) => (
@@ -228,25 +235,28 @@ function ChatList() {
                         />
                     ))}
                 </RenderIf>
-
-                <RenderIf value={!debounceValue && !loading}>
-                    {chats.map((chat, index) => (
-                        <AccountItem
-                            key={chat.id}
-                            separator={index !== chats.length - 1}
-                            isActive={index === activeIndex}
-                            onClick={() => handleClick(index, chat)}
-                            data={chat}
-                        />
-                    ))}
+                <RenderIf value={!debounceValue}>
+                    <RenderIf value={!loadingChatList}>
+                        {chats.map((chat, index) => (
+                            <AccountItem
+                                key={chat.id}
+                                separator={index !== chats.length - 1}
+                                isActive={index === activeIndex}
+                                onClick={() => handleClick(index, chat)}
+                                data={chat}
+                            />
+                        ))}
+                    </RenderIf>
+                    <RenderIf value={loadingChatList}>
+                        {Array(5)
+                            .fill()
+                            .map((_, index) => (
+                                <ChatListSkeleton key={index} />
+                            ))}
+                    </RenderIf>
                 </RenderIf>
-
                 <RenderIf value={!loading && debounceValue && searchRes.length === 0}>
                     <div className="p-5 text-center text-base-content">No users found!</div>
-                </RenderIf>
-
-                <RenderIf value={error}>
-                    <div className="p-5 text-center text-red-500">{error}</div>
                 </RenderIf>
             </div>
             <ModalAddGroup isOpen={isShowModalAddGroup} setIsOpen={setIsShowModalAddGroup} />

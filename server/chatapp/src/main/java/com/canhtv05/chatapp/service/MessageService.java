@@ -16,4 +16,6 @@ public interface MessageService {
     Message findMessageById(String messageId, User userRequest);
 
     void deleteMessage(String messageId, User userRequest);
+
+    MessageResponse getLastMessageByChatId(String chatId);
 }

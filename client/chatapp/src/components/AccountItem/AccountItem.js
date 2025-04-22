@@ -3,10 +3,12 @@ import PropTypes from 'prop-types';
 import { forwardRef, memo, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { PiTagSimpleFill } from 'react-icons/pi';
+import { AiFillLike } from 'react-icons/ai';
 
 import RenderIf from '../RenderIf';
 import useTimeAgo from '~/hooks/useTimeAgo';
 import useKeyValue from '~/hooks/useKeyValue';
+import images from '~/assets/images';
 
 const AccountItem = forwardRef(({ separator, isOnline, isActive, onClick, data, isSearchAccount = false }, ref) => {
     const { id: currentUserId } = useSelector((state) => state.auth.data.data);
@@ -35,8 +37,13 @@ const AccountItem = forwardRef(({ separator, isOnline, isActive, onClick, data, 
     }, [data]);
 
     return (
-        <div ref={ref}>
-            <div className={`cursor-pointer ${isActive ? 'bg-base-200' : 'hover:bg-active'}`} onClick={onClick}>
+        <div className="container" ref={ref}>
+            <div
+                className={`cursor-pointer transition-all ease-in-out duration-300 ${
+                    isActive ? 'bg-base-200' : 'hover:bg-base-200'
+                }`}
+                onClick={onClick}
+            >
                 <div className={separator ? 'border-base-300 border-b p-6' : 'p-6'}>
                     <div className="flex">
                         <div className="relative">
@@ -44,11 +51,10 @@ const AccountItem = forwardRef(({ separator, isOnline, isActive, onClick, data, 
                                 <Avatar
                                     variant="soft"
                                     alt={`${user?.firstName || ''} ${user?.lastName || ''}`}
-                                    src={user?.profilePicture}
+                                    src={user?.profilePicture ?? images.fallbackAvt}
                                     sx={{
                                         width: 50,
                                         height: 50,
-                                        background: data?.background ?? lastMessageRealTime?.background,
                                     }}
                                     onError={(e) => {
                                         e.target.onerror = null;
@@ -126,7 +132,22 @@ const AccountItem = forwardRef(({ separator, isOnline, isActive, onClick, data, 
                                                     : 'max-w-[70px]'
                                             }`}
                                         >
-                                            {lastMessage?.content ?? lastMessageRealTime?.content}
+                                            <RenderIf
+                                                value={
+                                                    lastMessage?.content === 'like' ??
+                                                    lastMessageRealTime?.content === 'like'
+                                                }
+                                            >
+                                                <AiFillLike className="size-5 text-primary" />
+                                            </RenderIf>
+                                            <RenderIf
+                                                value={
+                                                    lastMessage?.content !== 'like' ??
+                                                    lastMessageRealTime?.content !== 'like'
+                                                }
+                                            >
+                                                {lastMessage?.content ?? lastMessageRealTime?.content}
+                                            </RenderIf>
                                         </span>
                                     </RenderIf>
                                     <RenderIf value={!lastMessage}>

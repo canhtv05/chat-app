@@ -59,8 +59,6 @@ httpRequest.interceptors.response.use(
 
         const getRefreshToken = cookieUtil.getStorage()?.refreshToken;
 
-        console.log(cookieUtil.getStorage());
-
         if (error.response?.data?.code === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
 

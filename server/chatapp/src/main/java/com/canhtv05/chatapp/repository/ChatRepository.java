@@ -17,6 +17,6 @@ public interface ChatRepository extends JpaRepository<Chat, String> {
             "SELECT c FROM Chat c JOIN c.users u1 JOIN c.users u2 WHERE c.isGroup = false AND u1 = :user AND u2 = :requestUser")
     Chat findSingleChatByUserIds(@Param("user") User user, @Param("requestUser") User requestUser);
 
-    @Query("SELECT c FROM Chat c JOIN c.users u WHERE u.id = :userId")
+    @Query("SELECT c FROM Chat c JOIN c.users u WHERE u.id = :userId ORDER BY c.createdAt DESC ")
     List<Chat> findChatByUserId(@Param("userId") String userId);
 }

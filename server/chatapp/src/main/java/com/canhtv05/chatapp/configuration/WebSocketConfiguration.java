@@ -9,19 +9,13 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 
 @Configuration
 @EnableWebSocketMessageBroker
-@RequiredArgsConstructor
 public class WebSocketConfiguration implements WebSocketMessageBrokerConfigurer {
-
-    private final TokenProvider tokenProvider;
-
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry
                 .addEndpoint("/ws")
-//                .addInterceptors(new AuthHandshakeInterceptor())
                 .setAllowedOrigins("http://localhost:3000")
-//                .setHandshakeHandler(new CustomHandshakeHandler(tokenProvider))
                 .withSockJS();
     }
 

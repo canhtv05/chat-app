@@ -98,4 +98,11 @@ public class MessageController {
 
         return ApiResponse.<Void>builder().message("Message deleted").build();
     }
+
+    @GetMapping("/{chatId}/last-message")
+    public ApiResponse<MessageResponse> getLastMessage(@PathVariable String chatId) {
+        return ApiResponse.<MessageResponse>builder()
+                .data(messageService.getLastMessageByChatId(chatId))
+                .build();
+    }
 }
