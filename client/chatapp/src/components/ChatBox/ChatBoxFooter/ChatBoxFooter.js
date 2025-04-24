@@ -40,6 +40,17 @@ function ChatBoxFooter({ content, setContent, onSend }) {
         [setContent, onSend],
     );
 
+    const handleClick = useCallback(
+        (typeIcon) => {
+            if (typeIcon) onSend(typeIcon);
+            else onSend();
+            setIsLineBeak(false);
+            textAreaRef.current.style.height = '36px';
+            setContent('');
+        },
+        [onSend, setContent],
+    );
+
     const handleOnEmojiClick = useCallback(
         (emojiData, event) => {
             const textarea = textAreaRef.current;
@@ -84,7 +95,7 @@ function ChatBoxFooter({ content, setContent, onSend }) {
                 <MyButton size="sm" onClick={() => setOpenEmoji((prev) => !prev)}>
                     <CiFaceSmile className="size-7 text-base-content cursor-pointer" />
                 </MyButton>
-                <MyButton size="sm" onClick={content.length === 0 ? () => onSend('like') : () => onSend()}>
+                <MyButton size="sm" onClick={content.length === 0 ? () => handleClick('like') : () => handleClick()}>
                     <RenderIf value={content.length !== 0}>
                         <IoIosSend className="size-7 text-primary cursor-pointer rotate-45" />
                     </RenderIf>

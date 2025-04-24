@@ -1,288 +1,30 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { toast } from 'react-hot-toast';
+import { Fragment, useRef } from 'react';
 
 import RenderIf from '../RenderIf';
 import icons from '~/assets/icons';
 import ChatBoxHeader from './ChatBoxHeader';
-import MessageCard from '../MessageCard';
 import ChatBoxFooter from './ChatBoxFooter';
-import { getAllMessagesFromChat, sendMessage } from '~/services/message/messageService';
-import { createSingleChat } from '~/services/chat/chatService';
-import useKeyValue from '~/hooks/useKeyValue';
-import { updateLastMessage } from '~/redux/reducers/chatSlice';
-import socketService from '~/services/socket/socketService';
 import LoadingIcon from '../LoadingIcon';
+import { ScrollToBottom } from '../ScrollTo';
+import DateUtils from '~/utils/dateUtils';
+import useChatBoxLogic from './useChatBoxLogic';
+import { MessageCard } from '../MessageCard';
 
 function ChatBox() {
-    const dispatch = useDispatch();
+    const firstMessageItemRef = useRef();
+    const lastMessageRef = useRef();
+    const containerRef = useRef();
     const {
-        data: {
-            id: targetId,
-            isSearch,
-            idUser,
-            firstName: firstNameCurrentChat,
-            lastName: lastNameCurrentChat,
-            email: emailCurrentChat,
-            profilePicture: profilePictureCurrentChat,
-        },
+        content,
         currentChat,
-    } = useSelector((state) => state.chat);
-
-    const idChatOfUser = useSelector((state) => state.chat.idChatOfUser);
-    const {
-        id: currentUserId,
-        firstName,
-        lastName,
-        email,
-        profilePicture,
-    } = useSelector((state) => state.auth.data.data);
-
-    const lastMessageRef = useRef(null);
-    const observer = useRef(null);
-    const firstMessageItemRef = useRef(null);
-    const containerRef = useRef(null);
-    const isInitialFetch = useRef(true);
-    const prevPage = useRef(-1);
-
-    const [dataMessage, setDataMessage] = useState([]);
-    const [isSending, setIsSending] = useState(false);
-    const [content, setContent] = useState('');
-    const [isChatCreated, setIsChatCreated] = useState(false);
-    const [chatId, setChatId] = useState('');
-    const [shouldScrollToBottom, setShouldScrollToBottom] = useState(true);
-    const [loading, setLoading] = useState(false);
-    const [page, setPage] = useState(-1);
-    const [hasMore, setHasMore] = useState(true);
-
-    const getIdChatByUserId = useKeyValue(idChatOfUser, null);
-
-    const onMessageReceive = useCallback(
-        (payload) => {
-            const received = JSON.parse(payload.body);
-            if (received?.user?.id !== currentUserId) {
-                setDataMessage((prev) => [...prev, received]);
-            }
-            dispatch(updateLastMessage(received));
-        },
-        [currentUserId, dispatch],
-    );
-
-    useEffect(() => {
-        if (!currentChat || !targetId || !socketService.isReady()) return;
-
-        let idChat = isSearch ? getIdChatByUserId(targetId) : targetId;
-
-        socketService.subscribe(`/group/${idChat}`, onMessageReceive);
-
-        return () => {
-            socketService.unsubscription(`/group/${idChat}`);
-        };
-    }, [currentChat, getIdChatByUserId, isSearch, onMessageReceive, targetId]);
-
-    const fetchMessages = useCallback(
-        async (currentPage) => {
-            if (!targetId || loading) return;
-
-            let idChat = isSearch ? getIdChatByUserId(targetId) : targetId;
-            if (!idChat) {
-                setDataMessage([]);
-                return;
-            }
-            setLoading(true);
-
-            const scrollContainer = containerRef.current;
-            const scrollHeightBefore = scrollContainer ? scrollContainer.scrollHeight : 0;
-            const scrollTopBefore = scrollContainer ? scrollContainer.scrollTop : 0;
-
-            const [error, data] = await getAllMessagesFromChat(idChat, currentPage === -1 ? null : currentPage);
-            setLoading(false);
-
-            if (error) {
-                toast.error(error?.data?.message);
-                return;
-            }
-
-            if (data) {
-                setIsChatCreated(true);
-                setChatId(targetId);
-                setDataMessage((prev) => (currentPage === -1 ? data.data : [...data.data, ...prev]));
-                const currentPageFromApi = data?.meta?.pagination?.currentPage || 1;
-                setHasMore(currentPageFromApi > 1);
-
-                if (isInitialFetch.current || prevPage.current !== currentPageFromApi) {
-                    setPage(currentPageFromApi);
-                    prevPage.current = currentPageFromApi;
-                }
-
-                if (!isInitialFetch.current && scrollContainer) {
-                    requestAnimationFrame(() => {
-                        const scrollHeightAfter = scrollContainer.scrollHeight;
-                        scrollContainer.scrollTop = scrollTopBefore + (scrollHeightAfter - scrollHeightBefore);
-                    });
-                }
-                isInitialFetch.current = false;
-            }
-        },
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [targetId, isSearch, getIdChatByUserId],
-    );
-
-    useEffect(() => {
-        if (!targetId) {
-            setDataMessage([]);
-            setIsChatCreated(false);
-            setHasMore(false);
-            setLoading(false);
-            setPage(-1);
-            isInitialFetch.current = true;
-            prevPage.current = -1;
-            return;
-        }
-        fetchMessages(-1);
-    }, [targetId, fetchMessages]);
-
-    useEffect(() => {
-        // ngan call api vo han voi prev page
-        if (page === -1 || loading || !hasMore || page === prevPage.current) return;
-        fetchMessages(page);
-    }, [page, fetchMessages, hasMore, loading]);
-
-    useEffect(() => {
-        if (!hasMore || loading || !firstMessageItemRef.current) return;
-
-        if (observer.current) observer.current.disconnect();
-        observer.current = new IntersectionObserver(
-            (entries) => {
-                if (entries[0].isIntersecting && hasMore && !loading) {
-                    setPage((prev) => {
-                        const nextPage = prev - 1;
-                        return nextPage >= 1 ? nextPage : prev;
-                    });
-                }
-            },
-            { threshold: 0.1 },
-        );
-
-        observer.current.observe(firstMessageItemRef.current);
-
-        return () => {
-            if (observer.current) observer.current.disconnect();
-        };
-    }, [hasMore, loading]);
-
-    useEffect(() => {
-        if (lastMessageRef.current && shouldScrollToBottom) {
-            lastMessageRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
-
-            const scrollContainer = containerRef.current;
-            if (scrollContainer) {
-                scrollContainer.scrollTop += 50;
-            }
-        }
-    }, [dataMessage, shouldScrollToBottom]);
-
-    useEffect(() => {
-        if (dataMessage.length > 0) {
-            setIsChatCreated(true);
-        } else {
-            setIsChatCreated(false);
-        }
-    }, [dataMessage]);
-
-    const handleSendMessage = useCallback(
-        async (message) => {
-            const contentToSend = message || content.trim();
-            if (!contentToSend || !targetId) return;
-            let currentChatId = chatId;
-            const timestamp = new Date().toISOString();
-
-            const currentUser = {
-                id: currentUserId,
-                firstName,
-                lastName,
-                email,
-                profilePicture,
-            };
-
-            const targetUser = {
-                id: targetId,
-                firstName: firstNameCurrentChat,
-                lastName: lastNameCurrentChat,
-                email: emailCurrentChat,
-                profilePicture: profilePictureCurrentChat,
-            };
-
-            if (!isChatCreated) {
-                const [error, result] = await createSingleChat(idUser);
-                if (error) {
-                    toast.error(error?.data?.message);
-                    return;
-                }
-
-                currentChatId = result?.data?.id;
-                const body = {
-                    chatImage: null,
-                    chatName: null,
-                    createdBy: currentUser,
-                    id: currentChatId,
-                    isGroup: false,
-                    users: [currentUser, targetUser],
-                    content: contentToSend,
-                    timestamp,
-                    chatId: currentChatId,
-                };
-
-                socketService.send('single-chat-created', body);
-                socketService.subscribe(`/group/${currentChatId}`, onMessageReceive);
-                setChatId(currentChatId);
-                setIsChatCreated(true);
-            }
-
-            const localMessage = {
-                chatId: currentChatId,
-                content: contentToSend,
-                user: currentUser,
-                timestamp,
-            };
-
-            dispatch(updateLastMessage(localMessage));
-            setDataMessage((prev) => [...prev, localMessage]);
-
-            if (socketService.isReady()) {
-                socketService.send('message', {
-                    chatId: currentChatId,
-                    content: contentToSend,
-                    userId: currentUserId,
-                    timestamp,
-                });
-                setContent('');
-            }
-
-            setShouldScrollToBottom(true);
-            setIsSending(true);
-            await sendMessage({ chatId: currentChatId, content: contentToSend });
-            setIsSending(false);
-        },
-        [
-            chatId,
-            content,
-            currentUserId,
-            dispatch,
-            email,
-            emailCurrentChat,
-            firstName,
-            firstNameCurrentChat,
-            idUser,
-            isChatCreated,
-            lastName,
-            lastNameCurrentChat,
-            profilePicture,
-            profilePictureCurrentChat,
-            targetId,
-            onMessageReceive,
-        ],
-    );
+        currentUserId,
+        dataMessage,
+        handleSendMessage,
+        isSending,
+        loading,
+        setContent,
+        getMessageProps,
+    } = useChatBoxLogic({ containerRef, firstMessageItemRef, lastMessageRef });
 
     return (
         <div className="absolute top-0 left-0 w-full h-full bg-base-100">
@@ -303,35 +45,65 @@ function ChatBox() {
                     <div className="shrink-0">
                         <ChatBoxHeader />
                     </div>
-                    <div className="flex-1 overflow-hidden py-3">
-                        <div className="px-10 h-full overflow-y-auto scroll-smooth" ref={containerRef}>
-                            <RenderIf value={loading}>
-                                <div className="mt-4 absolute left-1/2 transform -translate-y-1/2">
-                                    <LoadingIcon size={30} />
-                                </div>
-                            </RenderIf>
-                            <div className="space-y-1 flex flex-col mt-2">
-                                <RenderIf value={dataMessage.length === 0}>
-                                    <p className="p-5 text-base-content font-semibold text-center">
-                                        No messages here. Why not send one 😀?
-                                    </p>
-                                </RenderIf>
-                                {dataMessage.map((data, index) => {
-                                    const isLast = index === dataMessage.length - 1;
-                                    const isFirst = index === 0;
-
-                                    return (
-                                        <MessageCard
-                                            isSending={isSending}
-                                            key={index}
-                                            ref={isFirst ? firstMessageItemRef : isLast ? lastMessageRef : null}
-                                            isLast={isLast}
-                                            isMe={currentUserId === data?.user?.id}
-                                            content={data?.content}
-                                        />
-                                    );
-                                })}
+                    <div className="flex-1 relative overflow-hidden py-3">
+                        <RenderIf value={loading}>
+                            <div className="flex justify-center px-5">
+                                <LoadingIcon size={30} />
                             </div>
+                        </RenderIf>
+                        <div className="px-5 h-full overflow-y-auto" ref={containerRef}>
+                            <ScrollToBottom containerRef={containerRef}>
+                                <div className="flex flex-col mt-2">
+                                    <RenderIf value={dataMessage.length === 0}>
+                                        <p className="p-5 text-base-content font-semibold text-center">
+                                            No messages here. Why not send one 😀?
+                                        </p>
+                                    </RenderIf>
+                                    {dataMessage.map((data, index) => {
+                                        const {
+                                            isFirst,
+                                            isGroupedWithNext,
+                                            isGroupedWithPrevious,
+                                            isLast,
+                                            prev,
+                                            isHasIconNext,
+                                            isHasIconPrevious,
+                                        } = getMessageProps(dataMessage, index, data);
+
+                                        const dateSeparator = DateUtils.getDateSeparator(
+                                            data?.timestamp,
+                                            prev?.timestamp,
+                                        );
+
+                                        return (
+                                            <Fragment key={index}>
+                                                <RenderIf value={dateSeparator}>
+                                                    <div className="flex justify-center w-full sticky top-0">
+                                                        <span className="text-sm text-base-content my-2 badge min-w-[100px] badge-neutral">
+                                                            {dateSeparator}
+                                                        </span>
+                                                    </div>
+                                                </RenderIf>
+                                                <MessageCard
+                                                    isHasIconPrevious={isHasIconPrevious}
+                                                    isHasIconNext={isHasIconNext}
+                                                    isGroupedWithPrevious={isGroupedWithPrevious}
+                                                    isGroupedWithNext={isGroupedWithNext}
+                                                    isSending={isSending}
+                                                    ref={isFirst ? firstMessageItemRef : isLast ? lastMessageRef : null}
+                                                    isLast={isLast}
+                                                    isMe={currentUserId === data?.user?.id}
+                                                    data={{
+                                                        content: data?.content,
+                                                        timestamp: data?.timestamp,
+                                                        prevTimestamp: prev?.timestamp,
+                                                    }}
+                                                />
+                                            </Fragment>
+                                        );
+                                    })}
+                                </div>
+                            </ScrollToBottom>
                         </div>
                     </div>
                     <div className="shrink-0 border-base-300 border-t">
