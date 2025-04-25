@@ -33,7 +33,7 @@ class SocketService {
     }
 
     disconnect() {
-        if (this.client && this.client.connected) {
+        if (this.isReady()) {
             this.client.deactivate();
             this.client = null;
             this.isConnected = false;
@@ -42,8 +42,8 @@ class SocketService {
     }
 
     subscribe(topic, callback) {
-        if (this.subscriptions.has(topic)) return;
-        if (this.client && this.client.connected) {
+        // if (this.subscriptions.has(topic)) return;
+        if (this.isReady()) {
             const subscription = this.client.subscribe(topic, callback); // them return
             this.subscriptions.set(topic, subscription);
             return subscription;
@@ -58,7 +58,7 @@ class SocketService {
     }
 
     send(destination, body) {
-        if (!this.client || !this.client.connected) return;
+        if (!this.isReady()) return;
 
         this.client.publish({
             destination: `/app/${destination}`,

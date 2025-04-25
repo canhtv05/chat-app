@@ -55,7 +55,12 @@ function App() {
                     </Layout>
                 }
                 path={route.path}
-            ></Route>
+            >
+                {route.children &&
+                    route.children.map((child, childIndex) => (
+                        <Route key={childIndex} path={child.path} element={child.element} />
+                    ))}
+            </Route>
         );
     };
     const loadModalRoute = (route, index) => {

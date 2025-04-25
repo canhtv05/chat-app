@@ -14,6 +14,7 @@ import {
     addLastMessage,
     setChats,
     setCurrentChat,
+    setDisableSearch,
     setIdChatOfUser,
     setInfoCurrentChat,
     setLastMessage,
@@ -27,14 +28,14 @@ import { ChatListSkeleton } from '../Skeleton';
 
 function ChatList() {
     const dispatch = useDispatch();
-    const { id: currentUserId, email } = useSelector((state) => state.auth.data.data);
+    const { id: currentUserId } = useSelector((state) => state.auth.data.data);
     const [activeIndex, setActiveIndex] = useState(null);
     const [loading, setLoading] = useState(false);
     const [loadingChatList, setLoadingChatList] = useState(false);
     const [query, setQuery] = useState('');
     const [isShowModalAddGroup, setIsShowModalAddGroup] = useState(false);
     const [searchRes, setSearchRes] = useState([]);
-    const { chats } = useSelector((state) => state.chat);
+    const { chats, isDisableSearch } = useSelector((state) => state.chat);
 
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
@@ -42,24 +43,31 @@ function ChatList() {
     const observer = useRef();
     const lastAccountItemRef = useRef();
 
-    const debounceValue = useDebounce(query, 500);
-
     const onChatCreated = useCallback(
         (payload) => {
             const received = JSON.parse(payload.body);
             if (!received?.users?.some((user) => user.id === currentUserId)) return;
-            setChats((prev) => [received, ...prev]);
+            dispatch(setChats([received, ...chats]));
             dispatch(addLastMessage(received));
         },
-        [dispatch, currentUserId],
+        [dispatch, currentUserId, chats],
     );
 
+    const debounceValue = useDebounce(query, 500);
+
     useEffect(() => {
+        if (isDisableSearch) {
+            setQuery('');
+        }
+    }, [isDisableSearch, query]);
+
+    useEffect(() => {
+        // phai nhan duoc data o day vào đây
         socketService.subscribe(`/create-single-chat`, onChatCreated);
         return () => {
             socketService.unsubscription(`/create-single-chat`);
         };
-    }, [email, onChatCreated]);
+    }, [onChatCreated]);
 
     useEffect(() => {
         setPage(1);
@@ -187,6 +195,7 @@ function ChatList() {
         const value = e.target.value;
         if (value.trim()) {
             setQuery(value);
+            dispatch(setDisableSearch(false));
         } else {
             setQuery('');
         }

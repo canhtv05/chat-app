@@ -8,6 +8,7 @@ const chatSlice = createSlice({
         lastMessages: {},
         currentChat: false,
         chats: [],
+        isDisableSearch: false,
     },
     reducers: {
         setInfoCurrentChat(state, action) {
@@ -63,6 +64,18 @@ const chatSlice = createSlice({
         setChats(state, action) {
             state.chats = action.payload;
         },
+        updateChats(state, action) {
+            const id = action.payload.id;
+
+            const findChatById = state.chats.find((chat) => chat?.id === id);
+            if (findChatById) {
+                state.chats = state.chats.filter((chat) => chat?.id !== id);
+                state.chats = [findChatById, ...state.chats];
+            }
+        },
+        setDisableSearch(state, action) {
+            state.isDisableSearch = action.payload;
+        },
     },
 });
 
@@ -75,5 +88,7 @@ export const {
     updateLastMessage,
     setCurrentChat,
     setChats,
+    setDisableSearch,
+    updateChats,
 } = chatSlice.actions;
 export default chatSlice.reducer;

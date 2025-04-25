@@ -1,4 +1,5 @@
 import { lazy } from 'react';
+import ChatBox from '~/components/ChatBox';
 import config from '~/configs';
 
 const Home = lazy(() => import('~/pages/Home'));
@@ -21,6 +22,12 @@ const privateRoutes = [
     {
         path: config.routes.chats,
         component: Chat,
+        children: [
+            {
+                path: ':idChat',
+                element: <ChatBox />,
+            },
+        ],
     },
 ];
 

@@ -1,7 +1,6 @@
 import { Fragment, useRef } from 'react';
 
 import RenderIf from '../RenderIf';
-import icons from '~/assets/icons';
 import ChatBoxHeader from './ChatBoxHeader';
 import ChatBoxFooter from './ChatBoxFooter';
 import LoadingIcon from '../LoadingIcon';
@@ -28,18 +27,6 @@ function ChatBox() {
 
     return (
         <div className="absolute top-0 left-0 w-full h-full bg-base-100">
-            <RenderIf value={!currentChat}>
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
-                    <img
-                        loading="lazy"
-                        className="object-cover w-[80%] h-[80%]"
-                        src={icons.meow}
-                        alt={Math.random(0, 100)}
-                    />
-                    <span className="text-base-content font-semibold">It looks a little quiet here...</span>
-                    <span className="text-base-content font-semibold">Start a new conversation and let's talk!</span>
-                </div>
-            </RenderIf>
             <RenderIf value={currentChat}>
                 <div className="flex flex-col h-full">
                     <div className="shrink-0">

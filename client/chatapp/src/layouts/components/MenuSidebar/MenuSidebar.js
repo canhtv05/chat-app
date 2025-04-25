@@ -2,14 +2,16 @@ import { BsChatText } from 'react-icons/bs';
 import { IoSettingsOutline } from 'react-icons/io5';
 import { Avatar } from '@mui/joy';
 import { Link, useLocation } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useState } from 'react';
 
 import MyButton from '~/components/MyButton';
 import images from '~/assets/images';
 import { Profile } from '~/components/Profile';
+import { setDisableSearch } from '~/redux/reducers/chatSlice';
 
 function MenuSidebar() {
+    const dispatch = useDispatch();
     const location = useLocation();
     const [isOpen, setIsOpen] = useState(false);
     const { profilePicture, firstName, lastName } = useSelector((state) => state.auth.data.data);
@@ -31,7 +33,7 @@ function MenuSidebar() {
                     </Avatar>
                 </MyButton>
             </div>
-            <MyButton active>
+            <MyButton active onClick={() => dispatch(setDisableSearch(true))}>
                 <BsChatText className="size-8 text-base-content" />
             </MyButton>
             <Link className="mt-auto" to={'/settings'} state={{ background: location }}>

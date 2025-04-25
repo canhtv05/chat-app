@@ -2,10 +2,11 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-hot-toast';
 import useKeyValue from '~/hooks/useKeyValue';
-import { updateLastMessage } from '~/redux/reducers/chatSlice';
+import { setCurrentChat, updateChats, updateLastMessage } from '~/redux/reducers/chatSlice';
 import socketService from '~/services/socket/socketService';
 import { getAllMessagesFromChat, sendMessage } from '~/services/message/messageService';
 import { createSingleChat } from '~/services/chat/chatService';
+import { useNavigate, useParams } from 'react-router-dom';
 
 const getMessageProps = (dataMessage, index, data) => {
     const getTimeDiffInMinutes = (a, b) => (new Date(a) - new Date(b)) / (1000 * 60);
@@ -77,9 +78,10 @@ const getMessageProps = (dataMessage, index, data) => {
 
 const useChatBoxLogic = ({ containerRef, firstMessageItemRef, lastMessageRef }) => {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const { idChat: idChatParams } = useParams();
     const {
         data: {
-            id: targetId,
             isSearch,
             idUser,
             firstName: firstNameCurrentChat,
@@ -124,26 +126,27 @@ const useChatBoxLogic = ({ containerRef, firstMessageItemRef, lastMessageRef }) 
             }
             dispatch(updateLastMessage(received));
         },
-        [currentUserId, dispatch],
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [currentUserId],
     );
 
     useEffect(() => {
-        if (!currentChat || !targetId || !socketService.isReady()) return;
+        if (!currentChat || !idChatParams || !socketService.isReady()) return;
 
-        let idChat = isSearch ? getIdChatByUserId(targetId) : targetId;
+        let idChat = isSearch ? getIdChatByUserId(idChatParams) : idChatParams;
 
         socketService.subscribe(`/group/${idChat}`, onMessageReceive);
 
         return () => {
             socketService.unsubscription(`/group/${idChat}`);
         };
-    }, [currentChat, getIdChatByUserId, isSearch, onMessageReceive, targetId]);
+    }, [currentChat, getIdChatByUserId, isSearch, onMessageReceive, idChatParams]);
 
     const fetchMessages = useCallback(
         async (currentPage) => {
-            if (!targetId || loading) return;
+            if (!idChatParams || loading) return;
 
-            let idChat = isSearch ? getIdChatByUserId(targetId) : targetId;
+            let idChat = isSearch ? getIdChatByUserId(idChatParams) : idChatParams;
             if (!idChat) {
                 setDataMessage([]);
                 return;
@@ -158,13 +161,16 @@ const useChatBoxLogic = ({ containerRef, firstMessageItemRef, lastMessageRef }) 
             setLoading(false);
 
             if (error) {
-                toast.error(error?.data?.message);
+                toast.error(error?.response?.data?.message);
+                dispatch(setCurrentChat(false));
+                navigate(`/chats`, { replace: true });
                 return;
             }
 
             if (data) {
+                dispatch(setCurrentChat(true));
                 setIsChatCreated(true);
-                setChatId(targetId);
+                setChatId(idChatParams);
                 setDataMessage((prev) => (currentPage === -1 ? data.data : [...data.data, ...prev]));
                 const currentPageFromApi = data?.meta?.pagination?.currentPage || 1;
                 setHasMore(currentPageFromApi > 1);
@@ -185,11 +191,11 @@ const useChatBoxLogic = ({ containerRef, firstMessageItemRef, lastMessageRef }) 
             }
         },
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        [targetId, isSearch, getIdChatByUserId],
+        [idChatParams, isSearch, getIdChatByUserId],
     );
 
     useEffect(() => {
-        if (!targetId) {
+        if (!idChatParams) {
             setDataMessage([]);
             setIsChatCreated(false);
             setHasMore(false);
@@ -200,7 +206,8 @@ const useChatBoxLogic = ({ containerRef, firstMessageItemRef, lastMessageRef }) 
             return;
         }
         fetchMessages(-1);
-    }, [targetId, fetchMessages, containerRef]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [idChatParams, containerRef]);
 
     useEffect(() => {
         if (page === -1 || loading || !hasMore || page === prevPage.current) return;
@@ -255,7 +262,7 @@ const useChatBoxLogic = ({ containerRef, firstMessageItemRef, lastMessageRef }) 
     const handleSendMessage = useCallback(
         async (message) => {
             const contentToSend = message || content.trim();
-            if (!contentToSend || !targetId) return;
+            if (!contentToSend || !idChatParams) return;
             let currentChatId = chatId;
             const timestamp = new Date().toISOString();
 
@@ -268,7 +275,7 @@ const useChatBoxLogic = ({ containerRef, firstMessageItemRef, lastMessageRef }) 
             };
 
             const targetUser = {
-                id: targetId,
+                id: idChatParams,
                 firstName: firstNameCurrentChat,
                 lastName: lastNameCurrentChat,
                 email: emailCurrentChat,
@@ -325,6 +332,7 @@ const useChatBoxLogic = ({ containerRef, firstMessageItemRef, lastMessageRef }) 
             setIsSending(true);
             await sendMessage({ chatId: currentChatId, content: contentToSend });
             setIsSending(false);
+            dispatch(updateChats({ id: currentChatId }));
         },
         [
             chatId,
@@ -341,7 +349,7 @@ const useChatBoxLogic = ({ containerRef, firstMessageItemRef, lastMessageRef }) 
             lastNameCurrentChat,
             profilePicture,
             profilePictureCurrentChat,
-            targetId,
+            idChatParams,
             onMessageReceive,
         ],
     );
@@ -352,7 +360,7 @@ const useChatBoxLogic = ({ containerRef, firstMessageItemRef, lastMessageRef }) 
                 containerRef.current.scrollTop = containerRef.current.scrollHeight;
             });
         }
-    }, [dataMessage, shouldScrollToBottom, containerRef]);
+    }, [containerRef]);
 
     return {
         handleSendMessage,
