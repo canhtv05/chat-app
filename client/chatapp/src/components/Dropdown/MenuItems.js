@@ -1,9 +1,13 @@
 import { useCallback, useRef } from 'react';
 import { FaAngleRight } from 'react-icons/fa6';
 import { useNavigate } from 'react-router-dom';
+import { IoCheckmark } from 'react-icons/io5';
+
 import Dropdown from './Dropdown';
+import useLocalStorage from '~/hooks/useLocalStorage';
 
 const MenuItems = ({ items, depthLevel, path, activePath, setActivePath, location }) => {
+    const { dataStorage } = useLocalStorage();
     const navigate = useNavigate();
     const ref = useRef();
     const isOpen = path.every((v, i) => v === activePath[i]);
@@ -68,6 +72,9 @@ const MenuItems = ({ items, depthLevel, path, activePath, setActivePath, locatio
                         <span className="ml-10"></span>
                     )}
                     {items.title}
+                    {items?.lang && items.lang === (dataStorage?.language || 'en') && (
+                        <IoCheckmark className="size-5 flex-1" />
+                    )}
                 </button>
             )}
             {items?.separate && <div className="h-[1px] w-full bg-neutral/10" />}

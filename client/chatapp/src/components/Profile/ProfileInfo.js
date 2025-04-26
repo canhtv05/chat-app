@@ -6,10 +6,12 @@ import { LuPenLine } from 'react-icons/lu';
 import { memo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { updateMyInfo } from '~/redux/reducers/authSlice';
 import { setLoading } from '~/redux/reducers/eventSlice';
 
 function ProfileInfo({ setIsShowEditForm }) {
+    const { t } = useTranslation();
     const dispatch = useDispatch();
     const { gender, dob, phone, firstName, lastName, profilePicture } = useSelector((state) => state.auth.data.data);
 
@@ -20,13 +22,13 @@ function ProfileInfo({ setIsShowEditForm }) {
         if (!picture) return;
 
         if (!picture.type.startsWith('image/')) {
-            toast.error('Please upload an image file (jpg, png, etc.)');
+            toast.error(t('common.toast.imageOnly'));
             return;
         }
 
         const maxSize = 5 * 1024 * 1024; // 5MB
         if (picture.size > maxSize) {
-            toast.error('File size exceeds 5MB limit');
+            toast.error(t('common.toast.sizeExceeded'));
             return;
         }
 
@@ -48,13 +50,13 @@ function ProfileInfo({ setIsShowEditForm }) {
                 setTempPicture(data.secure_url);
                 dispatch(updateMyInfo({ profilePicture: data.secure_url }));
             } else {
-                toast.error('Upload failed. Please try again.');
+                toast.success(t('common.toast.uploadSuccess'));
             }
         } catch (error) {
-            toast.error('Error uploading file. Please try again.');
+            toast.error(t('common.toast.uploadFailed'));
         } finally {
             dispatch(setLoading(false));
-            toast.success('Change avatar success!');
+            toast.error(t('common.toast.errorUpload'));
         }
     };
 
@@ -63,10 +65,17 @@ function ProfileInfo({ setIsShowEditForm }) {
     };
 
     const dataInfo = [
-        { label: 'Giới tính', value: gender },
-        { label: 'Ngày sinh', value: dob },
-        { label: 'Điện thoại', value: phone },
+        { label: t('profile.gender'), value: gender },
+        { label: t('profile.dob'), value: dob },
+        { label: t('profile.phone'), value: phone },
     ];
+
+    const genderText = (gender) => {
+        if (gender === 'MALE') return t('profile.male');
+        if (gender === 'FEMALE') return t('profile.female');
+        if (gender === 'OTHER') return t('profile.other');
+        return t('profile.unknown');
+    };
 
     return (
         <>
@@ -109,18 +118,14 @@ function ProfileInfo({ setIsShowEditForm }) {
             </div>
             <div className="py-1 mt-[75px]"></div>
             <div className="px-4 py-1 flex flex-col">
-                <span className="text-base-content font-semibold text-lg mb-2">Thông tin cá nhân</span>
+                <span className="text-base-content font-semibold text-lg mb-2"> {t('profile.personalInfo')}</span>
                 {dataInfo.map((info, index) => (
                     <div className="flex items-center my-2" key={index}>
                         <span className="text-base-content text-lg w-[120px] inline-block">{info.label}</span>
                         <span className="text-base-content text-lg font-semibold">
-                            {info.label === 'Giới tính'
-                                ? info.value === 'MALE'
-                                    ? 'Nam'
-                                    : info.value === 'FEMALE'
-                                    ? 'Nữ'
-                                    : 'Khác'
-                                : info.value}
+                            {info.label === t('profile.gender')
+                                ? genderText(info.value)
+                                : info.value || t('profile.noData')}
                         </span>
                     </div>
                 ))}
@@ -128,7 +133,10 @@ function ProfileInfo({ setIsShowEditForm }) {
             <div className="w-full border-base-300 border-t-2">
                 <MyButton width={'100%'} onClick={() => setIsShowEditForm(true)}>
                     <LuPenLine className="text-base-content size-6" />
-                    <span className="text-base-content font-semibold text-lg text-no ml-3">Cập nhật</span>
+                    <span className="text-base-content font-semibold text-lg text-no ml-3">
+                        {' '}
+                        {t('common.button.update')}
+                    </span>
                 </MyButton>
             </div>
         </>

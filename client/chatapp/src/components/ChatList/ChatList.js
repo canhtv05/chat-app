@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { CiSearch } from 'react-icons/ci';
 import { toast } from 'react-hot-toast';
 import { AiOutlineUserAdd, AiOutlineUsergroupAdd } from 'react-icons/ai';
@@ -28,6 +29,7 @@ import LoadingIcon from '../LoadingIcon';
 import { ChatListSkeleton } from '../Skeleton';
 
 function ChatList() {
+    const { t } = useTranslation();
     const dispatch = useDispatch();
     const { idChat } = useParams();
     const { id: currentUserId } = useSelector((state) => state.auth.data.data);
@@ -224,7 +226,7 @@ function ChatList() {
                 <div className="relative">
                     <MyInput
                         startDecorator={<CiSearch className="size-5" />}
-                        placeholder="Search..."
+                        placeholder={`${t('common.button.search')}...`}
                         variant="soft"
                         size="md"
                         onChange={handleSearch}

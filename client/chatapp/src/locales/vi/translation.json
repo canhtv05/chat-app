@@ -1,0 +1,99 @@
+{
+    "common": {
+        "button": {
+            "search": "Tìm kiếm",
+            "cancel": "Hủy",
+            "delete": "Xóa",
+            "save": "Lưu",
+            "update": "Cập nhật"
+        },
+        "toast": {
+            "imageOnly": "Vui lòng tải lên tệp hình ảnh (jpg, png, v.v.)",
+            "sizeExceeded": "Kích thước tệp vượt quá giới hạn 5MB",
+            "uploadSuccess": "Thay đổi ảnh đại diện thành công!",
+            "uploadFailed": "Tải lên thất bại. Vui lòng thử lại.",
+            "errorUpload": "Lỗi khi tải tệp. Vui lòng thử lại."
+        }
+    },
+    "lang": {
+        "vi": "Tiếng Việt",
+        "en": "Tiếng Anh"
+    },
+    "menu": {
+        "accountInformation": "Thông tin tài khoản",
+        "settings": "Cài đặt",
+        "language": "Ngôn ngữ",
+        "logout": "Đăng xuất",
+        "exit": "Thoát"
+    },
+    "auth": {
+        "welcomeBack": "Chào mừng quay lại!",
+        "keepConnected": "Để tiếp tục kết nối với chúng tôi, vui lòng đăng nhập với thông tin cá nhân của bạn",
+        "signIn": "Đăng nhập",
+        "helloFriend": "Xin chào!",
+        "enterDetails": "Nhập thông tin cá nhân của bạn và bắt đầu cùng chúng tôi",
+        "signUp": "Đăng ký"
+    },
+    "greeting": {
+        "hello": "Xin chào"
+    },
+    "container": {
+        "quietMessage": "Có vẻ nơi này hơi yên tĩnh...",
+        "startConversation": "Bắt đầu một cuộc trò chuyện mới và chúng ta sẽ trò chuyện nhé!"
+    },
+    "modalFormSwitcher": {
+        "title": "Thông tin tài khoản"
+    },
+    "settings": {
+        "themeTitle": "Giao diện",
+        "themeDescription": "Chọn một giao diện cho khung chat của bạn"
+    },
+    "accountItem": {
+        "groupChat": "Nhóm",
+        "singleChat": "Cá nhân",
+        "you": "Bạn",
+        "noMessages": "Chưa có tin nhắn!"
+    },
+    "profile": {
+        "personalInfo": "Thông tin cá nhân",
+        "gender": "Giới tính",
+        "dob": "Ngày sinh",
+        "phone": "Điện thoại",
+        "male": "Nam",
+        "female": "Nữ",
+        "other": "Khác",
+        "unknown": "Không rõ",
+        "noData": "Chưa có dữ liệu",
+        "firstName": "Tên",
+        "lastName": "Họ",
+        "firstNameRequired": "Vui lòng nhập tên của bạn!",
+        "lastNameRequired": "Vui lòng nhập họ của bạn!",
+        "dobRequired": "Vui lòng nhập ngày sinh của bạn!",
+        "genderRequired": "Vui lòng chọn giới tính của bạn!",
+        "updateSuccess": "Cập nhật hồ sơ thành công!"
+    },
+    "time": {
+        "now": "Vài giây",
+        "minutesAgo": "phút",
+        "hoursAgo": "giờ",
+        "daysAgo": "ngày"
+    },
+    "chatBox": {
+        "noMessages": "Chưa có tin nhắn. Sao không gửi một tin nhắn nhỉ 😀?",
+        "sending": "Đang gửi",
+        "sent": "Đã gửi",
+        "dateSeparator": {
+            "today": "Hôm nay",
+            "daysOfWeek": {
+                "Sun": "CN",
+                "Mon": "T2",
+                "Tue": "T3",
+                "Wed": "T4",
+                "Thu": "T5",
+                "Fri": "T6",
+                "Sat": "T7"
+            }
+        },
+        "sendTo": "Gửi tới"
+    }
+}

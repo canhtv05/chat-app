@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import SignIn from '~/components/SignIn/SignIn';
 import SignUp from '~/components/SignUp/SignUp';
 import './Auth.css';
 
 function Auth() {
+    const { t } = useTranslation();
     const [isClickSignUp, setIsClickSignUp] = useState(false);
     const [isClickSignIn, setIsClickSignIn] = useState(false);
 
@@ -46,17 +48,17 @@ function Auth() {
                 <div className="overlay-container">
                     <div className="overlay">
                         <div className="overlay-panel overlay-left">
-                            <h1 className="text-white text-4xl font-semibold mb-3">Welcome Back!</h1>
-                            <p>To keep connected with us please login with your personal info</p>
+                            <h1 className="text-white text-4xl font-semibold mb-3">{t('auth.welcomeBack')}</h1>
+                            <p>{t('auth.keepConnected')}</p>
                             <button className="ghost button mt-5" id="signIn">
-                                Sign In
+                                {t('auth.signIn')}
                             </button>
                         </div>
                         <div className="overlay-panel overlay-right">
-                            <h1 className="text-white text-4xl font-semibold mb-3">Hello, Friend!</h1>
-                            <p>Enter your personal details and start journey with us</p>
+                            <h1 className="text-white text-4xl font-semibold mb-3">{t('auth.helloFriend')}</h1>
+                            <p>{t('auth.enterDetails')}</p>
                             <button className="ghost button mt-5" id="signUp">
-                                Sign Up
+                                {t('auth.signUp')}
                             </button>
                         </div>
                     </div>

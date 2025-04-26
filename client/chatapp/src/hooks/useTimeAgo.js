@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const getTimeDifferenceInSeconds = (timestamp) => {
     const now = new Date();
@@ -17,6 +18,7 @@ const formatDate = (timestamp) => {
 };
 
 const useTimeAgo = (timestamp) => {
+    const { t } = useTranslation();
     const [timeAgo, setTimeAgo] = useState('');
 
     useEffect(() => {
@@ -27,22 +29,22 @@ const useTimeAgo = (timestamp) => {
 
             // Thời gian dưới 1 phút
             if (seconds < 60) {
-                setTimeAgo('now');
+                setTimeAgo(t('time.now'));
             }
             // Thời gian dưới 1 giờ
             else if (seconds < 3600) {
                 const minutes = Math.floor(seconds / 60);
-                setTimeAgo(`${minutes}m ago`);
+                setTimeAgo(`${minutes} ${t('time.minutesAgo')}`);
             }
             // Thời gian dưới 1 ngày
             else if (seconds < 86400) {
                 const hours = Math.floor(seconds / 3600);
-                setTimeAgo(`${hours}h ago`);
+                setTimeAgo(`${hours} ${t('time.hoursAgo')}`);
             }
             // Thời gian dưới 3 ngày
             else if (seconds < 86400 * 3) {
                 const days = Math.floor(seconds / 86400);
-                setTimeAgo(`${days} days ago`);
+                setTimeAgo(`${days} ${t('time.daysAgo')}`);
             }
             // Thời gian lớn hơn 3 ngày
             else {
@@ -64,7 +66,7 @@ const useTimeAgo = (timestamp) => {
         const interval = setInterval(updateTimeAgo, 1000);
 
         return () => clearInterval(interval);
-    }, [timestamp]);
+    }, [timestamp, t]);
 
     return timeAgo;
 };

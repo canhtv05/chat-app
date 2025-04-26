@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { ModalLink } from '~/components/Modals';
 
@@ -7,14 +8,15 @@ import { setTheme } from '~/redux/reducers/themeSlice';
 function Settings() {
     const dispatch = useDispatch();
     const { theme } = useSelector((state) => state.theme);
+    const { t } = useTranslation();
 
     return (
         <ModalLink>
             <div className="mx-auto px-4 pt-20 max-w-5xl">
                 <div className="space-y-6">
                     <div className="flex flex-col gap-1">
-                        <h2 className="text-lg font-semibold text-base-content">Theme</h2>
-                        <p className="text-sm text-base-content/70">Choose a theme for your chat interface</p>
+                        <h2 className="text-lg font-semibold text-base-content">{t('settings.themeTitle')}</h2>
+                        <p className="text-sm text-base-content/70">{t('settings.themeDescription')}</p>
                     </div>
 
                     <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">

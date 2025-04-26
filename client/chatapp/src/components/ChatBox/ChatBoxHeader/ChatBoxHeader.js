@@ -1,4 +1,5 @@
 import { Avatar, Tooltip } from '@mui/joy';
+import { useTranslation } from 'react-i18next';
 import { CiSearch } from 'react-icons/ci';
 import { PiTagSimpleFill } from 'react-icons/pi';
 import { useSelector } from 'react-redux';
@@ -8,6 +9,7 @@ import MyButton from '~/components/MyButton';
 import RenderIf from '~/components/RenderIf';
 
 function ChatBoxHeader({ isOnline = false }) {
+    const { t } = useTranslation();
     const { id: currentUserId } = useSelector((state) => state.auth.data.data);
     const data = useSelector((state) => state.chat.data);
     const user = data?.createdBy?.id ? data?.users.find((user) => user.id !== currentUserId) : data;
@@ -50,7 +52,11 @@ function ChatBoxHeader({ isOnline = false }) {
                         <RenderIf value={chat?.isGroup}>
                             <span className="text-base-content font-semibold">{chat?.chatName || ''}</span>
                         </RenderIf>
-                        <Tooltip title={chat?.isGroup ? 'Group chat' : 'Single chat'} arrow placement="top">
+                        <Tooltip
+                            title={chat?.isGroup ? t('accountItem.groupChat') : t('accountItem.singleChat')}
+                            arrow
+                            placement="top"
+                        >
                             <PiTagSimpleFill className="mr-2 text-lg" color={chat?.isGroup ? 'orange' : 'green'} />
                         </Tooltip>
                     </div>

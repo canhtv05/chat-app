@@ -1,0 +1,99 @@
+{
+    "common": {
+        "button": {
+            "search": "Search",
+            "cancel": "Cancel",
+            "delete": "Delete",
+            "save": "Save",
+            "update": "Update"
+        },
+        "toast": {
+            "imageOnly": "Please upload an image file (jpg, png, etc.)",
+            "sizeExceeded": "File size exceeds 5MB limit",
+            "uploadSuccess": "Avatar changed successfully!",
+            "uploadFailed": "Upload failed. Please try again.",
+            "errorUpload": "Error uploading file. Please try again."
+        }
+    },
+    "lang": {
+        "vi": "Vietnamese",
+        "en": "English"
+    },
+    "menu": {
+        "accountInformation": "Account Information",
+        "settings": "Settings",
+        "language": "Language",
+        "logout": "Logout",
+        "exit": "Exit"
+    },
+    "auth": {
+        "welcomeBack": "Welcome Back!",
+        "keepConnected": "To keep connected with us please login with your personal info",
+        "signIn": "Sign In",
+        "helloFriend": "Hello, Friend!",
+        "enterDetails": "Enter your personal details and start journey with us",
+        "signUp": "Sign Up"
+    },
+    "greeting": {
+        "hello": "Hello"
+    },
+    "container": {
+        "quietMessage": "It looks a little quiet here...",
+        "startConversation": "Start a new conversation and let's talk!"
+    },
+    "modalFormSwitcher": {
+        "title": "Account Information"
+    },
+    "settings": {
+        "themeTitle": "Theme",
+        "themeDescription": "Choose a theme for your chat interface"
+    },
+    "accountItem": {
+        "groupChat": "Group chat",
+        "singleChat": "Single chat",
+        "you": "You",
+        "noMessages": "No messages yet!"
+    },
+    "profile": {
+        "personalInfo": "Personal Information",
+        "gender": "Gender",
+        "dob": "Date of Birth",
+        "phone": "Phone",
+        "male": "Male",
+        "female": "Female",
+        "other": "Other",
+        "unknown": "Unknown",
+        "noData": "No data",
+        "firstName": "First Name",
+        "lastName": "Last Name",
+        "firstNameRequired": "Please enter your first name!",
+        "lastNameRequired": "Please enter your last name!",
+        "dobRequired": "Please enter your date of birth!",
+        "genderRequired": "Please enter your gender!",
+        "updateSuccess": "Profile updated successfully!"
+    },
+    "time": {
+        "now": "now",
+        "minutesAgo": "m ago",
+        "hoursAgo": "h ago",
+        "daysAgo": "days ago"
+    },
+    "chatBox": {
+        "noMessages": "No messages here. Why not send one 😀?",
+        "sending": "sending",
+        "sent": "sent",
+        "dateSeparator": {
+            "today": "Today",
+            "daysOfWeek": {
+                "Sun": "Sun",
+                "Mon": "Mon",
+                "Tue": "Tue",
+                "Wed": "Wed",
+                "Thu": "Thu",
+                "Fri": "Fri",
+                "Sat": "Sat"
+            }
+        },
+        "sendTo": "Send to"
+    }
+}

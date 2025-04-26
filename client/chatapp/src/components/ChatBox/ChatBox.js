@@ -1,4 +1,5 @@
 import { Fragment, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import RenderIf from '../RenderIf';
 import ChatBoxHeader from './ChatBoxHeader';
@@ -10,6 +11,7 @@ import useChatBoxLogic from './useChatBoxLogic';
 import { MessageCard } from '../MessageCard';
 
 function ChatBox() {
+    const { t } = useTranslation();
     const firstMessageItemRef = useRef();
     const lastMessageRef = useRef();
     const containerRef = useRef();
@@ -43,7 +45,7 @@ function ChatBox() {
                                 <div className="flex flex-col mt-2">
                                     <RenderIf value={dataMessage.length === 0}>
                                         <p className="p-5 text-base-content font-semibold text-center">
-                                            No messages here. Why not send one 😀?
+                                            {t('chatBox.noMessages')}
                                         </p>
                                     </RenderIf>
                                     {dataMessage.map((data, index) => {
@@ -60,6 +62,7 @@ function ChatBox() {
                                         const dateSeparator = DateUtils.getDateSeparator(
                                             data?.timestamp,
                                             prev?.timestamp,
+                                            t,
                                         );
 
                                         return (

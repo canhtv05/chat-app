@@ -1,5 +1,6 @@
 import { memo, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
 import Modal from './Modal';
 
 function ModalFormSwitcher({
@@ -12,6 +13,7 @@ function ModalFormSwitcher({
     setIsShowSubForm,
     valueScrollHeight,
 }) {
+    const { t } = useTranslation();
     const containerRef = useRef();
     const initialContainerHeightRef = useRef();
 
@@ -54,7 +56,7 @@ function ModalFormSwitcher({
     }, [isShowSubForm, valueScrollHeight]);
 
     return (
-        <Modal setIsOpen={setIsOpen} isOpen={isOpen} title="Thông tin tài khoản">
+        <Modal setIsOpen={setIsOpen} isOpen={isOpen} title={t('modalFormSwitcher.title')}>
             <div className="relative overflow-hidden transition-all" ref={containerRef}>
                 <div
                     className={`relative w-full transition-transform duration-300 ease-in-out ${

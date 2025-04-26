@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux';
 import { PiTagSimpleFill } from 'react-icons/pi';
 import { AiFillLike } from 'react-icons/ai';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 import RenderIf from '../RenderIf';
 import useTimeAgo from '~/hooks/useTimeAgo';
@@ -13,6 +14,7 @@ import images from '~/assets/images';
 
 const AccountItem = forwardRef(({ separator, isOnline, isActive, onClick, data, isSearchAccount = false }, ref) => {
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const { idChat: idChatParams } = useParams();
     const { id: currentUserId } = useSelector((state) => state.auth.data.data);
     const {
@@ -98,7 +100,11 @@ const AccountItem = forwardRef(({ separator, isOnline, isActive, onClick, data, 
                                         <div className="text-base-content">
                                             <div className="flex justify-start items-center">
                                                 <Tooltip
-                                                    title={chat?.isGroup ? 'Group chat' : 'Single chat'}
+                                                    title={
+                                                        chat?.isGroup
+                                                            ? t('accountItem.groupChat')
+                                                            : t('accountItem.singleChat')
+                                                    }
                                                     arrow
                                                     placement="top"
                                                 >
@@ -113,7 +119,7 @@ const AccountItem = forwardRef(({ separator, isOnline, isActive, onClick, data, 
                                                         currentUserId === lastMessageRealTime?.user?.id
                                                     }
                                                 >
-                                                    You
+                                                    {t('accountItem.you')}
                                                 </RenderIf>
                                                 <RenderIf
                                                     value={
@@ -158,7 +164,7 @@ const AccountItem = forwardRef(({ separator, isOnline, isActive, onClick, data, 
                                         </span>
                                     </RenderIf>
                                     <RenderIf value={!lastMessage}>
-                                        <span className="text-base-content">No messages yet!</span>
+                                        <span className="text-base-content">{t('accountItem.noMessages')}</span>
                                     </RenderIf>
                                 </div>
                             )}

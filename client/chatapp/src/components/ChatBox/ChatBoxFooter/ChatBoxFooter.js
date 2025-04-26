@@ -4,6 +4,7 @@ import { IoIosSend } from 'react-icons/io';
 import { AiFillLike } from 'react-icons/ai';
 import EmojiPicker from 'emoji-picker-react';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 
 import MyButton from '~/components/MyButton';
 import MyTextArea from '~/components/MyTextArea';
@@ -18,6 +19,7 @@ const styles = {
 };
 
 function ChatBoxFooter({ content, setContent, onSend }) {
+    const { t } = useTranslation();
     const { id: currentUserId } = useSelector((state) => state.auth.data.data);
     const data = useSelector((state) => state.chat.data);
     const user = data?.createdBy?.id ? data?.users.find((user) => user.id !== currentUserId) : data;
@@ -84,7 +86,7 @@ function ChatBoxFooter({ content, setContent, onSend }) {
         >
             <MyTextArea
                 ref={textAreaRef}
-                placeholder={`Send to ${user?.firstName ?? ''} ${user?.lastName ?? ''}...`}
+                placeholder={`${t('chatBox.sendTo')} ${user?.firstName ?? ''} ${user?.lastName ?? ''}...`}
                 type="text"
                 value={content}
                 onChange={handleChange}

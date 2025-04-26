@@ -1,10 +1,12 @@
+import { useTranslation } from 'react-i18next';
+import { Outlet, useMatch } from 'react-router-dom';
 import Header from '../Header/Header';
 import ChatList from '~/components/ChatList';
-import { Outlet, useMatch } from 'react-router-dom';
 import RenderIf from '~/components/RenderIf';
 import icons from '~/assets/icons';
 
 function Container() {
+    const { t } = useTranslation();
     const matchRootChat = useMatch('/chats');
     return (
         <div className="h-full flex flex-col flex-1">
@@ -26,9 +28,11 @@ function Container() {
                                     src={icons.meow}
                                     alt={Math.random(0, 100)}
                                 />
-                                <span className="text-base-content font-semibold">It looks a little quiet here...</span>
-                                <span className="text-base-content font-semibold">
-                                    Start a new conversation and let's talk!
+                                <span className="text-base-content font-semibold text-center">
+                                    {t('container.quietMessage')}
+                                </span>
+                                <span className="text-base-content font-semibold text-center">
+                                    {t('container.startConversation')}
                                 </span>
                             </div>
                         </RenderIf>

@@ -6,11 +6,10 @@ const Dropdown = ({ submenus, dropdown, depthLevel, parentPath, activePath, setA
     return (
         <ul
             className={`absolute border border-base-content/10
-        ${depthLevel === 1 ? 'left-[238px]' : 'left-0'} 
-        ${depthLevel > 1 ? 'left-full top-[-7px]' : ''}
-        top-0 bg-base-300 shadow-xl rounded-md min-w-[10rem] py-2 list-none z-[9999] text-sm
-        ${dropdown ? 'block' : 'hidden'}
-    `}
+                        ${depthLevel === 1 ? 'left-[238px]' : 'left-0'} 
+                        ${depthLevel > 1 ? 'left-full top-[-7px]' : ''}
+                        top-0 bg-base-300 shadow-xl rounded-md min-w-[10rem] py-2 list-none z-[9999] text-sm
+                        ${dropdown ? 'block' : 'hidden'}`}
         >
             {submenus.map((submenu, index) => (
                 <MenuItems

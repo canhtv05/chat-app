@@ -1,8 +1,10 @@
+import i18next from 'i18next';
 import { BsChatText } from 'react-icons/bs';
 import { IoSettingsOutline } from 'react-icons/io5';
 import { Avatar } from '@mui/joy';
 import { useDispatch, useSelector } from 'react-redux';
 import { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import MenuDropdown from '~/pages/Settings/MenuDropdown';
 import MyButton from '~/components/MyButton';
@@ -11,9 +13,12 @@ import { Profile } from '~/components/Profile';
 import { setDisableSearch } from '~/redux/reducers/chatSlice';
 import { MENU_ITEM_SETTINGS } from '~/constants';
 import useClickOutside from '~/hooks/useClickOutSide';
+import useLocalStorage from '~/hooks/useLocalStorage';
 
 function MenuSidebar() {
     const dispatch = useDispatch();
+    const { t } = useTranslation();
+    const { setStorage } = useLocalStorage();
     const [isOpenProfile, setIsOpenProfile] = useState(false);
     const [isOpenSetting, setIsOpenSetting] = useState(false);
     const { profilePicture, firstName, lastName } = useSelector((state) => state.auth.data.data);
@@ -26,8 +31,15 @@ function MenuSidebar() {
         setIsOpenProfile(true);
     };
 
+    const handleLanguage = (lang) => {
+        setStorage({ language: lang });
+        i18next.changeLanguage(lang);
+    };
+
     const handler = {
         handleOpenProfile,
+        handleLanguage,
+        t,
     };
 
     return (

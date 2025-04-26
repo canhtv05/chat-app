@@ -2,9 +2,10 @@ import PropTypes from 'prop-types';
 import { forwardRef } from 'react';
 import { motion } from 'framer-motion';
 import { IoCheckmarkDone, IoCheckmark } from 'react-icons/io5';
+import { useTranslation } from 'react-i18next';
+import { AiFillLike } from 'react-icons/ai';
 
 import RenderIf from '../RenderIf';
-import { AiFillLike } from 'react-icons/ai';
 import DateUtils from '~/utils/dateUtils';
 import BadgeItemMessage from './BadgeItemMessage';
 const MessageCard = forwardRef(
@@ -12,6 +13,7 @@ const MessageCard = forwardRef(
         { isMe, data, isSending, isLast, isGroupedWithPrevious, isGroupedWithNext, isHasIconNext, isHasIconPrevious },
         ref,
     ) => {
+        const { t } = useTranslation();
         let borderRadiusClass = 'rounded-3xl';
         if (isGroupedWithPrevious || isGroupedWithNext) {
             if (isMe) {
@@ -198,7 +200,7 @@ const MessageCard = forwardRef(
                         <RenderIf value={isSending}>
                             <div className="badge badge-neutral rounded-full mt-1">
                                 <IoCheckmark />
-                                <span className="ml-1">sending</span>
+                                <span className="ml-1">{t('chatBox.sending')}</span>
                             </div>
                         </RenderIf>
                         <RenderIf value={!isSending}>
@@ -212,7 +214,7 @@ const MessageCard = forwardRef(
                                 </RenderIf>
                                 <div className="badge badge-neutral rounded-full mt-1">
                                     <IoCheckmarkDone />
-                                    <span className="ml-1">sent</span>
+                                    <span className="ml-1">{t('chatBox.sent')}</span>
                                 </div>
                             </div>
                         </RenderIf>

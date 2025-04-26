@@ -9,7 +9,7 @@ class DateUtils {
         return `${hours}:${minutes}`;
     }
 
-    static getDateSeparator(currentTimestamp, prevTimestamp) {
+    static getDateSeparator(currentTimestamp, prevTimestamp, t) {
         if (!currentTimestamp) return null;
         const currentDate = new Date(currentTimestamp);
         const prevDate = prevTimestamp ? new Date(prevTimestamp) : null;
@@ -34,13 +34,21 @@ class DateUtils {
             return null;
         }
 
-        const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const daysOfWeek = [
+            t('chatBox.dateSeparator.daysOfWeek.Sun'),
+            t('chatBox.dateSeparator.daysOfWeek.Mon'),
+            t('chatBox.dateSeparator.daysOfWeek.Tue'),
+            t('chatBox.dateSeparator.daysOfWeek.Wed'),
+            t('chatBox.dateSeparator.daysOfWeek.Thu'),
+            t('chatBox.dateSeparator.daysOfWeek.Fri'),
+            t('chatBox.dateSeparator.daysOfWeek.Sat'),
+        ];
 
         const day = padZero(currentDate.getDate());
         const month = padZero(currentDate.getMonth() + 1);
 
         if (isSameDay(currentDate, today)) {
-            return 'Today';
+            return t('chatBox.dateSeparator.today');
         }
 
         if (getDaysDiff(today, currentDate) <= 7) {
