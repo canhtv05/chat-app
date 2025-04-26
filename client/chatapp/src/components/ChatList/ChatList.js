@@ -3,6 +3,7 @@ import { toast } from 'react-hot-toast';
 import { AiOutlineUserAdd, AiOutlineUsergroupAdd } from 'react-icons/ai';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useParams } from 'react-router-dom';
 
 import MyInput from '../MyInput';
 import MyButton from '../MyButton';
@@ -28,6 +29,7 @@ import { ChatListSkeleton } from '../Skeleton';
 
 function ChatList() {
     const dispatch = useDispatch();
+    const { idChat } = useParams();
     const { id: currentUserId } = useSelector((state) => state.auth.data.data);
     const [activeIndex, setActiveIndex] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -117,6 +119,21 @@ function ChatList() {
 
         fetchApi();
     }, [dispatch, currentUserId]);
+
+    useEffect(() => {
+        const chat = chats.find((chat) => {
+            return chat.id === idChat;
+        });
+        if (chat) {
+            dispatch(setCurrentChat(true));
+            dispatch(
+                setInfoCurrentChat({
+                    ...chat,
+                    idUser: chat?.createdBy?.id,
+                }),
+            );
+        }
+    }, [chats, dispatch, idChat]);
 
     useEffect(() => {
         if (!debounceValue.trim()) {

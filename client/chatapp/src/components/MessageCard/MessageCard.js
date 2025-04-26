@@ -89,7 +89,22 @@ const MessageCard = forwardRef(
                                     !isLast
                                 }
                             >
-                                <BadgeItemMessage isMe={isMe} time={currentTimestamp} />
+                                <RenderIf value={!isMe}>
+                                    <BadgeItemMessage isMe={isMe} time={currentTimestamp} />
+                                </RenderIf>
+                            </RenderIf>
+                            <RenderIf
+                                value={
+                                    !isGroupedWithPrevious &&
+                                    !isGroupedWithNext &&
+                                    !isHasIconNext &&
+                                    !isHasIconPrevious &&
+                                    prevTimestamp === currentTimestamp
+                                }
+                            >
+                                <RenderIf value={data?.content !== 'like' && !isLast && !isMe}>
+                                    <BadgeItemMessage isMe={isMe} time={currentTimestamp} />
+                                </RenderIf>
                             </RenderIf>
                             <RenderIf
                                 value={
@@ -157,7 +172,7 @@ const MessageCard = forwardRef(
                                 <BadgeItemMessage isMe={isMe} time={currentTimestamp} />
                             </RenderIf>
                             <RenderIf value={!isGroupedWithPrevious && !isGroupedWithNext}>
-                                <RenderIf value={data?.content !== 'like' && !isLast}>
+                                <RenderIf value={data?.content !== 'like' && !isLast && isMe}>
                                     <BadgeItemMessage isMe={isMe} time={currentTimestamp} />
                                 </RenderIf>
                                 <RenderIf
@@ -165,6 +180,15 @@ const MessageCard = forwardRef(
                                 >
                                     <BadgeItemMessage isMe={isMe} time={currentTimestamp} badge />
                                 </RenderIf>
+                            </RenderIf>
+                            <RenderIf
+                                value={
+                                    !isGroupedWithPrevious && !isGroupedWithNext && data?.content === 'like' && !isMe
+                                }
+                            >
+                                <div className="badge badge-neutral rounded-full mt-1 mr-2">
+                                    <span>{currentTimestamp}</span>
+                                </div>
                             </RenderIf>
                         </div>
                     </motion.div>

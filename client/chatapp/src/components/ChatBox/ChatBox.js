@@ -66,7 +66,7 @@ function ChatBox() {
                                             <Fragment key={index}>
                                                 <RenderIf value={dateSeparator}>
                                                     <div className="flex justify-center w-full sticky top-0">
-                                                        <span className="text-sm text-base-content my-2 badge min-w-[100px] badge-neutral">
+                                                        <span className="text-sm text-neutral-content my-2 rounded-xl badge min-w-[100px] badge-neutral">
                                                             {dateSeparator}
                                                         </span>
                                                     </div>

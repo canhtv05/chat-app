@@ -1,3 +1,8 @@
+import { CiSettings, CiUser } from 'react-icons/ci';
+import { GrLanguage } from 'react-icons/gr';
+
+const classNames = `size-7 mr-3`;
+
 export const THEMES = [
     'light',
     'dark',
@@ -32,3 +37,38 @@ export const THEMES = [
     'nord',
     'sunset',
 ];
+
+export const MENU_ITEM_SETTINGS = ({ handleOpenProfile = () => {} }) => {
+    return [
+        {
+            title: 'Account information',
+            leftIcon: <CiUser className={classNames} />,
+            onClick: handleOpenProfile,
+        },
+        {
+            title: 'Settings',
+            leftIcon: <CiSettings className={classNames} />,
+            separate: true,
+            to: '/settings',
+        },
+        {
+            title: 'Language',
+            leftIcon: <GrLanguage className="size-7 mr-3 scale-75 opacity-70 text-base" />,
+            separate: true,
+            submenu: [
+                {
+                    title: 'Tiếng Việt',
+                },
+                {
+                    title: 'English',
+                },
+            ],
+        },
+        {
+            title: 'Logout',
+        },
+        {
+            title: 'Exit',
+        },
+    ];
+};

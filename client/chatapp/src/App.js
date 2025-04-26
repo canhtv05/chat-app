@@ -1,6 +1,7 @@
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { Fragment, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
+import { Toaster } from 'react-hot-toast';
 
 import { modals, privateRoutes, publicRoutes } from './routes';
 import DefaultLayout from './layouts/DefaultLayout';
@@ -8,7 +9,6 @@ import PrivateRoute from './routes/PrivateRoute';
 import { getMyInfo } from './redux/reducers/authSlice';
 import PublicRoute from './routes/PublicRoute';
 import cookieUtil from './utils/cookieUtils';
-import { Toaster } from 'react-hot-toast';
 
 function App() {
     const location = useLocation();

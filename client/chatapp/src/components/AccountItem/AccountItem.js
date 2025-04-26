@@ -4,7 +4,7 @@ import { forwardRef, memo, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { PiTagSimpleFill } from 'react-icons/pi';
 import { AiFillLike } from 'react-icons/ai';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import RenderIf from '../RenderIf';
 import useTimeAgo from '~/hooks/useTimeAgo';
@@ -13,6 +13,7 @@ import images from '~/assets/images';
 
 const AccountItem = forwardRef(({ separator, isOnline, isActive, onClick, data, isSearchAccount = false }, ref) => {
     const navigate = useNavigate();
+    const { idChat: idChatParams } = useParams();
     const { id: currentUserId } = useSelector((state) => state.auth.data.data);
     const {
         data: { id: targetId },
@@ -20,6 +21,7 @@ const AccountItem = forwardRef(({ separator, isOnline, isActive, onClick, data, 
     } = useSelector((state) => state.chat);
     const user = isSearchAccount ? data : data?.users.find((user) => user.id !== currentUserId);
     const chat = isSearchAccount ? null : data;
+    const active = isActive || chat?.id ? idChatParams === chat?.id : idChatParams === targetId;
 
     const last = useKeyValue(lastMessages, {});
     const lastMessage = last(chat?.id);
@@ -42,17 +44,10 @@ const AccountItem = forwardRef(({ separator, isOnline, isActive, onClick, data, 
     }, [data]);
 
     return (
-        <div
-            className="container"
-            ref={ref}
-            onClick={() => {
-                navigate(`/chats/${chat?.id || targetId}`);
-                console.log(targetId);
-            }}
-        >
+        <div className="container" ref={ref} onClick={() => navigate(`/chats/${chat?.id || targetId}`)}>
             <div
                 className={`cursor-pointer transition-all ease-in-out duration-300 ${
-                    isActive ? 'bg-base-200' : 'hover:bg-base-200'
+                    active ? 'bg-base-200' : 'hover:bg-base-200'
                 }`}
                 onClick={onClick}
             >
