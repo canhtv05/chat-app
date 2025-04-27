@@ -22,6 +22,7 @@ import com.canhtv05.chatapp.utils.BuildPageUrl;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
@@ -103,6 +104,13 @@ public class MessageController {
     public ApiResponse<MessageResponse> getLastMessage(@PathVariable String chatId) {
         return ApiResponse.<MessageResponse>builder()
                 .data(messageService.getLastMessageByChatId(chatId))
+                .build();
+    }
+
+    @PostMapping("/upload-image")
+    public ApiResponse<String> uploadImage(@RequestParam("file") MultipartFile file) {
+        return ApiResponse.<String>builder()
+                .data(messageService.uploadImage(file))
                 .build();
     }
 }

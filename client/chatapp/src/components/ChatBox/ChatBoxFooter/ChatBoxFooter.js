@@ -5,11 +5,15 @@ import { AiFillLike } from 'react-icons/ai';
 import EmojiPicker from 'emoji-picker-react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'react-hot-toast';
+import { CiImageOn } from 'react-icons/ci';
 
 import MyButton from '~/components/MyButton';
 import MyTextArea from '~/components/MyTextArea';
 import RenderIf from '~/components/RenderIf';
 import useTextAreaResize from '~/hooks/useTextAreaResize';
+import { sendImage, sendMessage } from '~/services/message/messageService';
+import socketService from '~/services/socket/socketService';
 
 const styles = {
     '--epr-bg-color': 'oklch(var(--b3))',
@@ -18,14 +22,16 @@ const styles = {
     '--epr-picker-border-color': 'transparent',
 };
 
-function ChatBoxFooter({ content, setContent, onSend }) {
+function ChatBoxFooter({ content, setContent, onSend, setIsSending, currentIdChat, setShouldScrollToBottom }) {
     const { t } = useTranslation();
     const { id: currentUserId } = useSelector((state) => state.auth.data.data);
     const data = useSelector((state) => state.chat.data);
     const user = data?.createdBy?.id ? data?.users.find((user) => user.id !== currentUserId) : data;
     const [isLineBeak, setIsLineBeak] = useState(false);
     const [openEmoji, setOpenEmoji] = useState(false);
+    const [tempUrl, setTempUrl] = useState('');
     const textAreaRef = useRef(null);
+    const fileInputRef = useRef(null);
 
     const handleChange = useTextAreaResize({ setContent, setIsLineBeak });
 
@@ -78,12 +84,72 @@ function ChatBoxFooter({ content, setContent, onSend }) {
         [setContent],
     );
 
+    const handleImageUpload = useCallback(
+        async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
+            if (!validTypes.includes(file.type)) {
+                toast.error(t('common.toast.imageOnly'));
+                return;
+            }
+            if (file.size > 5 * 1024 * 1024) {
+                toast.error(t('common.toast.sizeExceeded'));
+                return;
+            }
+
+            const tempUrl = URL.createObjectURL(file);
+            setTempUrl(tempUrl);
+            setIsSending(true);
+            onSend(content, tempUrl);
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const [err, result] = await sendImage(formData);
+            if (err) {
+                toast.error(t('common.toast.uploadFailed'));
+                e.target.value = null;
+                return;
+            }
+            await sendMessage({ chatId: currentIdChat.current, content: content, imageUrl: result.data });
+            setIsSending(false);
+            setContent('');
+            URL.revokeObjectURL(tempUrl);
+
+            const timestamp = new Date().toISOString();
+            if (socketService.isReady()) {
+                socketService.send('message', {
+                    chatId: currentIdChat.current,
+                    content: content,
+                    userId: currentUserId,
+                    timestamp,
+                    imageUrl: result.data,
+                });
+            }
+            setShouldScrollToBottom(true);
+            e.target.value = null;
+        },
+        [content, currentIdChat, currentUserId, onSend, setContent, setIsSending, setShouldScrollToBottom, t],
+    );
+
     return (
         <div
             className={`p-5 relative flex ${
                 isLineBeak ? 'flex-col pb-3' : 'flex-row'
             } justify-between items-center border-b border-base-300 relative w-full`}
         >
+            <MyButton size="sm" onClick={() => fileInputRef.current.click()}>
+                <CiImageOn className="size-7 text-base-content cursor-pointer" />
+            </MyButton>
+            <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImageUpload}
+                accept="image/jpeg,image/png,image/gif"
+                style={{ display: 'none' }}
+            />
             <MyTextArea
                 ref={textAreaRef}
                 placeholder={`${t('chatBox.sendTo')} ${user?.firstName ?? ''} ${user?.lastName ?? ''}...`}

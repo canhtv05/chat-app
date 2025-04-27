@@ -29,7 +29,6 @@ public class RealtimeChatController {
 
     @MessageMapping("/message")
     public void receiveMessage(@Payload SendMessageRequest request) {
-
         User user = userService.findUserById(request.getUserId());
 
         var response = MessageResponse.builder()
@@ -37,6 +36,7 @@ public class RealtimeChatController {
                 .content(request.getContent())
                 .user(userMapper.toUser(user))
                 .timestamp(request.getTimestamp())
+                .imageUrl(request.getImageUrl())
                 .build();
 
         simpMessagingTemplate.convertAndSend("/group/" + request.getChatId(), response);

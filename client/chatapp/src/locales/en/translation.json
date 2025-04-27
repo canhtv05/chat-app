@@ -94,6 +94,7 @@
                 "Sat": "Sat"
             }
         },
-        "sendTo": "Send to"
+        "sendTo": "Send to",
+        "image": "Image"
     }
 }

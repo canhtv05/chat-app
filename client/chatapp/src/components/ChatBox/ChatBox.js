@@ -1,4 +1,4 @@
-import { Fragment, useRef } from 'react';
+import { Fragment, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import RenderIf from '../RenderIf';
@@ -25,7 +25,17 @@ function ChatBox() {
         loading,
         setContent,
         getMessageProps,
+        currentIdChat,
+        setIsSending,
+        setShouldScrollToBottom,
+        shouldScrollToBottom,
     } = useChatBoxLogic({ containerRef, firstMessageItemRef, lastMessageRef });
+
+    useEffect(() => {
+        if (lastMessageRef.current && shouldScrollToBottom) {
+            lastMessageRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
+    }, [shouldScrollToBottom]);
 
     return (
         <div className="absolute top-0 left-0 w-full h-full bg-base-100">
@@ -49,15 +59,8 @@ function ChatBox() {
                                         </p>
                                     </RenderIf>
                                     {dataMessage.map((data, index) => {
-                                        const {
-                                            isFirst,
-                                            isGroupedWithNext,
-                                            isGroupedWithPrevious,
-                                            isLast,
-                                            prev,
-                                            isHasIconNext,
-                                            isHasIconPrevious,
-                                        } = getMessageProps(dataMessage, index, data);
+                                        const { isFirst, isGroupedWithNext, isGroupedWithPrevious, isLast, prev } =
+                                            getMessageProps(dataMessage, index, data);
 
                                         const dateSeparator = DateUtils.getDateSeparator(
                                             data?.timestamp,
@@ -75,8 +78,6 @@ function ChatBox() {
                                                     </div>
                                                 </RenderIf>
                                                 <MessageCard
-                                                    isHasIconPrevious={isHasIconPrevious}
-                                                    isHasIconNext={isHasIconNext}
                                                     isGroupedWithPrevious={isGroupedWithPrevious}
                                                     isGroupedWithNext={isGroupedWithNext}
                                                     isSending={isSending}
@@ -87,6 +88,7 @@ function ChatBox() {
                                                         content: data?.content,
                                                         timestamp: data?.timestamp,
                                                         prevTimestamp: prev?.timestamp,
+                                                        imageUrl: data?.imageUrl,
                                                     }}
                                                 />
                                             </Fragment>
@@ -97,7 +99,14 @@ function ChatBox() {
                         </div>
                     </div>
                     <div className="shrink-0 border-base-300 border-t">
-                        <ChatBoxFooter content={content} setContent={setContent} onSend={handleSendMessage} />
+                        <ChatBoxFooter
+                            content={content}
+                            setContent={setContent}
+                            onSend={handleSendMessage}
+                            setIsSending={setIsSending}
+                            currentIdChat={currentIdChat}
+                            setShouldScrollToBottom={setShouldScrollToBottom}
+                        />
                     </div>
                 </div>
             </RenderIf>

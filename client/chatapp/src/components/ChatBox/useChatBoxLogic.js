@@ -7,77 +7,115 @@ import socketService from '~/services/socket/socketService';
 import { getAllMessagesFromChat, sendMessage } from '~/services/message/messageService';
 import { createSingleChat } from '~/services/chat/chatService';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const getMessageProps = (dataMessage, index, data) => {
-    const getTimeDiffInMinutes = (a, b) => (new Date(a) - new Date(b)) / (1000 * 60);
-    const isSameUser = (a, b) => a?.user?.id === b?.user?.id;
+    // Helper để tính chênh lệch thời gian (phút)
+    const getTimeDiffInMinutes = (a, b) => {
+        if (!a || !b) return Infinity;
+        return (new Date(a) - new Date(b)) / (1000 * 60);
+    };
 
-    const prev = dataMessage[index - 1];
-    const next = dataMessage[index + 1];
+    // Helper kiểm tra cùng người gửi
+    const isSameUser = (a, b) => a?.user?.id && b?.user?.id && a.user.id === b.user.id;
 
-    const isLast = index === dataMessage.length - 1;
+    // Helper kiểm tra tin nhắn có nội dung hợp lệ (không rỗng)
+    const isValidMessage = (msg) => {
+        return msg && (msg.content?.trim() !== '' || !!msg.imageUrl);
+    };
+
+    // Tìm tin nhắn hợp lệ trước và sau
+    let prev = null;
+    let prevIndex = index - 1;
+    while (prevIndex >= 0 && !isValidMessage(dataMessage[prevIndex])) {
+        prevIndex--;
+    }
+    if (prevIndex >= 0) prev = dataMessage[prevIndex];
+
+    let next = null;
+    let nextIndex = index + 1;
+    while (nextIndex < dataMessage.length && !isValidMessage(dataMessage[nextIndex])) {
+        nextIndex++;
+    }
+    if (nextIndex < dataMessage.length) next = dataMessage[nextIndex];
+
+    // Xác định vị trí tin nhắn
     const isFirst = index === 0;
+    const isLast = index === dataMessage.length - 1;
 
+    // Khởi tạo trạng thái nhóm
     let isGroupedWithPrevious = false;
     let isGroupedWithNext = false;
 
-    let isHasIconPrevious = false;
-    let isHasIconNext = false;
-
-    if (prev) {
-        const timeDiff = getTimeDiffInMinutes(data?.timestamp, prev?.timestamp);
+    // Kiểm tra nhóm với tin nhắn trước
+    if (prev && data?.timestamp && prev?.timestamp) {
+        const timeDiff = getTimeDiffInMinutes(data.timestamp, prev.timestamp);
         isGroupedWithPrevious = timeDiff < 5 && isSameUser(data, prev);
-        if (prev?.content === 'like') isHasIconPrevious = true;
     }
 
-    if (next) {
-        const timeDiff = getTimeDiffInMinutes(next?.timestamp, data?.timestamp);
+    // Kiểm tra nhóm với tin nhắn sau
+    if (next && data?.timestamp && next?.timestamp) {
+        const timeDiff = getTimeDiffInMinutes(next.timestamp, data.timestamp);
         isGroupedWithNext = timeDiff < 5 && isSameUser(data, next);
-        if (next?.content === 'like') isHasIconNext = true;
     }
 
-    if (isHasIconNext && isHasIconPrevious) {
+    // Xử lý ngoại lệ cho tin nhắn 'like' hoặc có imageUrl
+    const isLike = data?.content === 'like';
+    const hasImage = !!data?.imageUrl;
+    const prevIsLike = prev?.content === 'like';
+    const nextIsLike = next?.content === 'like';
+    const prevHasImage = !!prev?.imageUrl;
+    const nextHasImage = !!next?.imageUrl;
+
+    // Không nhóm nếu tin nhắn hiện tại là 'like' hoặc có imageUrl
+    if (isLike || hasImage) {
+        isGroupedWithNext = false;
+        // Chỉ nhóm với trước nếu trước không phải imageUrl
+        isGroupedWithPrevious = isGroupedWithPrevious && !prevHasImage;
+    }
+
+    // Không nhóm nếu tin nhắn hiện tại là văn bản và trước/sau là imageUrl hoặc like
+    if (data?.content && !isLike && !hasImage) {
+        if (prevHasImage || prevIsLike) {
+            isGroupedWithPrevious = false;
+        }
+        if (nextHasImage || nextIsLike) {
+            isGroupedWithNext = false;
+        }
+    }
+
+    // Không nhóm nếu tin nhắn đứng giữa hai tin nhắn 'like'
+    if (prevIsLike && nextIsLike) {
         isGroupedWithPrevious = false;
         isGroupedWithNext = false;
     }
 
-    if (isHasIconPrevious && isGroupedWithNext) {
-        isGroupedWithPrevious = false;
-    }
-
-    if ((isHasIconNext && isGroupedWithPrevious) || (isHasIconNext && isGroupedWithNext)) {
-        isGroupedWithNext = false;
-    }
-
-    if (isHasIconPrevious && isGroupedWithPrevious && !isGroupedWithNext) {
-        isGroupedWithNext = false;
-        isGroupedWithPrevious = false;
-    }
-
-    if (isLast && data?.content === 'like') {
-        isGroupedWithNext = false;
-        isGroupedWithPrevious = false;
-    }
-
-    if (isHasIconNext && isHasIconPrevious) {
+    // Không nhóm nếu tin nhắn cuối là 'like'
+    if (isLast && isLike) {
         isGroupedWithPrevious = false;
         isGroupedWithNext = false;
+    }
+
+    if (prev && prevIsLike && isLike && next && nextIsLike) {
+        const timeDiff = getTimeDiffInMinutes(data.timestamp, prev.timestamp);
+        isGroupedWithPrevious = timeDiff < 5 && isSameUser(data, prev);
+        const timeDiff2 = getTimeDiffInMinutes(next.timestamp, data.timestamp);
+        isGroupedWithNext = timeDiff2 < 5 && isSameUser(data, next);
     }
 
     return {
         isFirst,
         isLast,
-        isGroupedWithNext,
         isGroupedWithPrevious,
+        isGroupedWithNext,
         prev,
         next,
-        isHasIconPrevious,
-        isHasIconNext,
     };
 };
 
 const useChatBoxLogic = ({ containerRef, firstMessageItemRef, lastMessageRef }) => {
     const dispatch = useDispatch();
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const { idChat: idChatParams } = useParams();
     const {
@@ -104,6 +142,7 @@ const useChatBoxLogic = ({ containerRef, firstMessageItemRef, lastMessageRef }) 
     const observer = useRef(null);
     const isInitialFetch = useRef(true);
     const prevPage = useRef(-1);
+    const currentIdChat = useRef();
 
     const [dataMessage, setDataMessage] = useState([]);
     const [isSending, setIsSending] = useState(false);
@@ -123,11 +162,14 @@ const useChatBoxLogic = ({ containerRef, firstMessageItemRef, lastMessageRef }) 
             if (received?.user?.id !== currentUserId) {
                 setDataMessage((prev) => [...prev, received]);
                 setShouldScrollToBottom(true);
+            } else {
+                setShouldScrollToBottom(false);
             }
+            if (!received.imageUrl) received.content = `${t('chatBox.image')}`;
             dispatch(updateLastMessage(received));
         },
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        [currentUserId],
+        [currentUserId, shouldScrollToBottom, t],
     );
 
     useEffect(() => {
@@ -249,7 +291,7 @@ const useChatBoxLogic = ({ containerRef, firstMessageItemRef, lastMessageRef }) 
                 lastMessageRef.current.scrollIntoView({ block: 'end' });
             });
         }
-    }, [dataMessage, shouldScrollToBottom, lastMessageRef]);
+    }, [shouldScrollToBottom, lastMessageRef]);
 
     useEffect(() => {
         if (dataMessage.length > 0) {
@@ -260,10 +302,12 @@ const useChatBoxLogic = ({ containerRef, firstMessageItemRef, lastMessageRef }) 
     }, [dataMessage]);
 
     const handleSendMessage = useCallback(
-        async (message) => {
+        async (message, imageUrl) => {
             const contentToSend = message || content.trim();
-            if (!contentToSend || !idChatParams) return;
-            let currentChatId = chatId;
+            if (!idChatParams) return;
+
+            currentIdChat.current = chatId;
+
             const timestamp = new Date().toISOString();
 
             const currentUser = {
@@ -285,34 +329,35 @@ const useChatBoxLogic = ({ containerRef, firstMessageItemRef, lastMessageRef }) 
             if (!isChatCreated) {
                 const [error, result] = await createSingleChat(idUser);
                 if (error) {
-                    toast.error(error?.data?.message);
+                    toast.error(error?.response?.data?.message);
                     return;
                 }
 
-                currentChatId = result?.data?.id;
+                currentIdChat.current = result?.data?.id;
                 const body = {
                     chatImage: null,
                     chatName: null,
                     createdBy: currentUser,
-                    id: currentChatId,
+                    id: currentIdChat.current,
                     isGroup: false,
                     users: [currentUser, targetUser],
                     content: contentToSend,
                     timestamp,
-                    chatId: currentChatId,
+                    chatId: currentIdChat.current,
                 };
 
                 socketService.send('single-chat-created', body);
-                socketService.subscribe(`/group/${currentChatId}`, onMessageReceive);
-                setChatId(currentChatId);
+                socketService.subscribe(`/group/${currentIdChat.current}`, onMessageReceive);
+                setChatId(currentIdChat.current);
                 setIsChatCreated(true);
             }
 
             const localMessage = {
-                chatId: currentChatId,
+                chatId: currentIdChat.current,
                 content: contentToSend,
                 user: currentUser,
                 timestamp,
+                imageUrl,
             };
 
             dispatch(updateLastMessage(localMessage));
@@ -320,7 +365,7 @@ const useChatBoxLogic = ({ containerRef, firstMessageItemRef, lastMessageRef }) 
 
             if (socketService.isReady()) {
                 socketService.send('message', {
-                    chatId: currentChatId,
+                    chatId: currentIdChat.current,
                     content: contentToSend,
                     userId: currentUserId,
                     timestamp,
@@ -328,11 +373,13 @@ const useChatBoxLogic = ({ containerRef, firstMessageItemRef, lastMessageRef }) 
                 setContent('');
             }
 
+            if (!imageUrl && contentToSend) {
+                setIsSending(true);
+                await sendMessage({ chatId: currentIdChat.current, content: contentToSend });
+                setIsSending(false);
+            }
             setShouldScrollToBottom(true);
-            setIsSending(true);
-            await sendMessage({ chatId: currentChatId, content: contentToSend });
-            setIsSending(false);
-            dispatch(updateChats({ id: currentChatId }));
+            dispatch(updateChats({ id: currentIdChat.current }));
         },
         [
             chatId,
@@ -343,28 +390,29 @@ const useChatBoxLogic = ({ containerRef, firstMessageItemRef, lastMessageRef }) 
             emailCurrentChat,
             firstName,
             firstNameCurrentChat,
+            idChatParams,
             idUser,
             isChatCreated,
             lastName,
             lastNameCurrentChat,
+            onMessageReceive,
             profilePicture,
             profilePictureCurrentChat,
-            idChatParams,
-            onMessageReceive,
         ],
     );
 
     useEffect(() => {
-        if (containerRef.current) {
+        if (lastMessageRef.current && shouldScrollToBottom) {
             requestAnimationFrame(() => {
-                containerRef.current.scrollTop = containerRef.current.scrollHeight;
+                lastMessageRef.current.scrollIntoView({ block: 'end', behavior: 'smooth' });
             });
         }
-    }, [containerRef]);
+    }, [shouldScrollToBottom, lastMessageRef]);
 
     return {
         handleSendMessage,
         isSending,
+        setIsSending,
         currentChat,
         loading,
         dataMessage,
@@ -372,6 +420,9 @@ const useChatBoxLogic = ({ containerRef, firstMessageItemRef, lastMessageRef }) 
         content,
         setContent,
         getMessageProps,
+        currentIdChat,
+        setShouldScrollToBottom,
+        shouldScrollToBottom,
     };
 };
 

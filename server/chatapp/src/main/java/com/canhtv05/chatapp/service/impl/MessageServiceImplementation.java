@@ -1,8 +1,12 @@
 package com.canhtv05.chatapp.service.impl;
 
+import java.io.IOException;
 import java.time.Instant;
+import java.util.Map;
 import java.util.Objects;
 
+import com.cloudinary.Cloudinary;
+import lombok.experimental.NonFinal;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -27,6 +31,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @Service
@@ -38,6 +43,7 @@ public class MessageServiceImplementation implements MessageService {
     UserService userService;
     ChatService chatService;
     MessageMapper messageMapper;
+    Cloudinary cloudinary;
 
     @Override
     public MessageResponse sendMessage(SendMessageRequest request) {
@@ -54,6 +60,7 @@ public class MessageServiceImplementation implements MessageService {
                 .user(user)
                 .timestamp(Instant.now())
                 .content(request.getContent())
+                .imageUrl(request.getImageUrl())
                 .build();
 
         return messageMapper.toMessageResponse(messageRepository.save(message));
@@ -119,5 +126,16 @@ public class MessageServiceImplementation implements MessageService {
     public MessageResponse getLastMessageByChatId(String chatId) {
         Message message = messageRepository.getLastMessageByChatId(chatId);
         return messageMapper.toMessageResponse(message);
+    }
+
+    @Override
+    public String uploadImage(MultipartFile file) {
+        try {
+            Map<String, Object> uploadResult = cloudinary.uploader().upload(file.getBytes(),
+                    Map.of("resource_type", "image"));
+            return (String) uploadResult.get("secure_url");
+        } catch (IOException | AppException e) {
+            throw new AppException(ErrorCode.UPLOAD_FAILED);
+        }
     }
 }

@@ -17,8 +17,11 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Message extends AbstractEntity<String> {
 
-    @Column(name = "content", nullable = false)
+    @Column(name = "content")
     String content;
+
+    @Column(name = "image_url")
+    String imageUrl;
 
     @Column(name = "timestamp", nullable = false)
     Instant timestamp;

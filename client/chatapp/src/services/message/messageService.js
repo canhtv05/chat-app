@@ -21,3 +21,14 @@ export const getLastMessageByIdChat = async (chatId) => {
     const [error, result] = await handlerRequest(httpRequest.get(`/messages/${chatId}/last-message`));
     return [error, result];
 };
+
+export const sendImage = async (request) => {
+    const [error, result] = await handlerRequest(
+        httpRequest.post(`/messages/upload-image`, request, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        }),
+    );
+    return [error, result];
+};

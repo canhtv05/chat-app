@@ -3,6 +3,7 @@ package com.canhtv05.chatapp.dto.response;
 import java.io.Serializable;
 import java.time.Instant;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -18,4 +19,5 @@ public class MessageResponse implements Serializable {
     Instant timestamp;
     UserResponse user;
     String chatId;
+    String imageUrl;
 }

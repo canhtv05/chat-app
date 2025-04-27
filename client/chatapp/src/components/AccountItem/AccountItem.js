@@ -161,6 +161,9 @@ const AccountItem = forwardRef(({ separator, isOnline, isActive, onClick, data, 
                                             >
                                                 {lastMessage?.content ?? lastMessageRealTime?.content}
                                             </RenderIf>
+                                            <RenderIf value={!lastMessage.content && lastMessage.imageUrl}>
+                                                {`${t('chatBox.image')}`}
+                                            </RenderIf>
                                         </span>
                                     </RenderIf>
                                     <RenderIf value={!lastMessage}>

@@ -25,7 +25,8 @@ public interface MessageRepository extends JpaRepository<Message, String> {
                     m.created_at,
                     m.updated_at,
                     m.timestamp,
-                    m.user_id
+                    m.user_id,
+                    m.image_url
             FROM message m
             JOIN chat c ON m.chat_id = c.id
             WHERE m.chat_id = :chatId
