@@ -7,6 +7,7 @@ import java.util.Objects;
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.canhtv05.chatapp.common.Links;
 import com.canhtv05.chatapp.common.Meta;
@@ -22,7 +23,6 @@ import com.canhtv05.chatapp.utils.BuildPageUrl;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor

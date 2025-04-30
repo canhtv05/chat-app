@@ -1,12 +1,14 @@
-import { useCallback, useRef, useState } from 'react';
+import { Fragment, useCallback, useRef, useState } from 'react';
 import { CiFaceSmile } from 'react-icons/ci';
 import { IoIosSend } from 'react-icons/io';
 import { AiFillLike } from 'react-icons/ai';
 import EmojiPicker from 'emoji-picker-react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-hot-toast';
 import { CiImageOn } from 'react-icons/ci';
+import { FaTimes } from 'react-icons/fa';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import MyButton from '~/components/MyButton';
 import MyTextArea from '~/components/MyTextArea';
@@ -14,6 +16,7 @@ import RenderIf from '~/components/RenderIf';
 import useTextAreaResize from '~/hooks/useTextAreaResize';
 import { sendImage, sendMessage } from '~/services/message/messageService';
 import socketService from '~/services/socket/socketService';
+import { setSending } from '~/redux/reducers/chatSlice';
 
 const styles = {
     '--epr-bg-color': 'oklch(var(--b3))',
@@ -22,42 +25,20 @@ const styles = {
     '--epr-picker-border-color': 'transparent',
 };
 
-function ChatBoxFooter({ content, setContent, onSend, setIsSending, currentIdChat, setShouldScrollToBottom }) {
+function ChatBoxFooter({ content, setContent, onSend, currentIdChat, setShouldScrollToBottom }) {
     const { t } = useTranslation();
+    const dispatch = useDispatch();
     const { id: currentUserId } = useSelector((state) => state.auth.data.data);
     const data = useSelector((state) => state.chat.data);
     const user = data?.createdBy?.id ? data?.users.find((user) => user.id !== currentUserId) : data;
     const [isLineBeak, setIsLineBeak] = useState(false);
     const [openEmoji, setOpenEmoji] = useState(false);
-    const [tempUrl, setTempUrl] = useState('');
+    const [tempFiles, setTempFiles] = useState([]);
+    const [tempUrls, setTempUrls] = useState([]);
     const textAreaRef = useRef(null);
     const fileInputRef = useRef(null);
 
     const handleChange = useTextAreaResize({ setContent, setIsLineBeak });
-
-    const handleKeyDown = useCallback(
-        (e) => {
-            if (e.key === 'Enter') {
-                onSend();
-                setContent('');
-                setIsLineBeak(false);
-                textAreaRef.current.style.height = '36px';
-                e.preventDefault();
-            }
-        },
-        [setContent, onSend],
-    );
-
-    const handleClick = useCallback(
-        (typeIcon) => {
-            if (typeIcon) onSend(typeIcon);
-            else onSend();
-            setIsLineBeak(false);
-            textAreaRef.current.style.height = '36px';
-            setContent('');
-        },
-        [onSend, setContent],
-    );
 
     const handleOnEmojiClick = useCallback(
         (emojiData, event) => {
@@ -84,111 +65,227 @@ function ChatBoxFooter({ content, setContent, onSend, setIsSending, currentIdCha
         [setContent],
     );
 
-    const handleImageUpload = useCallback(
-        async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
+    const handleImageSelect = useCallback(
+        (e) => {
+            const files = Array.from(e.target.files);
+            if (!files.length) return;
 
             const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
-            if (!validTypes.includes(file.type)) {
-                toast.error(t('common.toast.imageOnly'));
-                return;
-            }
-            if (file.size > 5 * 1024 * 1024) {
-                toast.error(t('common.toast.sizeExceeded'));
-                return;
+
+            const newFiles = [];
+            const newUrls = [];
+
+            for (const file of files) {
+                if (!validTypes.includes(file.type)) {
+                    toast.error(t('common.toast.imageOnly'));
+                    continue;
+                }
+                if (file.size > 5 * 1024 * 1024) {
+                    toast.error(t('common.toast.sizeExceeded'));
+                    continue;
+                }
+
+                newFiles.push(file);
+                const tempUrl = URL.createObjectURL(file);
+                newUrls.push(tempUrl);
             }
 
-            const tempUrl = URL.createObjectURL(file);
-            setTempUrl(tempUrl);
-            setIsSending(true);
-            onSend(content, tempUrl);
-
-            const formData = new FormData();
-            formData.append('file', file);
-
-            const [err, result] = await sendImage(formData);
-            if (err) {
-                toast.error(t('common.toast.uploadFailed'));
-                e.target.value = null;
-                return;
-            }
-            await sendMessage({ chatId: currentIdChat.current, content: content, imageUrl: result.data });
-            setIsSending(false);
-            setContent('');
-            URL.revokeObjectURL(tempUrl);
-
-            const timestamp = new Date().toISOString();
-            if (socketService.isReady()) {
-                socketService.send('message', {
-                    chatId: currentIdChat.current,
-                    content: content,
-                    userId: currentUserId,
-                    timestamp,
-                    imageUrl: result.data,
-                });
-            }
-            setShouldScrollToBottom(true);
+            setTempFiles((prev) => [...prev, ...newFiles]);
+            setTempUrls((prev) => [...prev, ...newUrls]);
             e.target.value = null;
         },
-        [content, currentIdChat, currentUserId, onSend, setContent, setIsSending, setShouldScrollToBottom, t],
+        [t],
+    );
+
+    const handleClick = useCallback(async () => {
+        dispatch(setSending(true));
+        if (content.length === 0 && tempFiles.length === 0) {
+            onSend('like');
+            dispatch(setSending(false));
+            return;
+        }
+
+        const filesToSend = [...tempFiles];
+        const urlsToSend = [...tempUrls];
+
+        setTempFiles([]);
+        setTempUrls([]);
+        setContent('');
+        setIsLineBeak(false);
+        textAreaRef.current.style.height = '36px';
+        setShouldScrollToBottom(true);
+
+        if (content.length > 0) {
+            onSend(content, null);
+        }
+
+        if (filesToSend.length > 0) {
+            for (let i = 0; i < filesToSend.length; i++) {
+                const tempFile = filesToSend[i];
+                const tempUrl = urlsToSend[i];
+
+                const formData = new FormData();
+                formData.append('file', tempFile);
+
+                onSend('', tempUrl);
+
+                const timestamp = new Date().toISOString();
+
+                const [err, result] = await sendImage(formData);
+                if (err) {
+                    toast.error(t('common.toast.uploadFailed'));
+                    onSend('', '', currentIdChat.current);
+                    continue;
+                }
+
+                await sendMessage({
+                    chatId: currentIdChat.current,
+                    content: '',
+                    imageUrl: result.data,
+                });
+
+                if (socketService.isReady()) {
+                    socketService.send('message', {
+                        chatId: currentIdChat.current,
+                        content: '',
+                        userId: currentUserId,
+                        timestamp,
+                        imageUrl: result.data,
+                    });
+                }
+            }
+        }
+        dispatch(setSending(false));
+        tempUrls.forEach((url) => URL.revokeObjectURL(url));
+    }, [
+        content,
+        tempFiles,
+        tempUrls,
+        setContent,
+        setShouldScrollToBottom,
+        onSend,
+        currentUserId,
+        currentIdChat,
+        dispatch,
+        t,
+    ]);
+
+    const handleRemoveTmpImg = (index) => {
+        setTempUrls((prev) => {
+            return prev.filter((imgTmp, i) => {
+                if (i === index) URL.revokeObjectURL(imgTmp);
+                return i !== index;
+            });
+        });
+    };
+
+    const handleKeyDown = useCallback(
+        (e) => {
+            if (e.key === 'Enter') {
+                handleClick();
+                setContent('');
+                setIsLineBeak(false);
+                textAreaRef.current.style.height = '36px';
+                e.preventDefault();
+            }
+        },
+        [handleClick, setContent],
     );
 
     return (
-        <div
-            className={`p-5 relative flex ${
-                isLineBeak ? 'flex-col pb-3' : 'flex-row'
-            } justify-between items-center border-b border-base-300 relative w-full`}
-        >
-            <MyButton size="sm" onClick={() => fileInputRef.current.click()}>
-                <CiImageOn className="size-7 text-base-content cursor-pointer" />
-            </MyButton>
-            <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleImageUpload}
-                accept="image/jpeg,image/png,image/gif"
-                style={{ display: 'none' }}
-            />
-            <MyTextArea
-                ref={textAreaRef}
-                placeholder={`${t('chatBox.sendTo')} ${user?.firstName ?? ''} ${user?.lastName ?? ''}...`}
-                type="text"
-                value={content}
-                onChange={handleChange}
-                width={isLineBeak ? '100%' : '90%'}
-                onKeyDown={handleKeyDown}
-            />
-            <div className={`items-center flex ${isLineBeak ? 'mt-2 justify-end w-full' : 'justify-center'}`}>
-                <MyButton size="sm" onClick={() => setOpenEmoji((prev) => !prev)}>
-                    <CiFaceSmile className="size-7 text-base-content cursor-pointer" />
-                </MyButton>
-                <MyButton size="sm" onClick={content.length === 0 ? () => handleClick('like') : () => handleClick()}>
-                    <RenderIf value={content.length !== 0}>
-                        <IoIosSend className="size-7 text-primary cursor-pointer rotate-45" />
-                    </RenderIf>
-                    <RenderIf value={content.length === 0}>
-                        <AiFillLike className="size-7 text-primary cursor-pointer" />
-                    </RenderIf>
-                </MyButton>
-            </div>
-            <div className="absolute top-[-440px] right-[310px]">
-                <RenderIf value={openEmoji}>
-                    <div className="absolute">
-                        <EmojiPicker
-                            width={300}
-                            previewConfig={{
-                                showPreview: false,
-                            }}
-                            emojiStyle="facebook"
-                            open={openEmoji}
-                            onEmojiClick={handleOnEmojiClick}
-                            style={styles}
-                        />
+        <>
+            <div className={`relative w-full`}>
+                <div
+                    className={`flex ${
+                        isLineBeak ? 'flex-col p-5' : 'flex-row p-5'
+                    }  justify-between items-center relative w-full`}
+                >
+                    <div className={`${isLineBeak ? 'absolute left-3 bottom-3' : ''}`}>
+                        <MyButton size="sm" onClick={() => fileInputRef.current.click()}>
+                            <CiImageOn className="size-7 text-base-content cursor-pointer" />
+                        </MyButton>
                     </div>
-                </RenderIf>
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleImageSelect}
+                        accept="image/jpeg,image/png,image/gif"
+                        style={{ display: 'none' }}
+                        multiple
+                    />
+                    <MyTextArea
+                        ref={textAreaRef}
+                        placeholder={`${t('chatBox.sendTo')} ${user?.firstName ?? ''} ${user?.lastName ?? ''}...`}
+                        type="text"
+                        value={content}
+                        onChange={handleChange}
+                        width={isLineBeak ? '100%' : '90%'}
+                        onKeyDown={handleKeyDown}
+                    />
+                    <div className={`items-center flex ${isLineBeak ? 'mt-2 justify-end w-full' : 'justify-center'}`}>
+                        <MyButton size="sm" onClick={() => setOpenEmoji((prev) => !prev)}>
+                            <CiFaceSmile className="size-7 text-base-content cursor-pointer" />
+                        </MyButton>
+                        <MyButton size="sm" onClick={handleClick}>
+                            <RenderIf value={content.length !== 0 || tempUrls.length > 0}>
+                                <IoIosSend className="size-7 text-primary cursor-pointer rotate-45" />
+                            </RenderIf>
+                            <RenderIf value={content.length === 0 && tempUrls.length === 0}>
+                                <AiFillLike className="size-7 text-primary cursor-pointer" />
+                            </RenderIf>
+                        </MyButton>
+                    </div>
+                    <div className="absolute top-[-440px] right-[310px]">
+                        <RenderIf value={openEmoji}>
+                            <div className="absolute">
+                                <EmojiPicker
+                                    width={300}
+                                    previewConfig={{
+                                        showPreview: false,
+                                    }}
+                                    emojiStyle="facebook"
+                                    open={openEmoji}
+                                    onEmojiClick={handleOnEmojiClick}
+                                    style={styles}
+                                />
+                            </div>
+                        </RenderIf>
+                    </div>
+                </div>
             </div>
-        </div>
+            <AnimatePresence>
+                {tempUrls.length > 0 && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 30 }}
+                        transition={{ duration: 0.3 }}
+                        className="flex flex-row overflow-x-auto border-t w-full border-base-300 pt-2"
+                    >
+                        {tempUrls.map((temp, index) => (
+                            <motion.div
+                                key={temp}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: 20 }}
+                                transition={{ duration: 0.3 }}
+                                className="relative m-2"
+                            >
+                                <img
+                                    src={temp}
+                                    alt={`temp-${index}`}
+                                    className="object-contain max-w-[150px] max-h-[150px] rounded-lg block relative"
+                                    loading="lazy"
+                                />
+                                <button className="absolute top-1 -right-2" onClick={() => handleRemoveTmpImg(index)}>
+                                    <FaTimes className="size-5 text-white bg-black bg-opacity-50 rounded-full p-1 cursor-pointer" />
+                                </button>
+                            </motion.div>
+                        ))}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </>
     );
 }
 

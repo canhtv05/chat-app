@@ -3,7 +3,6 @@ package com.canhtv05.chatapp.dto.response;
 import java.io.Serializable;
 import java.time.Instant;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 

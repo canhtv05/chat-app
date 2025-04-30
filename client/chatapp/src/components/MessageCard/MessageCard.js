@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { forwardRef } from 'react';
+import { forwardRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { IoCheckmarkDone, IoCheckmark } from 'react-icons/io5';
 import { useTranslation } from 'react-i18next';
@@ -8,8 +8,10 @@ import { AiFillLike } from 'react-icons/ai';
 import RenderIf from '../RenderIf';
 import DateUtils from '~/utils/dateUtils';
 import BadgeItemMessage from './BadgeItemMessage';
-const MessageCard = forwardRef(({ isMe, data, isSending, isLast, isGroupedWithPrevious, isGroupedWithNext }, ref) => {
+import { useSelector } from 'react-redux';
+const MessageCard = forwardRef(({ isMe, data, isLast, isGroupedWithPrevious, isGroupedWithNext }, ref) => {
     const { t } = useTranslation();
+    const { sending } = useSelector((state) => state.chat);
     let borderRadiusClass = 'rounded-3xl';
     if (isGroupedWithPrevious || isGroupedWithNext) {
         if (isMe) {
@@ -36,6 +38,10 @@ const MessageCard = forwardRef(({ isMe, data, isSending, isLast, isGroupedWithPr
             }
         }
     }
+
+    useEffect(() => {
+        console.log(sending);
+    }, [sending]);
 
     const currentTimestamp = DateUtils.getHoursAndMinutes(data?.timestamp);
     const isLike = data?.content === 'like';
@@ -74,15 +80,7 @@ const MessageCard = forwardRef(({ isMe, data, isSending, isLast, isGroupedWithPr
                                 </div>
                             </RenderIf>
                             <div className="text-xs text-gray-400 mt-1">
-                                <RenderIf value={isGroupedWithPrevious && !isGroupedWithNext}>
-                                    <RenderIf value={isLike}>
-                                        <BadgeItemMessage isMe={isMe} time={currentTimestamp} badge />
-                                    </RenderIf>
-                                    <RenderIf value={!isLike}>
-                                        <BadgeItemMessage isMe={isMe} time={currentTimestamp} />
-                                    </RenderIf>
-                                </RenderIf>
-                                <RenderIf value={!isGroupedWithPrevious && !isGroupedWithNext}>
+                                <RenderIf value={!isGroupedWithNext}>
                                     <RenderIf value={!isLike}>
                                         <BadgeItemMessage isMe={isMe} time={currentTimestamp} />
                                     </RenderIf>
@@ -99,23 +97,23 @@ const MessageCard = forwardRef(({ isMe, data, isSending, isLast, isGroupedWithPr
                 <div className={`flex w-full mt-1 ${isMe ? 'justify-end' : 'justify-start'}`}>
                     <img
                         className={`object-contain block max-w-[48%] max-h-[300px] rounded-xl`}
-                        src={data?.imageUrl}
+                        src={data.imageUrl}
                         alt="img"
                     />
                 </div>
-                <RenderIf value={isGroupedWithPrevious && !isLast}>
+                <RenderIf value={!isGroupedWithPrevious && !isLast}>
                     <BadgeItemMessage isMe={isMe} time={currentTimestamp} badge />
                 </RenderIf>
             </RenderIf>
             <div className="w-full flex justify-end">
                 <RenderIf value={isLast && isMe}>
-                    <RenderIf value={isSending}>
+                    <RenderIf value={sending}>
                         <div className="badge badge-neutral rounded-full mt-1">
                             <IoCheckmark />
                             <span className="ml-1">{t('chatBox.sending')}</span>
                         </div>
                     </RenderIf>
-                    <RenderIf value={!isSending}>
+                    <RenderIf value={!sending}>
                         <div className="flex mt-1">
                             <RenderIf value={data.imageUrl || data.content === 'like'}>
                                 <div className="badge badge-neutral rounded-full mt-1 mr-2">
@@ -143,6 +141,7 @@ const MessageCard = forwardRef(({ isMe, data, isSending, isLast, isGroupedWithPr
                     </RenderIf>
                 </RenderIf>
             </div>
+            {/* {`${isGroupedWithNext}, ${isGroupedWithPrevious}, ${isLast}, ${isLike}`} */}
         </div>
     );
 });

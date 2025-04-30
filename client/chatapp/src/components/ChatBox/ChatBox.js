@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useParams } from 'react-router-dom';
 
 import RenderIf from '../RenderIf';
 import ChatBoxHeader from './ChatBoxHeader';
@@ -15,27 +16,39 @@ function ChatBox() {
     const firstMessageItemRef = useRef();
     const lastMessageRef = useRef();
     const containerRef = useRef();
+
+    const { idChat } = useParams();
+
+    const prevPath = useRef(idChat);
+
     const {
         content,
         currentChat,
         currentUserId,
         dataMessage,
         handleSendMessage,
-        isSending,
         loading,
+
         setContent,
         getMessageProps,
         currentIdChat,
-        setIsSending,
+        // isSending,
+        // setIsSending,
         setShouldScrollToBottom,
-        shouldScrollToBottom,
     } = useChatBoxLogic({ containerRef, firstMessageItemRef, lastMessageRef });
 
     useEffect(() => {
-        if (lastMessageRef.current && shouldScrollToBottom) {
-            lastMessageRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        if (containerRef.current && prevPath.current !== idChat) {
+            requestAnimationFrame(() => {
+                containerRef.current.scrollTo({
+                    top: containerRef.current.scrollHeight,
+                    behavior: 'smooth',
+                });
+            });
         }
-    }, [shouldScrollToBottom]);
+
+        prevPath.current = idChat;
+    }, [idChat]);
 
     return (
         <div className="absolute top-0 left-0 w-full h-full bg-base-100">
@@ -80,7 +93,7 @@ function ChatBox() {
                                                 <MessageCard
                                                     isGroupedWithPrevious={isGroupedWithPrevious}
                                                     isGroupedWithNext={isGroupedWithNext}
-                                                    isSending={isSending}
+                                                    // isSending={isSending}
                                                     ref={isFirst ? firstMessageItemRef : isLast ? lastMessageRef : null}
                                                     isLast={isLast}
                                                     isMe={currentUserId === data?.user?.id}
@@ -103,7 +116,7 @@ function ChatBox() {
                             content={content}
                             setContent={setContent}
                             onSend={handleSendMessage}
-                            setIsSending={setIsSending}
+                            // setIsSending={setIsSending}
                             currentIdChat={currentIdChat}
                             setShouldScrollToBottom={setShouldScrollToBottom}
                         />

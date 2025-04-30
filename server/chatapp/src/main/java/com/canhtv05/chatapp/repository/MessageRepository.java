@@ -17,22 +17,24 @@ public interface MessageRepository extends JpaRepository<Message, String> {
 
     Long countByChatId(String chatId);
 
-    @Query(value = """
-            SELECT
-                    m.id,
-                    m.content,
-                    m.chat_id,
-                    m.created_at,
-                    m.updated_at,
-                    m.timestamp,
-                    m.user_id,
-                    m.image_url
-            FROM message m
-            JOIN chat c ON m.chat_id = c.id
-            WHERE m.chat_id = :chatId
-            ORDER BY m.created_at DESC
-            LIMIT 1
-            """
-            , nativeQuery = true)
+    @Query(
+            value =
+                    """
+			SELECT
+					m.id,
+					m.content,
+					m.chat_id,
+					m.created_at,
+					m.updated_at,
+					m.timestamp,
+					m.user_id,
+					m.image_url
+			FROM message m
+			JOIN chat c ON m.chat_id = c.id
+			WHERE m.chat_id = :chatId
+			ORDER BY m.created_at DESC
+			LIMIT 1
+			""",
+            nativeQuery = true)
     Message getLastMessageByChatId(@Param("chatId") String chatId);
 }

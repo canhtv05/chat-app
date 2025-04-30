@@ -48,6 +48,8 @@ services:
       SPRING_DATASOURCE_PASSWORD: root
       SPRING_REDIS_HOST: redis
       SPRING_REDIS_PORT: 6379
+      JWT_SIGNER_KEY: your-secret
+      CLOUDINARY_URL: your-cloudinary-url
     networks:
       - backend
 

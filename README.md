@@ -72,10 +72,12 @@ Chạy script `chatapp.sql`
 
 ## ![preview](<./preview/Screenshot 2025-04-07 165120.png>)
 
+## ![preview](<./preview/Screenshot 2025-04-30 205413.png>)
+
 ### Bugs
 
 ```
-Vẫn còn 1 số lỗi vẫn chưa được cải thiện...
+scroll sai vị trí khi vào chat box
 ```
 
 ### 📄 License

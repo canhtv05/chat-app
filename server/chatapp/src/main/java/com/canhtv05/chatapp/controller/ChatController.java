@@ -13,7 +13,6 @@ import com.canhtv05.chatapp.dto.resquest.RenameGroupRequest;
 import com.canhtv05.chatapp.dto.resquest.SingleChatCreationRequest;
 import com.canhtv05.chatapp.entity.User;
 import com.canhtv05.chatapp.mapper.ChatMapper;
-import com.canhtv05.chatapp.mapper.UserMapper;
 import com.canhtv05.chatapp.service.ChatService;
 import com.canhtv05.chatapp.service.UserService;
 

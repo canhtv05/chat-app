@@ -5,14 +5,13 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.Objects;
 
-import com.cloudinary.Cloudinary;
-import lombok.experimental.NonFinal;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.canhtv05.chatapp.dto.response.MessageResponse;
 import com.canhtv05.chatapp.dto.resquest.SendMessageRequest;
@@ -26,12 +25,12 @@ import com.canhtv05.chatapp.repository.MessageRepository;
 import com.canhtv05.chatapp.service.ChatService;
 import com.canhtv05.chatapp.service.MessageService;
 import com.canhtv05.chatapp.service.UserService;
+import com.cloudinary.Cloudinary;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @Service
@@ -81,8 +80,11 @@ public class MessageServiceImplementation implements MessageService {
         Sort sort = Sort.by(Sort.Direction.ASC, "timestamp");
         Pageable pageable = PageRequest.of(pageIndex, size, sort);
 
-        log.info("check 1: {}, check 2: {}, check 3: {}", chat.getUsers(),
-                !chat.getAdmins().contains(userRequest), !chat.getCreatedBy().equals(userRequest));
+        log.info(
+                "check 1: {}, check 2: {}, check 3: {}",
+                chat.getUsers(),
+                !chat.getAdmins().contains(userRequest),
+                !chat.getCreatedBy().equals(userRequest));
 
         if (!chat.getUsers().contains(userRequest)
                 && !chat.getAdmins().contains(userRequest)
@@ -131,8 +133,8 @@ public class MessageServiceImplementation implements MessageService {
     @Override
     public String uploadImage(MultipartFile file) {
         try {
-            Map<String, Object> uploadResult = cloudinary.uploader().upload(file.getBytes(),
-                    Map.of("resource_type", "image"));
+            Map<String, Object> uploadResult =
+                    cloudinary.uploader().upload(file.getBytes(), Map.of("resource_type", "image"));
             return (String) uploadResult.get("secure_url");
         } catch (IOException | AppException e) {
             throw new AppException(ErrorCode.UPLOAD_FAILED);

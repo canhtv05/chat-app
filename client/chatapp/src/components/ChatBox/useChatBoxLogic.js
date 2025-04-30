@@ -2,114 +2,125 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-hot-toast';
 import useKeyValue from '~/hooks/useKeyValue';
-import { setCurrentChat, updateChats, updateLastMessage } from '~/redux/reducers/chatSlice';
+import {
+    removeLastMessageById,
+    setCurrentChat,
+    setSending,
+    updateChats,
+    updateLastMessage,
+} from '~/redux/reducers/chatSlice';
 import socketService from '~/services/socket/socketService';
 import { getAllMessagesFromChat, sendMessage } from '~/services/message/messageService';
 import { createSingleChat } from '~/services/chat/chatService';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
-const getMessageProps = (dataMessage, index, data) => {
-    // Helper để tính chênh lệch thời gian (phút)
+const getMessageProps = (list, index, item) => {
     const getTimeDiffInMinutes = (a, b) => {
-        if (!a || !b) return Infinity;
+        if (!a || !b) return;
         return (new Date(a) - new Date(b)) / (1000 * 60);
     };
 
-    // Helper kiểm tra cùng người gửi
-    const isSameUser = (a, b) => a?.user?.id && b?.user?.id && a.user.id === b.user.id;
+    const isSameUser = (a, b) => a?.user?.id && b?.user.id && a.user.id === b.user.id;
 
-    // Helper kiểm tra tin nhắn có nội dung hợp lệ (không rỗng)
     const isValidMessage = (msg) => {
-        return msg && (msg.content?.trim() !== '' || !!msg.imageUrl);
+        return msg && (!!msg.content || !!msg.imageUrl);
     };
 
-    // Tìm tin nhắn hợp lệ trước và sau
-    let prev = null;
-    let prevIndex = index - 1;
-    while (prevIndex >= 0 && !isValidMessage(dataMessage[prevIndex])) {
-        prevIndex--;
-    }
-    if (prevIndex >= 0) prev = dataMessage[prevIndex];
+    const checkGroup = (val1, val2) => {
+        const timeDiff = getTimeDiffInMinutes(val1.timestamp, val2.timestamp);
+        return timeDiff <= 2 && isSameUser(val1, val2);
+    };
 
-    let next = null;
-    let nextIndex = index + 1;
-    while (nextIndex < dataMessage.length && !isValidMessage(dataMessage[nextIndex])) {
-        nextIndex++;
-    }
-    if (nextIndex < dataMessage.length) next = dataMessage[nextIndex];
-
-    // Xác định vị trí tin nhắn
     const isFirst = index === 0;
-    const isLast = index === dataMessage.length - 1;
+    const isLast = index === list.length - 1;
 
-    // Khởi tạo trạng thái nhóm
-    let isGroupedWithPrevious = false;
-    let isGroupedWithNext = false;
+    let prev = null;
+    let next = null;
 
-    // Kiểm tra nhóm với tin nhắn trước
-    if (prev && data?.timestamp && prev?.timestamp) {
-        const timeDiff = getTimeDiffInMinutes(data.timestamp, prev.timestamp);
-        isGroupedWithPrevious = timeDiff < 5 && isSameUser(data, prev);
+    let isGroupedWithNext = null;
+    let isGroupedWithPrevious = null;
+
+    if (isValidMessage(list[index - 1])) {
+        prev = list[index - 1];
+        isGroupedWithPrevious = checkGroup(item, prev);
     }
 
-    // Kiểm tra nhóm với tin nhắn sau
-    if (next && data?.timestamp && next?.timestamp) {
-        const timeDiff = getTimeDiffInMinutes(next.timestamp, data.timestamp);
-        isGroupedWithNext = timeDiff < 5 && isSameUser(data, next);
+    if (isValidMessage(list[index + 1])) {
+        next = list[index + 1];
+        isGroupedWithNext = checkGroup(next, item);
     }
 
-    // Xử lý ngoại lệ cho tin nhắn 'like' hoặc có imageUrl
-    const isLike = data?.content === 'like';
-    const hasImage = !!data?.imageUrl;
-    const prevIsLike = prev?.content === 'like';
-    const nextIsLike = next?.content === 'like';
-    const prevHasImage = !!prev?.imageUrl;
-    const nextHasImage = !!next?.imageUrl;
+    const isLike = item?.content === 'like';
+    const hasImage = !!item?.imageUrl;
+    const prevHasImage = prev ? prev.imageUrl : null;
+    const nextHasImage = next ? next.imageUrl : null;
+    const prevIsLike = prev ? prev.content === 'like' : null;
+    const nextIsLike = next ? next.content === 'like' : null;
 
-    // Không nhóm nếu tin nhắn hiện tại là 'like' hoặc có imageUrl
-    if (isLike || hasImage) {
+    // khong group voi anh hoac like
+    if ((!isLike || !hasImage) && (nextIsLike || nextHasImage)) {
+        isGroupedWithPrevious = true;
         isGroupedWithNext = false;
-        // Chỉ nhóm với trước nếu trước không phải imageUrl
-        isGroupedWithPrevious = isGroupedWithPrevious && !prevHasImage;
     }
 
-    // Không nhóm nếu tin nhắn hiện tại là văn bản và trước/sau là imageUrl hoặc like
-    if (data?.content && !isLike && !hasImage) {
-        if (prevHasImage || prevIsLike) {
+    // khong group next khi item == last
+    if (isLast && (hasImage || isLike)) {
+        isGroupedWithNext = false;
+    }
+
+    if (isLike) {
+        if (nextIsLike && checkGroup(next, item)) {
+            isGroupedWithNext = true;
+        }
+    } else {
+        if (prevIsLike && checkGroup(item, prev)) {
             isGroupedWithPrevious = false;
         }
-        if (nextHasImage || nextIsLike) {
-            isGroupedWithNext = false;
+    }
+
+    // khong group khi content or like o giua image
+    if (!hasImage && prevHasImage && nextHasImage) {
+        isGroupedWithNext = false;
+        isGroupedWithPrevious = false;
+    }
+
+    // group voi sau no la 1 img
+    if (hasImage) {
+        if (prevHasImage) isGroupedWithPrevious = true;
+        if (!nextHasImage || isLike || !checkGroup(next, item)) {
+            isGroupedWithPrevious = false;
         }
     }
 
-    // Không nhóm nếu tin nhắn đứng giữa hai tin nhắn 'like'
-    if (prevIsLike && nextIsLike) {
-        isGroupedWithPrevious = false;
-        isGroupedWithNext = false;
+    if (!isLike && !hasImage) {
+        // khong group khi 2 ben la img or like
+        if (prevIsLike && nextIsLike) {
+            isGroupedWithNext = false;
+            isGroupedWithPrevious = false;
+        }
+        // ko group khi trc no la img or like
+        if (prevIsLike || prevHasImage) {
+            isGroupedWithPrevious = false;
+        }
     }
 
-    // Không nhóm nếu tin nhắn cuối là 'like'
-    if (isLast && isLike) {
+    // ko group voi truoc khi != user
+    if (!isSameUser(item, prev)) {
         isGroupedWithPrevious = false;
-        isGroupedWithNext = false;
     }
 
-    if (prev && prevIsLike && isLike && next && nextIsLike) {
-        const timeDiff = getTimeDiffInMinutes(data.timestamp, prev.timestamp);
-        isGroupedWithPrevious = timeDiff < 5 && isSameUser(data, prev);
-        const timeDiff2 = getTimeDiffInMinutes(next.timestamp, data.timestamp);
-        isGroupedWithNext = timeDiff2 < 5 && isSameUser(data, next);
+    if (prev && !checkGroup(item, prev)) {
+        isGroupedWithPrevious = false;
     }
 
     return {
-        isFirst,
-        isLast,
-        isGroupedWithPrevious,
-        isGroupedWithNext,
         prev,
         next,
+        isFirst,
+        isLast,
+        isGroupedWithNext,
+        isGroupedWithPrevious,
     };
 };
 
@@ -145,7 +156,6 @@ const useChatBoxLogic = ({ containerRef, firstMessageItemRef, lastMessageRef }) 
     const currentIdChat = useRef();
 
     const [dataMessage, setDataMessage] = useState([]);
-    const [isSending, setIsSending] = useState(false);
     const [content, setContent] = useState('');
     const [isChatCreated, setIsChatCreated] = useState(false);
     const [chatId, setChatId] = useState('');
@@ -165,7 +175,7 @@ const useChatBoxLogic = ({ containerRef, firstMessageItemRef, lastMessageRef }) 
             } else {
                 setShouldScrollToBottom(false);
             }
-            if (!received.imageUrl) received.content = `${t('chatBox.image')}`;
+            // if (received.imageUrl) received.content = `${t('chatBox.image')}`;
             dispatch(updateLastMessage(received));
         },
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -302,8 +312,9 @@ const useChatBoxLogic = ({ containerRef, firstMessageItemRef, lastMessageRef }) 
     }, [dataMessage]);
 
     const handleSendMessage = useCallback(
-        async (message, imageUrl) => {
-            const contentToSend = message || content.trim();
+        async (message, imageUrl, chatIdError = null) => {
+            dispatch(setSending(true));
+            const contentToSend = message;
             if (!idChatParams) return;
 
             currentIdChat.current = chatId;
@@ -359,31 +370,35 @@ const useChatBoxLogic = ({ containerRef, firstMessageItemRef, lastMessageRef }) 
                 timestamp,
                 imageUrl,
             };
+            if (chatIdError) {
+                // delete if there is chatId because of error
+                dispatch(removeLastMessageById(chatId));
+                return;
+            } else {
+                dispatch(updateLastMessage(localMessage));
+            }
 
-            dispatch(updateLastMessage(localMessage));
             setDataMessage((prev) => [...prev, localMessage]);
 
-            if (socketService.isReady()) {
-                socketService.send('message', {
-                    chatId: currentIdChat.current,
-                    content: contentToSend,
-                    userId: currentUserId,
-                    timestamp,
-                });
-                setContent('');
+            if (contentToSend && !imageUrl) {
+                await sendMessage({ chatId: currentIdChat.current, content: contentToSend });
+
+                if (socketService.isReady()) {
+                    socketService.send('message', {
+                        chatId: currentIdChat.current,
+                        content: contentToSend,
+                        userId: currentUserId,
+                        timestamp,
+                    });
+                    setContent('');
+                }
             }
 
-            if (!imageUrl && contentToSend) {
-                setIsSending(true);
-                await sendMessage({ chatId: currentIdChat.current, content: contentToSend });
-                setIsSending(false);
-            }
             setShouldScrollToBottom(true);
             dispatch(updateChats({ id: currentIdChat.current }));
         },
         [
             chatId,
-            content,
             currentUserId,
             dispatch,
             email,
@@ -411,8 +426,8 @@ const useChatBoxLogic = ({ containerRef, firstMessageItemRef, lastMessageRef }) 
 
     return {
         handleSendMessage,
-        isSending,
-        setIsSending,
+        // isSending,
+        // setIsSending,
         currentChat,
         loading,
         dataMessage,
@@ -423,6 +438,7 @@ const useChatBoxLogic = ({ containerRef, firstMessageItemRef, lastMessageRef }) 
         currentIdChat,
         setShouldScrollToBottom,
         shouldScrollToBottom,
+        setDataMessage,
     };
 };
 
